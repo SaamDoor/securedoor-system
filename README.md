@@ -1,34 +1,86 @@
-# securedoor-system
+# سام درب — Premium Luxury Security Door Platform
 
-A production-grade Persian luxury e-commerce platform for security doors and architectural products.
+A world-class enterprise digital platform for a premium luxury security door manufacturer.
 
-## 🚀 Tech Stack
+## Architecture
 
-- Next.js (Frontend)
-- ASP.NET Core (Backend)
-- PostgreSQL (Database)
-- Tailwind CSS
-- JWT Authentication
+```
+securedoor-system/
+├── frontend/          # Next.js 15 App Router
+│   ├── app/
+│   │   ├── (shop)/           # Public storefront
+│   │   ├── (auth)/           # Authentication
+│   │   ├── (user)/           # Customer dashboard
+│   │   └── (admin)/          # Enterprise admin panel
+│   ├── components/
+│   │   ├── ui/               # Core UI library
+│   │   ├── layout/           # Navbar, Footer
+│   │   ├── home/             # Homepage sections
+│   │   ├── shop/             # Product components
+│   │   ├── user/             # User dashboard
+│   │   └── admin/            # Admin panel
+│   ├── lib/
+│   │   ├── supabase/         # Supabase client + storage
+│   │   ├── api/              # Data fetching layer
+│   │   ├── utils.ts          # Utilities (Persian, Jalali, etc.)
+│   │   ├── constants.ts      # App constants
+│   │   └── seo.ts            # SEO + JSON-LD schemas
+│   ├── hooks/                # TanStack Query hooks
+│   ├── store/                # Zustand (cart, auth)
+│   └── types/                # TypeScript types
+└── supabase/
+    └── migrations/
+        ├── 001_initial_schema.sql
+        ├── 002_indexes_and_triggers.sql
+        ├── 003_rls_policies.sql
+        └── 004_seed_data.sql
+```
 
-## ✨ Features
+## Tech Stack
 
-- Fully Persian (RTL) UI
-- Luxury design system
-- SEO & AEO optimized
-- Scalable architecture
-- Admin & Customer dashboards
-- Real-time chat system
+- **Frontend:** Next.js 15, App Router, TypeScript, Tailwind CSS, Framer Motion
+- **Database:** PostgreSQL (Supabase)
+- **Auth:** JWT + Refresh Tokens + RBAC
+- **State:** TanStack Query + Zustand
+- **UI:** Custom luxury design system + Radix UI primitives
+- **Deployment:** Vercel (Frontend) + Supabase (DB + Storage)
 
-## 📦 Project Structure
+## Setup
 
-- frontend/
-- backend/
-- docs/
+```bash
+cd frontend
+cp .env.local.example .env.local
+# Fill in your Supabase credentials
+npm install
+npm run dev
+```
 
-## 🎯 Goal
+## Database Setup
 
-To build a scalable, enterprise-level platform for manufacturing businesses in Iran.
+Run migrations in order via Supabase SQL editor or CLI:
 
----
+```bash
+supabase db push
+```
 
-Built with ❤️ for high-performance and premium user experience.
+## Design System
+
+- **Primary Font:** Peyda + IRANSansX + Vazirmatn (Persian)
+- **Color:** Deep Black (#0B0B0B) + Royal Gold (#C8A85D)
+- **Language:** 100% Persian (RTL, Jalali dates, Persian numbers)
+- **Philosophy:** Rolex × Bentley × Bang & Olufsen in the door industry
+
+## Platform Modules
+
+| Module | Status |
+|--------|--------|
+| Homepage (13 sections) | ✅ |
+| Product Catalog + Detail | ✅ |
+| Authentication (Login/Register) | ✅ |
+| User Dashboard | ✅ |
+| Admin Dashboard | ✅ |
+| Integration Center | ✅ |
+| Database Schema (50+ tables) | ✅ |
+| SEO + JSON-LD + Sitemap | ✅ |
+| Row Level Security | ✅ |
+| Persian Design System | ✅ |
