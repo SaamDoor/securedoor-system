@@ -68,7 +68,8 @@
     "react-medium-image-zoom": "^5.2.11",
     "use-debounce": "^10.0.4",
     "zustand": "^5.0.2",
-    "immer": "^10.1.1"
+    "immer": "^10.1.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
@@ -87,4 +88,3 @@
     "prettier-plugin-tailwindcss": "^0.6.9"
   }
 }
-
