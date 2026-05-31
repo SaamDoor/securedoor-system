@@ -66,8 +66,6 @@ const config: Config = {
 
         /* ── Text ── */
         foreground: '#FFFFFF',
-        muted: '#A0A0A0',
-        'muted-foreground': '#707070',
 
         /* ── State ── */
         success: {
@@ -105,8 +103,9 @@ const config: Config = {
           foreground: '#FFFFFF',
         },
         muted: {
-          DEFAULT: '#181818',
-          foreground: '#A0A0A0',
+          DEFAULT: '#A0A0A0',
+          foreground: '#707070',
+          bg: '#181818',
         },
         accent: {
           DEFAULT: '#C8A85D',
