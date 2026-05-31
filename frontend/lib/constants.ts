@@ -1,23 +1,31 @@
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'سام درب'
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://samdoor.com'
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mashuf.com'
 export const SITE_DESCRIPTION =
-  'سام درب — پیشرو در ساخت درب‌های ضد سرقت لوکس و پرمیوم. با بهترین تکنولوژی روز دنیا و طراحی مدرن، امنیت و زیبایی را به خانه شما می‌آوریم.'
+  'سام درب، گروه صنعتی مشعوف — پیشرو در تولید درب‌های ضد سرقت، چهارچوب‌های فلزی فرانسوی و مکزیکی، درب‌های اتاقی و درب‌های حیاطی فرفورژه در استان مازندران.'
+
+export const BRAND = {
+  name: 'سام درب',
+  group: 'گروه صنعتی مشعوف',
+  manager: 'حسام مشعوف',
+} as const
 
 export const CONTACT = {
-  phone: '۰۲۱-۸۸۰۰۰۰۰۰',
-  mobile: '۰۹۱۲-۰۰۰۰۰۰۰',
-  email: 'info@samdoor.com',
-  address: 'تهران، خیابان ولیعصر، برج سام',
+  phone: '09003286539',
+  phoneFa: '۰۹۰۰ ۳۲۸ ۶۵۳۹',
+  email: 'info@mashuf.com',
+  address: 'مازندران، شهرستان قائم شهر، بلوار سید نظام‌الدین، جاده قادیکلای بزرگ، بین ولیعصر ۱۵ و ۳۶',
+  addressShort: 'قائم شهر، مازندران',
+  mapUrl: 'https://nshn.ir/537b1NmyGFj-5d',
   workingHours: 'شنبه تا چهارشنبه ۸ تا ۱۷، پنجشنبه ۸ تا ۱۳',
-}
+} as const
 
 export const SOCIAL_LINKS = {
-  instagram: 'https://instagram.com/samdoor',
-  telegram: 'https://t.me/samdoor',
-  whatsapp: 'https://wa.me/989120000000',
-  linkedin: 'https://linkedin.com/company/samdoor',
-  youtube: 'https://youtube.com/@samdoor',
-}
+  instagram: 'https://instagram.com/mashuf.industrial',
+  telegram: 'https://t.me/mashuf',
+  whatsapp: 'https://wa.me/989003286539',
+  linkedin: 'https://linkedin.com/company/mashuf',
+  youtube: 'https://youtube.com/@mashuf',
+} as const
 
 export const PAGINATION_DEFAULTS = {
   page: 1,
@@ -78,6 +86,6 @@ export const CURRENCY = 'تومان'
 export const CURRENCY_CODE = 'IRR'
 
 export const WHATSAPP_BUSINESS = {
-  phone: '989120000000',
-  defaultMessage: 'سلام، می‌خواهم درباره درب‌های سام بیشتر بدانم',
-}
+  phone: '989003286539',
+  defaultMessage: 'سلام، می‌خواهم درباره محصولات سام درب بیشتر بدانم',
+} as const

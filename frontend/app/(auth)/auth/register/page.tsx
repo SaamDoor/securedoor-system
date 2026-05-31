@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { isValidIranPhone } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 
 const registerSchema = z
   .object({
@@ -48,13 +49,33 @@ export default function RegisterPage() {
   })
 
   async function onSubmit(data: RegisterFormData) {
-    try {
-      await new Promise((r) => setTimeout(r, 1200))
-      toast.success('ثبت‌نام با موفقیت انجام شد! لطفاً ایمیل خود را تأیید کنید.')
-      router.push('/auth/verify-email')
-    } catch {
-      toast.error('خطا در ثبت‌نام. لطفاً دوباره تلاش کنید.')
+    const supabase = createClient()
+
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          phone: data.phone,
+        },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    if (error) {
+      const msg = error.message.includes('User already registered')
+        ? 'این ایمیل قبلاً ثبت شده است. لطفاً وارد شوید'
+        : error.message.includes('Too many requests')
+        ? 'تعداد تلاش‌ها بیش از حد مجاز است. کمی صبر کنید'
+        : 'خطا در ثبت‌نام. لطفاً دوباره تلاش کنید'
+      toast.error(msg)
+      return
     }
+
+    toast.success('ثبت‌نام با موفقیت انجام شد! لطفاً ایمیل خود را تأیید کنید.')
+    router.push('/auth/verify-email')
   }
 
   return (

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,6 +11,7 @@ import { Eye, EyeOff, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 
 const loginSchema = z.object({
   email: z.string().email('ایمیل معتبر وارد کنید'),
@@ -20,8 +21,20 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>
 
-export default function LoginPage() {
+const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support'] as const
+type AdminRole = (typeof ADMIN_ROLES)[number]
+
+function mapAuthError(message: string): string {
+  if (message.includes('Invalid login credentials')) return 'ایمیل یا رمز عبور اشتباه است'
+  if (message.includes('Email not confirmed')) return 'لطفاً ابتدا ایمیل خود را تأیید کنید'
+  if (message.includes('Too many requests')) return 'تعداد تلاش‌ها بیش از حد مجاز است. چند دقیقه صبر کنید'
+  if (message.includes('User not found')) return 'کاربری با این ایمیل یافت نشد'
+  return 'خطا در ورود. لطفاً دوباره تلاش کنید'
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
 
   const {
@@ -33,14 +46,52 @@ export default function LoginPage() {
   })
 
   async function onSubmit(data: LoginFormData) {
-    try {
-      // In production: call auth API
-      await new Promise((r) => setTimeout(r, 1000))
-      toast.success('خوش آمدید! در حال انتقال...')
-      router.push('/user/dashboard')
-    } catch {
-      toast.error('اطلاعات ورود اشتباه است')
+    const supabase = createClient()
+
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    })
+
+    if (error) {
+      toast.error(mapAuthError(error.message))
+      return
     }
+
+    if (!authData.user) {
+      toast.error('خطا در ورود. لطفاً دوباره تلاش کنید')
+      return
+    }
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role, first_name, last_name')
+      .eq('id', authData.user.id)
+      .single()
+
+    const role = (profile?.role ?? 'customer') as string
+    const displayName =
+      profile?.first_name
+        ? `${profile.first_name} ${profile.last_name ?? ''}`.trim()
+        : data.email
+
+    document.cookie = `user_role=${role}; path=/; SameSite=Lax; Max-Age=86400`
+
+    toast.success(`خوش آمدید، ${displayName}!`)
+
+    const redirect = searchParams.get('redirect')
+    if (redirect?.startsWith('/')) {
+      router.push(redirect)
+      router.refresh()
+      return
+    }
+
+    if (ADMIN_ROLES.includes(role as AdminRole)) {
+      router.push('/admin')
+    } else {
+      router.push('/user/dashboard')
+    }
+    router.refresh()
   }
 
   return (
@@ -83,11 +134,7 @@ export default function LoginPage() {
 
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              className="accent-gold"
-              {...register('rememberMe')}
-            />
+            <input type="checkbox" className="accent-gold" {...register('rememberMe')} />
             <span className="text-sm text-muted">مرا به یاد بسپار</span>
           </label>
           <Link href="/auth/forgot-password" className="text-sm text-gold hover:text-gold-light">
@@ -106,14 +153,12 @@ export default function LoginPage() {
           ورود
         </Button>
 
-        {/* Divider */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-white/8" />
           <span className="text-xs text-muted">یا</span>
           <div className="flex-1 h-px bg-white/8" />
         </div>
 
-        {/* Google login placeholder */}
         <button
           type="button"
           className="w-full h-11 rounded-xl border border-white/15 flex items-center justify-center gap-3 text-sm text-muted hover:text-white hover:border-white/30 transition-all"
@@ -122,13 +167,14 @@ export default function LoginPage() {
           ورود با Google
         </button>
       </form>
-
-      {/* Admin hint for development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-6 p-3 rounded-xl bg-gold/5 border border-gold/20 text-xs text-muted">
-          <span className="text-gold font-semibold">Dev:</span> admin@samdoor.com / password123
-        </div>
-      )}
     </motion.div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   )
 }
