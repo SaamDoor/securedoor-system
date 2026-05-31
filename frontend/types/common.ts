@@ -1,3 +1,28 @@
+// ─── Shared Primitive Types ──────────────────────────────────────────────────
+
+export type ViewMode = 'grid' | 'list'
+
+export type Status = 'active' | 'inactive' | 'pending' | 'archived'
+
+export type AlertType = 'warning' | 'info' | 'success' | 'error'
+
+export type BadgeVariant =
+  | 'gold'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'muted'
+  | 'white'
+  | 'primary'
+  | 'outline'
+
+export type SortOption = {
+  label: string
+  value: string
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
 export interface PaginationMeta {
   page: number
   limit: number
@@ -6,6 +31,8 @@ export interface PaginationMeta {
   hasNext: boolean
   hasPrev: boolean
 }
+
+// ─── API Response ─────────────────────────────────────────────────────────────
 
 export interface ApiResponse<T> {
   data: T
@@ -20,11 +47,15 @@ export interface ApiError {
   statusCode: number
 }
 
+// ─── Select ───────────────────────────────────────────────────────────────────
+
 export interface SelectOption {
   label: string
   value: string
   disabled?: boolean
 }
+
+// ─── File ─────────────────────────────────────────────────────────────────────
 
 export interface FileUpload {
   id: string
@@ -36,6 +67,8 @@ export interface FileUpload {
   path: string
   createdAt: string
 }
+
+// ─── Address ──────────────────────────────────────────────────────────────────
 
 export interface Address {
   id: string
@@ -53,6 +86,16 @@ export interface Address {
   updatedAt: string
 }
 
+// ─── Notification ─────────────────────────────────────────────────────────────
+
+export type NotificationType =
+  | 'order'
+  | 'payment'
+  | 'message'
+  | 'system'
+  | 'promotion'
+  | 'review'
+
 export interface Notification {
   id: string
   userId: string
@@ -64,13 +107,15 @@ export interface Notification {
   createdAt: string
 }
 
-export type NotificationType =
-  | 'order'
-  | 'payment'
-  | 'message'
-  | 'system'
-  | 'promotion'
-  | 'review'
+// ─── Banner ───────────────────────────────────────────────────────────────────
+
+export type BannerPosition =
+  | 'hero'
+  | 'homepage_middle'
+  | 'category_top'
+  | 'sidebar'
+  | 'product_page'
+  | 'checkout'
 
 export interface Banner {
   id: string
@@ -86,13 +131,7 @@ export interface Banner {
   endDate?: string
 }
 
-export type BannerPosition =
-  | 'hero'
-  | 'homepage_middle'
-  | 'category_top'
-  | 'sidebar'
-  | 'product_page'
-  | 'checkout'
+// ─── Menu ─────────────────────────────────────────────────────────────────────
 
 export interface MenuItem {
   id: string
@@ -111,18 +150,7 @@ export interface Menu {
   items: MenuItem[]
 }
 
-export interface SiteSettings {
-  siteName: string
-  siteUrl: string
-  logo: string
-  favicon: string
-  phone: string
-  email: string
-  address: string
-  workingHours: string
-  socialLinks: SocialLinks
-  seoDefaults: SeoDefaults
-}
+// ─── Site Settings ────────────────────────────────────────────────────────────
 
 export interface SocialLinks {
   instagram?: string
@@ -140,6 +168,28 @@ export interface SeoDefaults {
   ogImage: string
 }
 
+export interface SiteSettings {
+  siteName: string
+  siteUrl: string
+  logo: string
+  favicon: string
+  phone: string
+  email: string
+  address: string
+  workingHours: string
+  socialLinks: SocialLinks
+  seoDefaults: SeoDefaults
+}
+
+// ─── FAQ ──────────────────────────────────────────────────────────────────────
+
+export interface FaqCategory {
+  id: string
+  name: string
+  slug: string
+  order: number
+}
+
 export interface Faq {
   id: string
   question: string
@@ -149,12 +199,7 @@ export interface Faq {
   isActive: boolean
 }
 
-export interface FaqCategory {
-  id: string
-  name: string
-  slug: string
-  order: number
-}
+// ─── Testimonial ──────────────────────────────────────────────────────────────
 
 export interface Testimonial {
   id: string
@@ -168,6 +213,8 @@ export interface Testimonial {
   order: number
 }
 
+// ─── Certificate ──────────────────────────────────────────────────────────────
+
 export interface Certificate {
   id: string
   name: string
@@ -176,12 +223,3 @@ export interface Certificate {
   validUntil?: string
   order: number
 }
-
-export type SortOption = {
-  label: string
-  value: string
-}
-
-export type ViewMode = 'grid' | 'list'
-
-export type Status = 'active' | 'inactive' | 'pending' | 'archived'

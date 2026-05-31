@@ -1,18 +1,16 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Filter, Grid3X3, List, SlidersHorizontal, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/shop/product-card'
 import { ProductFilters } from '@/components/shop/product-filters'
 import { ProductSort } from '@/components/shop/product-sort'
-import { Skeleton } from '@/components/ui/skeleton'
-import { SectionHeader } from '@/components/ui/section-header'
-import { SORT_OPTIONS } from '@/lib/constants'
 import { toPersianNumber } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import type { ViewMode } from '@/types'
+import type { Product, ViewMode } from '@/types'
+import type { StockStatus } from '@/types/product'
 
 interface ProductsPageClientProps {
   searchParams: {
@@ -26,36 +24,48 @@ interface ProductsPageClientProps {
   }
 }
 
-const DEMO_PRODUCTS = Array.from({ length: 12 }, (_, i) => ({
-  id: String(i + 1),
-  sku: `SD-${1000 + i}`,
-  name: `درب ضد سرقت مدل ${['آرتوس', 'رگال', 'فایر', 'گراند', 'پرمیوم', 'الیت'][i % 6]} ${['پلاتینیوم', 'گلد', 'بلک', 'رویال', 'پرو', 'کلاسیک'][i % 6]}`,
-  slug: `door-model-${i + 1}`,
-  shortDescription: 'درب ضد سرقت با استاندارد بین‌المللی',
-  description: '',
-  price: (15 + i * 3.5) * 1_000_000,
-  comparePrice: i % 3 === 0 ? (18 + i * 3.5) * 1_000_000 : undefined,
-  costPrice: undefined,
-  categoryId: '1',
-  category: { id: '1', name: 'درب ضد سرقت', slug: 'darb-zed-sereqat', order: 1, isActive: true },
-  images: [],
-  attributes: [],
-  specifications: [],
-  downloads: [],
-  tags: [],
-  stock: i % 4 === 0 ? 0 : 10,
-  stockStatus: (i % 4 === 0 ? 'out_of_stock' : 'in_stock') as 'in_stock' | 'out_of_stock',
-  weight: undefined,
-  dimensions: undefined,
-  isActive: true,
-  isFeatured: i < 4,
-  isNew: i < 3,
-  viewCount: 1000 + i * 123,
-  reviewCount: 10 + i * 7,
-  averageRating: 4.5 + (i % 3) * 0.15,
-  createdAt: '2025-01-01',
-  updatedAt: '2025-01-01',
-}))
+const NAMES = ['آرتوس', 'رگال', 'فایر', 'گراند', 'پرمیوم', 'الیت'] as const
+const VARIANTS = ['پلاتینیوم', 'گلد', 'بلک', 'رویال', 'پرو', 'کلاسیک'] as const
+
+const DEMO_PRODUCTS: Product[] = Array.from({ length: 12 }, (_, i) => {
+  const stockStatus: StockStatus = i % 4 === 0 ? 'out_of_stock' : 'in_stock'
+  return {
+    id: String(i + 1),
+    sku: `SD-${1000 + i}`,
+    name: `درب ضد سرقت مدل ${NAMES[i % 6]} ${VARIANTS[i % 6]}`,
+    slug: `door-model-${i + 1}`,
+    shortDescription: 'درب ضد سرقت با استاندارد بین‌المللی و ضمانت ۱۰ ساله',
+    description: 'توضیحات کامل محصول',
+    price: (15 + i * 3.5) * 1_000_000,
+    comparePrice: i % 3 === 0 ? (18 + i * 3.5) * 1_000_000 : undefined,
+    costPrice: undefined,
+    categoryId: '1',
+    category: {
+      id: '1',
+      name: 'درب ضد سرقت',
+      slug: 'darb-zed-sereqat',
+      order: 1,
+      isActive: true,
+    },
+    images: [],
+    attributes: [],
+    specifications: [],
+    downloads: [],
+    tags: [],
+    stock: i % 4 === 0 ? 0 : 10,
+    stockStatus,
+    weight: undefined,
+    dimensions: undefined,
+    isActive: true,
+    isFeatured: i < 4,
+    isNew: i < 3,
+    viewCount: 1000 + i * 123,
+    reviewCount: 10 + i * 7,
+    averageRating: Math.min(5, 4.5 + (i % 3) * 0.15),
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+  }
+})
 
 export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -67,7 +77,11 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
   return (
     <div className="min-h-screen bg-black">
       {/* Page hero */}
-      <div className="page-hero pt-28 pb-12">
+      <div className="relative min-h-[220px] flex items-center justify-center overflow-hidden pt-20 pb-10"
+        style={{
+          background: 'radial-gradient(ellipse at center top, rgba(200,168,93,0.08) 0%, transparent 60%), linear-gradient(180deg, #0F0F0F 0%, #0B0B0B 100%)',
+        }}
+      >
         <div className="container text-center">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -75,14 +89,16 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-3 mb-4">
-              <div className="h-px w-10 bg-gold" />
-              <span className="text-gold text-sm font-semibold tracking-widest">کاتالوگ</span>
-              <div className="h-px w-10 bg-gold" />
+              <div className="h-px w-10 bg-[#C8A85D]" />
+              <span className="text-[#C8A85D] text-sm font-semibold tracking-widest">کاتالوگ</span>
+              <div className="h-px w-10 bg-[#C8A85D]" />
             </div>
             <h1 className="text-4xl font-black text-white mb-3">
-              {searchParams.search ? `نتایج جستجو: "${searchParams.search}"` : 'همه محصولات'}
+              {searchParams.search
+                ? `نتایج جستجو: "${searchParams.search}"`
+                : 'همه محصولات'}
             </h1>
-            <p className="text-muted">
+            <p className="text-[#A0A0A0]">
               {toPersianNumber(totalProducts)} محصول یافت شد
             </p>
           </motion.div>
@@ -91,18 +107,16 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
 
       <div className="container py-8">
         <div className="flex gap-8">
-
-          {/* ── Desktop sidebar filters ── */}
+          {/* Desktop sidebar */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
             <ProductFilters searchParams={searchParams} />
           </aside>
 
-          {/* ── Main content ── */}
+          {/* Main content */}
           <div className="flex-1 min-w-0">
             {/* Toolbar */}
             <div className="flex items-center justify-between mb-6 gap-4">
               <div className="flex items-center gap-2">
-                {/* Mobile filter button */}
                 <Button
                   variant="dark"
                   size="sm"
@@ -112,32 +126,35 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
                 >
                   فیلتر
                 </Button>
-
-                <span className="text-sm text-muted hidden sm:block">
+                <span className="text-sm text-[#A0A0A0] hidden sm:block">
                   {toPersianNumber(totalProducts)} محصول
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
-                {/* Sort */}
                 <ProductSort value={sortBy} onChange={setSortBy} />
 
-                {/* View mode */}
-                <div className="hidden sm:flex items-center gap-1 p-1 rounded-lg bg-surface border border-white/8">
+                <div className="hidden sm:flex items-center gap-1 p-1 rounded-lg bg-[#181818] border border-white/8">
                   <button
                     onClick={() => setViewMode('grid')}
+                    aria-label="نمایش شبکه‌ای"
                     className={cn(
                       'h-7 w-7 rounded flex items-center justify-center transition-colors',
-                      viewMode === 'grid' ? 'bg-gold text-black' : 'text-muted hover:text-white',
+                      viewMode === 'grid'
+                        ? 'bg-[#C8A85D] text-black'
+                        : 'text-[#A0A0A0] hover:text-white',
                     )}
                   >
                     <Grid3X3 className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
+                    aria-label="نمایش لیستی"
                     className={cn(
                       'h-7 w-7 rounded flex items-center justify-center transition-colors',
-                      viewMode === 'list' ? 'bg-gold text-black' : 'text-muted hover:text-white',
+                      viewMode === 'list'
+                        ? 'bg-[#C8A85D] text-black'
+                        : 'text-[#A0A0A0] hover:text-white',
                     )}
                   >
                     <List className="h-4 w-4" />
@@ -149,15 +166,15 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
             {/* Active filters */}
             {(searchParams.category || searchParams.search) && (
               <div className="flex flex-wrap items-center gap-2 mb-6">
-                <span className="text-xs text-muted">فیلترهای فعال:</span>
+                <span className="text-xs text-[#A0A0A0]">فیلترهای فعال:</span>
                 {searchParams.category && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C8A85D]/10 border border-[#C8A85D]/30 text-[#C8A85D] text-xs">
                     {searchParams.category}
                     <X className="h-3 w-3 cursor-pointer" />
                   </span>
                 )}
                 {searchParams.search && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C8A85D]/10 border border-[#C8A85D]/30 text-[#C8A85D] text-xs">
                     جستجو: {searchParams.search}
                     <X className="h-3 w-3 cursor-pointer" />
                   </span>
@@ -165,7 +182,7 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
               </div>
             )}
 
-            {/* Products grid/list */}
+            {/* Products */}
             <motion.div
               className={cn(
                 'grid gap-5',
@@ -193,14 +210,14 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
 
             {/* Pagination */}
             <div className="flex items-center justify-center gap-2 mt-12">
-              {[1, 2, 3, '...', 8].map((page, i) => (
+              {([1, 2, 3, '...', 8] as Array<number | string>).map((page, i) => (
                 <button
                   key={i}
                   className={cn(
                     'h-10 min-w-[40px] px-3 rounded-xl text-sm font-medium transition-all',
                     page === 1
-                      ? 'bg-gold text-black'
-                      : 'bg-surface border border-white/8 text-muted hover:border-gold/30 hover:text-white',
+                      ? 'bg-[#C8A85D] text-black'
+                      : 'bg-[#181818] border border-white/8 text-[#A0A0A0] hover:border-[#C8A85D]/30 hover:text-white',
                   )}
                 >
                   {typeof page === 'number' ? toPersianNumber(page) : page}
@@ -218,7 +235,7 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-60 lg:hidden"
+            className="fixed inset-0 z-50 lg:hidden"
           >
             <div
               className="absolute inset-0 bg-black/60"
@@ -229,16 +246,16 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
               animate={{ x: '0%' }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 200 }}
-              className="absolute top-0 left-0 bottom-0 w-80 max-w-[90vw] bg-surface border-l border-white/8 overflow-y-auto"
+              className="absolute top-0 left-0 bottom-0 w-80 max-w-[90vw] bg-[#181818] border-l border-white/8 overflow-y-auto"
             >
               <div className="flex items-center justify-between p-5 border-b border-white/8">
                 <h3 className="font-bold text-white flex items-center gap-2">
-                  <SlidersHorizontal className="h-5 w-5 text-gold" />
+                  <SlidersHorizontal className="h-5 w-5 text-[#C8A85D]" />
                   فیلترها
                 </h3>
                 <button
                   onClick={() => setIsMobileFilterOpen(false)}
-                  className="text-muted hover:text-white"
+                  className="text-[#A0A0A0] hover:text-white"
                 >
                   <X className="h-5 w-5" />
                 </button>

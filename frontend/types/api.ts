@@ -20,6 +20,8 @@ export type IntegrationCategory =
   | 'crm'
   | 'custom'
 
+export type IntegrationStatus = 'connected' | 'disconnected' | 'error' | 'testing'
+
 export interface Integration {
   id: string
   name: string
@@ -30,6 +32,8 @@ export interface Integration {
   logoUrl?: string
   isActive: boolean
   isConfigured: boolean
+  status: IntegrationStatus
+  lastTested?: string
   createdAt: string
   updatedAt: string
 }
@@ -120,11 +124,6 @@ export interface AdminDashboardStats {
     active: number
     outOfStock: number
     lowStock: number
-  }
-  inventory: {
-    totalItems: number
-    lowStockAlerts: number
-    outOfStockItems: number
   }
 }
 

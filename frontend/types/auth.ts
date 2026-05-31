@@ -1,5 +1,22 @@
 export type UserRole = 'super_admin' | 'admin' | 'manager' | 'support' | 'customer'
 
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage'
+
+export interface Permission {
+  id: string
+  name: string
+  resource: string
+  action: PermissionAction
+}
+
+export interface Role {
+  id: string
+  name: string
+  slug: UserRole
+  permissions: Permission[]
+  isSystem: boolean
+}
+
 export interface User {
   id: string
   email: string
@@ -40,23 +57,6 @@ export interface AuthState {
   tokens: AuthTokens | null
   isAuthenticated: boolean
   isLoading: boolean
-}
-
-export interface Permission {
-  id: string
-  name: string
-  resource: string
-  action: PermissionAction
-}
-
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage'
-
-export interface Role {
-  id: string
-  name: string
-  slug: UserRole
-  permissions: Permission[]
-  isSystem: boolean
 }
 
 export interface Session {

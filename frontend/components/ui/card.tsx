@@ -1,42 +1,39 @@
-'use client'
-
 import * as React from 'react'
-import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
+export type CardVariant = 'default' | 'glass' | 'bordered' | 'gold' | 'elevated'
+
+const variantClasses: Record<CardVariant, string> = {
+  default: 'bg-[#181818] border border-white/8',
+  glass: 'bg-[#181818]/80 backdrop-blur-xl border border-white/8',
+  bordered: 'bg-transparent border border-white/15',
+  gold: 'bg-[#181818] border border-[#C8A85D]/30 shadow-[0_2px_8px_rgba(200,168,93,0.15)]',
+  elevated: 'bg-[#181818] border border-white/8 shadow-[0_10px_40px_rgba(0,0,0,0.6)]',
+}
+
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'glass' | 'bordered' | 'gold' | 'elevated'
+  variant?: CardVariant
   hoverable?: boolean
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', hoverable = false, ...props }, ref) => {
-    const variants = {
-      default: 'bg-surface border border-white/8',
-      glass: 'bg-surface/80 backdrop-blur-xl border border-white/8',
-      bordered: 'bg-transparent border border-white/15',
-      gold: 'bg-surface border border-gold/30 shadow-gold-sm',
-      elevated: 'bg-surface border border-white/8 shadow-luxury-sm',
-    }
-
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'rounded-2xl',
-          variants[variant],
-          hoverable && [
-            'transition-all duration-400 ease-luxury cursor-pointer',
-            'hover:border-gold/30 hover:shadow-gold hover:-translate-y-1',
-          ],
-          className,
-        )}
-        {...props}
-      />
-    )
-  },
+  ({ className, variant = 'default', hoverable = false, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        'rounded-2xl',
+        variantClasses[variant],
+        hoverable && [
+          'transition-all duration-400 cursor-pointer',
+          'hover:border-[#C8A85D]/30 hover:shadow-[0_4px_20px_rgba(200,168,93,0.25)]',
+          'hover:-translate-y-1',
+        ],
+        className,
+      )}
+      {...props}
+    />
+  ),
 )
-
 Card.displayName = 'Card'
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -44,7 +41,6 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
     <div ref={ref} className={cn('flex flex-col gap-2 p-6', className)} {...props} />
   ),
 )
-
 CardHeader.displayName = 'CardHeader'
 
 const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
@@ -56,15 +52,14 @@ const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTML
     />
   ),
 )
-
 CardTitle.displayName = 'CardTitle'
 
-const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn('text-sm text-muted leading-relaxed', className)} {...props} />
-  ),
-)
-
+const CardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p ref={ref} className={cn('text-sm text-[#A0A0A0] leading-relaxed', className)} {...props} />
+))
 CardDescription.displayName = 'CardDescription'
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -72,7 +67,6 @@ const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
     <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
   ),
 )
-
 CardContent.displayName = 'CardContent'
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -84,13 +78,6 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
     />
   ),
 )
-
 CardFooter.displayName = 'CardFooter'
 
-const MotionCard = motion.create(
-  React.forwardRef<HTMLDivElement, CardProps>(
-    (props, ref) => <Card ref={ref} {...props} />,
-  ),
-)
-
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, MotionCard }
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
