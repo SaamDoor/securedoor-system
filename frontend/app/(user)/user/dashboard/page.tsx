@@ -18,11 +18,19 @@ const stats = [
   { label: 'دانلودهای فعال', value: '۵', icon: Download, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
 ]
 
-const recentOrders = [
+const recentOrders: Array<{
+  id: string
+  orderNumber: string
+  status: keyof typeof statusConfig
+  total: number
+  itemCount: number
+  createdAt: string
+  productName: string
+}> = [
   {
     id: '1',
     orderNumber: 'SD-20250101-001',
-    status: 'delivered' as const,
+    status: 'delivered',
     total: 28_500_000,
     itemCount: 1,
     createdAt: '2025-01-10',
@@ -31,7 +39,7 @@ const recentOrders = [
   {
     id: '2',
     orderNumber: 'SD-20250105-002',
-    status: 'processing' as const,
+    status: 'processing',
     total: 19_800_000,
     itemCount: 1,
     createdAt: '2025-01-18',
@@ -40,7 +48,7 @@ const recentOrders = [
   {
     id: '3',
     orderNumber: 'SD-20250120-003',
-    status: 'pending' as const,
+    status: 'pending',
     total: 35_200_000,
     itemCount: 2,
     createdAt: '2025-01-25',
