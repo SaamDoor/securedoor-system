@@ -11,19 +11,22 @@ import { Eye, EyeOff, UserPlus, Mail, Lock, Phone, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { isValidIranPhone } from '@/lib/utils'
+import { isValidIranPhone, phoneToAuthEmail } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
 const registerSchema = z
   .object({
-    firstName: z.string().min(2, 'نام حداقل ۲ کاراکتر باشد').max(50, 'نام خیلی طولانی است'),
-    lastName: z.string().min(2, 'نام خانوادگی حداقل ۲ کاراکتر باشد').max(50, 'نام خانوادگی خیلی طولانی است'),
-    email: z.string().email('ایمیل معتبر وارد کنید'),
+    firstName: z.string().min(2, 'نام حداقل ۲ کاراکتر باشد').max(50),
+    lastName: z.string().min(2, 'نام خانوادگی حداقل ۲ کاراکتر باشد').max(50),
     phone: z.string().refine(isValidIranPhone, 'شماره موبایل معتبر وارد کنید (مثال: ۰۹۱۲۳۴۵۶۷۸۹)'),
+    email: z
+      .string()
+      .optional()
+      .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'ایمیل معتبر وارد کنید'),
     password: z
       .string()
       .min(8, 'رمز عبور حداقل ۸ کاراکتر باشد')
-      .regex(/[A-Z]/, 'رمز عبور باید حداقل یک حرف بزرگ داشته باشد')
+      .regex(/[A-Z]/, 'رمز عبور باید حداقل یک حرف بزرگ انگلیسی داشته باشد')
       .regex(/[0-9]/, 'رمز عبور باید حداقل یک عدد داشته باشد'),
     confirmPassword: z.string(),
     acceptTerms: z.boolean().refine(Boolean, 'پذیرش قوانین الزامی است'),
@@ -37,13 +40,11 @@ type RegisterFormData = z.infer<typeof registerSchema>
 
 function mapRegisterError(message: string): string {
   if (message.includes('User already registered') || message.includes('already been registered'))
-    return 'این ایمیل قبلاً ثبت شده است. لطفاً وارد شوید'
+    return 'این شماره موبایل قبلاً ثبت شده است. لطفاً وارد شوید'
   if (message.includes('Too many requests'))
     return 'تعداد تلاش‌ها بیش از حد مجاز است. کمی صبر کنید'
   if (message.includes('Password should be at least'))
     return 'رمز عبور باید حداقل ۸ کاراکتر باشد'
-  if (message.includes('Unable to validate email'))
-    return 'آدرس ایمیل معتبر نیست'
   return 'خطا در ثبت‌نام. لطفاً دوباره تلاش کنید'
 }
 
@@ -64,16 +65,22 @@ export default function RegisterPage() {
   async function onSubmit(data: RegisterFormData) {
     const supabase = createClient()
 
+    // Build the internal auth email from phone — never shown to user
+    const authEmail = phoneToAuthEmail(data.phone)
+
     const { error } = await supabase.auth.signUp({
-      email: data.email.trim().toLowerCase(),
+      email: authEmail,
       password: data.password,
       options: {
         data: {
           first_name: data.firstName.trim(),
           last_name: data.lastName.trim(),
           phone: data.phone.trim(),
+          // Store real email in metadata if provided; used for contact/notifications only
+          contact_email: data.email?.trim().toLowerCase() || null,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        // No email redirect needed — phone-based accounts skip email confirmation
+        emailRedirectTo: undefined,
       },
     })
 
@@ -82,8 +89,43 @@ export default function RegisterPage() {
       return
     }
 
-    toast.success('ثبت‌نام موفق! لطفاً ایمیل خود را تأیید کنید.', { duration: 5000 })
-    router.push('/auth/verify-email')
+    toast.success('ثبت‌نام با موفقیت انجام شد! در حال ورود...', { duration: 3000 })
+
+    // Auto sign-in immediately after registration (no email confirmation needed)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: authEmail,
+      password: data.password,
+    })
+
+    if (signInError) {
+      // If email confirmation is still enabled in Dashboard, show a helpful message
+      if (signInError.message.includes('Email not confirmed')) {
+        toast.info(
+          'لطفاً تأیید ایمیل را در داشبورد Supabase غیرفعال کنید (Authentication → Settings → Disable email confirmations)',
+          { duration: 10000 }
+        )
+        router.push('/auth/login')
+      } else {
+        toast.error('ثبت‌نام شد اما ورود خودکار ناموفق بود. لطفاً وارد شوید.')
+        router.push('/auth/login')
+      }
+      return
+    }
+
+    // Fetch profile to get role cookie
+    const { data: sessionData } = await supabase.auth.getUser()
+    if (sessionData.user) {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', sessionData.user.id)
+        .single()
+      const role = profile?.role ?? 'customer'
+      document.cookie = `user_role=${role}; path=/; SameSite=Lax; Max-Age=${60 * 60 * 24}`
+    }
+
+    router.push('/user/dashboard')
+    router.refresh()
   }
 
   return (
@@ -121,25 +163,29 @@ export default function RegisterPage() {
           />
         </div>
 
+        {/* Phone — required, primary identifier */}
         <Input
-          label="ایمیل"
-          type="email"
-          placeholder="example@email.com"
-          error={errors.email?.message}
-          leftIcon={<Mail className="h-4 w-4" />}
-          autoComplete="email"
-          {...register('email')}
-        />
-
-        <Input
-          label="شماره موبایل"
+          label="شماره موبایل *"
           type="tel"
           placeholder="09123456789"
           error={errors.phone?.message}
           leftIcon={<Phone className="h-4 w-4" />}
           autoComplete="tel"
           dir="ltr"
+          hint="شماره موبایل نام کاربری شما خواهد بود"
           {...register('phone')}
+        />
+
+        {/* Email — optional */}
+        <Input
+          label="ایمیل (اختیاری)"
+          type="email"
+          placeholder="example@email.com"
+          error={errors.email?.message}
+          leftIcon={<Mail className="h-4 w-4" />}
+          autoComplete="email"
+          hint="برای دریافت اطلاعیه‌ها و پشتیبانی (الزامی نیست)"
+          {...register('email')}
         />
 
         <Input
@@ -147,7 +193,7 @@ export default function RegisterPage() {
           type={showPassword ? 'text' : 'password'}
           placeholder="حداقل ۸ کاراکتر"
           error={errors.password?.message}
-          hint="رمز عبور باید شامل حروف بزرگ انگلیسی و اعداد باشد"
+          hint="شامل حروف بزرگ انگلیسی و اعداد باشد"
           leftIcon={<Lock className="h-4 w-4" />}
           rightIcon={
             <button

@@ -135,6 +135,24 @@ export function isValidIranPhone(phone: string): boolean {
   return /^09[0-9]{9}$/.test(cleaned)
 }
 
+/** Normalize phone to 11-digit Iranian format (09XXXXXXXXX) */
+export function normalizePhone(phone: string): string {
+  const digits = toEnglishNumber(phone).replace(/\D/g, '')
+  if (digits.startsWith('98') && digits.length === 12) return '0' + digits.slice(2)
+  if (digits.startsWith('9') && digits.length === 10) return '0' + digits
+  return digits
+}
+
+/**
+ * Derive a stable internal email from a phone number for Supabase Auth.
+ * Supabase requires an email; we use this as a non-guessable internal identifier.
+ * The domain `auth.internal` is not a real MX — no email is ever sent to it.
+ */
+export function phoneToAuthEmail(phone: string): string {
+  const digits = normalizePhone(phone).replace(/\D/g, '')
+  return `ph_${digits}@auth.internal`
+}
+
 export function isValidNationalId(id: string): boolean {
   const cleaned = toEnglishNumber(id).replace(/\D/g, '')
   if (cleaned.length !== 10) return false
