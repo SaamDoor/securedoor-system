@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>تأیید ایمیل — گروه صنعتی مشعوف</title>
+  <!--[if mso]>
+  <noscript>
+    <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    /* ── Reset ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+
+    body {
+      background-color: #0D0D0D;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      text-align: right;
+    }
+
+    /* ── Wrapper ── */
+    .email-wrapper {
+      width: 100%;
+      background-color: #0D0D0D;
+      padding: 40px 16px;
+    }
+
+    /* ── Card ── */
+    .email-card {
+      max-width: 560px;
+      margin: 0 auto;
+      background-color: #161616;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(200, 168, 93, 0.15);
+    }
+
+    /* ── Header ── */
+    .email-header {
+      background: linear-gradient(135deg, #111111 0%, #1A1A1A 50%, #0D0D0D 100%);
+      padding: 40px 40px 32px;
+      text-align: center;
+      border-bottom: 1px solid rgba(200, 168, 93, 0.12);
+      position: relative;
+    }
+
+    .email-header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #C8A85D, #E8C97D, #C8A85D, transparent);
+    }
+
+    /* ── Logo ── */
+    .logo-wrapper {
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #C8A85D, #E8C97D, #C8A85D);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 28px;
+      font-weight: 900;
+      color: #000;
+      letter-spacing: -1px;
+      box-shadow: 0 8px 32px rgba(200, 168, 93, 0.25);
+    }
+
+    .brand-name {
+      font-size: 22px;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: -0.5px;
+      display: block;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: #C8A85D;
+      font-weight: 600;
+      display: block;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    /* ── Badge ── */
+    .header-badge {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 6px 16px;
+      background: rgba(200, 168, 93, 0.1);
+      border: 1px solid rgba(200, 168, 93, 0.3);
+      border-radius: 100px;
+      font-size: 12px;
+      color: #C8A85D;
+      font-weight: 600;
+    }
+
+    /* ── Body ── */
+    .email-body {
+      padding: 40px;
+    }
+
+    .greeting {
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+
+    .greeting-name {
+      color: #C8A85D;
+    }
+
+    .description {
+      font-size: 15px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.65);
+      margin-bottom: 32px;
+    }
+
+    /* ── CTA Button ── */
+    .cta-wrapper {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 16px 48px;
+      background: linear-gradient(135deg, #C8A85D, #E8C97D, #C8A85D);
+      color: #000000 !important;
+      font-size: 16px;
+      font-weight: 900;
+      text-decoration: none;
+      border-radius: 14px;
+      letter-spacing: 0.3px;
+      box-shadow: 0 8px 24px rgba(200, 168, 93, 0.3);
+      transition: all 0.3s;
+    }
+
+    /* ── Info box ── */
+    .info-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-right: 3px solid #C8A85D;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    .info-box-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #C8A85D;
+      margin-bottom: 6px;
+    }
+
+    .info-box-text {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.7;
+    }
+
+    /* ── Link fallback ── */
+    .link-fallback {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .link-fallback-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.35);
+      margin-bottom: 8px;
+    }
+
+    .link-fallback-url {
+      font-size: 11px;
+      color: #C8A85D;
+      word-break: break-all;
+      line-height: 1.6;
+      direction: ltr;
+      text-align: left;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200, 168, 93, 0.15), transparent);
+      margin: 0 40px;
+    }
+
+    /* ── Footer ── */
+    .email-footer {
+      padding: 28px 40px;
+      text-align: center;
+    }
+
+    .footer-trust {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .trust-item {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .trust-item span {
+      color: #C8A85D;
+      margin-left: 4px;
+    }
+
+    .footer-address {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.3);
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.3);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: #C8A85D;
+    }
+
+    .footer-copyright {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.2);
+      margin-top: 16px;
+    }
+
+    /* ── Responsive ── */
+    @media only screen and (max-width: 600px) {
+      .email-header, .email-body, .email-footer { padding: 28px 24px !important; }
+      .divider { margin: 0 24px !important; }
+      .greeting { font-size: 20px !important; }
+      .cta-button { padding: 14px 32px !important; font-size: 15px !important; }
+      .footer-trust { flex-direction: column; gap: 8px !important; }
+      .footer-links { flex-direction: column; gap: 8px !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td>
+          <div class="email-card">
+
+            <!-- ═══ HEADER ═══ -->
+            <div class="email-header">
+              <div class="logo-wrapper">
+                <!-- Replace with <img src="logo-url" alt="مشعوف" width="64" /> if you upload the logo -->
+                <div class="logo-icon">م</div>
+                <span class="brand-name">گروه صنعتی مشعوف</span>
+                <span class="brand-sub">MASHOUF INDUSTRIAL GROUP</span>
+              </div>
+              <div class="header-badge">تأیید آدرس ایمیل</div>
+            </div>
+
+            <!-- ═══ BODY ═══ -->
+            <div class="email-body">
+
+              <p class="greeting">
+                سلام <span class="greeting-name">{{ .Email }}</span>،
+              </p>
+
+              <p class="description">
+                از اینکه به خانواده گروه صنعتی مشعوف پیوستید سپاسگزاریم.<br />
+                برای تکمیل ثبت‌نام و فعال‌سازی حساب کاربری خود، لطفاً روی دکمه زیر کلیک کنید.
+              </p>
+
+              <!-- CTA Button -->
+              <div class="cta-wrapper">
+                <a href="{{ .ConfirmationURL }}" class="cta-button">
+                  ✓ تأیید ایمیل و ورود به حساب
+                </a>
+              </div>
+
+              <!-- Info boxes -->
+              <div class="info-box">
+                <div class="info-box-title">⏱ مهلت استفاده از لینک</div>
+                <div class="info-box-text">این لینک تنها ۲۴ ساعت اعتبار دارد. پس از انقضا باید مجدداً ثبت‌نام کنید.</div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-box-title">🔒 امنیت حساب کاربری</div>
+                <div class="info-box-text">
+                  اگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید.
+                  حساب شما بدون تأیید فعال نمی‌شود.
+                </div>
+              </div>
+
+              <!-- Link fallback -->
+              <div class="link-fallback">
+                <p class="link-fallback-label">در صورتی که دکمه بالا کار نکرد، این لینک را در مرورگر خود باز کنید:</p>
+                <p class="link-fallback-url">{{ .ConfirmationURL }}</p>
+              </div>
+            </div>
+
+            <!-- ═══ DIVIDER ═══ -->
+            <div class="divider"></div>
+
+            <!-- ═══ FOOTER ═══ -->
+            <div class="email-footer">
+
+              <!-- Trust signals -->
+              <div class="footer-trust">
+                <span class="trust-item"><span>✦</span> محصولات اصل</span>
+                <span class="trust-item"><span>✦</span> ضمانت اصالت</span>
+                <span class="trust-item"><span>✦</span> پشتیبانی ۲۴/۷</span>
+              </div>
+
+              <p class="footer-address">
+                قائمشهر، مازندران — info@mashuf.com — ۰۹۰۰۳۲۸۶۵۳۹
+              </p>
+
+              <div class="footer-links">
+                <a href="https://mashuf.com">وب‌سایت</a>
+                <a href="https://mashuf.com/privacy">حریم خصوصی</a>
+                <a href="https://mashuf.com/terms">قوانین</a>
+                <a href="https://mashuf.com/contact">تماس با ما</a>
+              </div>
+
+              <p class="footer-copyright">
+                © ۱۴۰۴ گروه صنعتی مشعوف — تمامی حقوق محفوظ است
+              </p>
+            </div>
+
+          </div><!-- /.email-card -->
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

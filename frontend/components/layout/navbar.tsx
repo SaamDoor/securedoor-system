@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Logo } from '@/components/ui/logo'
 import { CONTACT, SOCIAL_LINKS } from '@/lib/constants'
 
 const navItems = [
@@ -30,6 +31,16 @@ const navItems = [
       { label: 'درب ویلایی', href: '/products?category=darb-villaei' },
       { label: 'درب اداری', href: '/products?category=darb-edari' },
       { label: 'متعلقات', href: '/products?category=moteallaqat' },
+    ],
+  },
+  {
+    label: 'پروژه‌های ساختمانی',
+    href: '/projects',
+    children: [
+      { label: 'همه پروژه‌ها', href: '/projects' },
+      { label: 'پیش‌فروش', href: '/projects?status=pre_sale' },
+      { label: 'برای فروش', href: '/projects?status=for_sale' },
+      { label: 'تحویل‌شده', href: '/projects?status=delivered' },
     ],
   },
   { label: 'دسته‌بندی‌ها', href: '/categories' },
@@ -111,22 +122,7 @@ export function Navbar() {
           <div className="flex items-center justify-between h-18">
 
             {/* ── Logo ── */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative">
-                <div className="w-10 h-10 bg-gold-gradient rounded-xl flex items-center justify-center shadow-gold-sm group-hover:shadow-gold transition-shadow duration-300">
-                  <span className="text-black font-black text-lg leading-none">س</span>
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-black rounded-full border-2 border-gold" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-black text-white tracking-tight leading-none">
-                  مشعوف
-                </span>
-                <span className="text-2xs text-gold tracking-widest font-medium leading-none mt-0.5">
-                  MASHOUF GROUP
-                </span>
-              </div>
-            </Link>
+            <Logo variant="default" size="md" />
 
             {/* ── Desktop nav ── */}
             <nav className="hidden lg:flex items-center gap-1">
@@ -334,16 +330,9 @@ export function Navbar() {
             <div className="absolute top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-surface border-l border-white/8 overflow-y-auto">
               {/* Header */}
               <div className="flex items-center justify-between p-5 border-b border-white/8">
-                <Link
-                  href="/"
-                  onClick={() => setIsMobileOpen(false)}
-                  className="flex items-center gap-2"
-                >
-                  <div className="w-8 h-8 bg-gold-gradient rounded-lg flex items-center justify-center">
-                    <span className="text-black font-black text-base">س</span>
-                  </div>
-                  <span className="font-bold text-white">گروه صنعتی مشعوف</span>
-                </Link>
+                <div onClick={() => setIsMobileOpen(false)}>
+                  <Logo variant="default" size="sm" />
+                </div>
                 <button
                   onClick={() => setIsMobileOpen(false)}
                   className="text-muted hover:text-white transition-colors"

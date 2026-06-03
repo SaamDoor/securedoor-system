@@ -20,8 +20,11 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet: { name: string; value: string; options?: CookieSetOptions }[]) {
+          // First mutate the request so downstream code sees updated cookies
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          // Recreate the response so it carries the mutated request
           supabaseResponse = NextResponse.next({ request })
+          // Then propagate to the response so the browser stores them
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -30,28 +33,31 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: getUser() refreshes the session cookie when it's near expiry.
-  // Do NOT skip this call — it keeps the session alive on every request.
+  // IMPORTANT: getUser() refreshes the session token when near expiry.
+  // Never skip this call — missing it breaks session continuity.
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
 
-  // Redirect authenticated users away from auth pages
+  // ── Auth pages: redirect already-logged-in users ──────────────────────
   if (AUTH_ROUTES.some((r) => pathname.startsWith(r)) && user) {
-    return NextResponse.redirect(new URL('/user/dashboard', request.url))
+    const role = request.cookies.get('user_role')?.value ?? ''
+    const dest = ADMIN_ROLES.includes(role) ? '/admin' : '/user/dashboard'
+    return NextResponse.redirect(new URL(dest, request.url))
   }
 
-  // Protect user + checkout routes
+  // ── Protected routes: require login ───────────────────────────────────
   if (PROTECTED_ROUTES.some((r) => pathname.startsWith(r)) && !user) {
     const loginUrl = new URL('/auth/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Protect admin routes — the login form writes a user_role cookie as a hint.
-  // Pages themselves do a secondary server-side role check for real enforcement.
+  // ── Admin routes: cookie is a fast hint; real enforcement is in page ──
+  // If the hint says non-admin we redirect immediately without a DB call.
+  // The individual admin page/layout must re-verify via createAdminClient().
   if (ADMIN_ROUTES.some((r) => pathname.startsWith(r)) && user) {
     const userRole = request.cookies.get('user_role')?.value ?? ''
     if (!ADMIN_ROLES.includes(userRole)) {
@@ -59,6 +65,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // ── Security & SEO headers ─────────────────────────────────────────────
   supabaseResponse.headers.set(
     'X-Robots-Tag',
     pathname.startsWith('/admin') ? 'noindex, nofollow' : 'index, follow'
@@ -69,6 +76,14 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|fonts|images|icons).*)',
+    /*
+     * Match all paths except:
+     *  - _next/static  (static files)
+     *  - _next/image   (image optimisation)
+     *  - favicon.ico, robots.txt, sitemap.xml
+     *  - /fonts, /images, /icons  (public assets)
+     *  - files with an extension in public/  (*.svg, *.png …)
+     */
+    '/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|fonts|images|icons|.*\\.(?:svg|png|jpg|jpeg|webp|avif|ico|gif|woff|woff2|ttf|otf)).*)',
   ],
 }
