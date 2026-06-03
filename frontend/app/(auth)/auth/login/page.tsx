@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -38,10 +38,34 @@ function mapAuthError(message: string): string {
   return 'خطا در ورود. لطفاً دوباره تلاش کنید'
 }
 
+// Map ?auth_error= codes that Supabase appends when redirecting back after failure
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  otp_expired:
+    'لینک تأیید ایمیل منقضی شده است. دوباره ثبت‌نام کنید تا ایمیل جدید ارسال شود.',
+  access_denied:
+    'دسترسی رد شد. لطفاً دوباره تلاش کنید.',
+  auth_callback_failed:
+    'تأیید ایمیل ناموفق بود. لطفاً دوباره ثبت‌نام کنید.',
+  invalid_request:
+    'لینک تأیید نامعتبر است. لطفاً دوباره ثبت‌نام کنید.',
+}
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
+
+  // Show a Persian toast when Supabase redirects here with ?auth_error=
+  useEffect(() => {
+    const authError = searchParams.get('auth_error')
+    if (!authError) return
+    const msg = AUTH_ERROR_MESSAGES[authError] ?? 'خطایی در احراز هویت رخ داد. لطفاً دوباره تلاش کنید.'
+    toast.error(msg, { duration: 8000 })
+    // Clean the param from the URL without a page reload
+    const clean = new URL(window.location.href)
+    clean.searchParams.delete('auth_error')
+    window.history.replaceState({}, '', clean.toString())
+  }, [searchParams])
 
   const {
     register,

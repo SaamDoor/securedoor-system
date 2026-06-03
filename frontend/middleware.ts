@@ -39,7 +39,20 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
+  const { pathname, searchParams } = request.nextUrl
+
+  // ── Supabase auth error: catch ?error=access_denied at any path ───────
+  // When an OTP/magic-link expires Supabase bounces back to the Site URL
+  // (or the redirect_to URL) with error params in the query string.
+  // We intercept here and send the user to the login page with a readable
+  // error key so the page can show a Persian toast.
+  const supabaseError = searchParams.get('error')
+  const supabaseErrorCode = searchParams.get('error_code')
+  if (supabaseError && !pathname.startsWith('/auth/')) {
+    const loginUrl = new URL('/auth/login', request.url)
+    loginUrl.searchParams.set('auth_error', supabaseErrorCode ?? supabaseError)
+    return NextResponse.redirect(loginUrl)
+  }
 
   // ── Auth pages: redirect already-logged-in users ──────────────────────
   if (AUTH_ROUTES.some((r) => pathname.startsWith(r)) && user) {
