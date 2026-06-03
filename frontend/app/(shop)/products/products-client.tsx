@@ -47,7 +47,7 @@ const DEMO_PRODUCTS: Product[] = Array.from({ length: 12 }, (_, i) => {
       order: 1,
       isActive: true,
     },
-    images: [{ id: '1', url: '/placeholder-product.svg', alt: 'گروه صنعتی مشعوف', isPrimary: true, order: 0 }],
+    images: [{ id: '1', productId: String(i + 1), url: '/placeholder-product.svg', alt: 'گروه صنعتی مشعوف', isPrimary: true, order: 0 }],
     attributes: [],
     specifications: [],
     downloads: [],
