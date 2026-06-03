@@ -83,7 +83,7 @@ export function FeaturedProductsSection() {
         <div className="flex items-end justify-between mb-12">
           <SectionHeader
             eyebrow="محصولات ویژه"
-            title="بهترین‌های سام درب"
+            title="بهترین‌های گروه مشعوف"
             description="برگزیده‌ترین محصولات با بالاترین امتیاز مشتریان."
           />
           <Link

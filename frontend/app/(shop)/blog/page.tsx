@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatJalaliDate, toPersianNumber } from '@/lib/utils'
 
 export const metadata: Metadata = {
-  title: 'وبلاگ | سام درب',
+  title: 'وبلاگ | گروه صنعتی مشعوف',
   description: 'مقالات تخصصی در حوزه امنیت، طراحی و راهنمای انتخاب درب ضد سرقت',
 }
 
@@ -108,7 +108,7 @@ export default function BlogPage() {
         <div className="container">
           <div className="inline-flex items-center gap-3 mb-4">
             <div className="h-px w-10 bg-[#C8A85D]" />
-            <span className="text-[#C8A85D] text-sm font-semibold tracking-widest">وبلاگ سام درب</span>
+            <span className="text-[#C8A85D] text-sm font-semibold tracking-widest">وبلاگ گروه مشعوف</span>
             <div className="h-px w-10 bg-[#C8A85D]" />
           </div>
           <h1 className="text-4xl font-black text-white mb-4">دانش‌نامه تخصصی</h1>

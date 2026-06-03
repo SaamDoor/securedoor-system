@@ -163,7 +163,7 @@ export default function RegisterPage() {
             <Link href="/terms" className="text-gold hover:text-gold-light">قوانین و مقررات</Link>{' '}
             و{' '}
             <Link href="/privacy" className="text-gold hover:text-gold-light">حریم خصوصی</Link>{' '}
-            سام درب را می‌پذیرم.
+            گروه صنعتی مشعوف را می‌پذیرم.
           </span>
         </label>
         {errors.acceptTerms && (

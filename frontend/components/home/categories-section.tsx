@@ -53,7 +53,7 @@ export function CategoriesSection() {
           <SectionHeader
             eyebrow="دسته‌بندی‌ها"
             title="هر فضا، یک راه‌حل"
-            description="محصولات سام درب برای هر نوع ساختمان و کاربری طراحی شده‌اند."
+            description="محصولات گروه صنعتی مشعوف برای هر نوع ساختمان و کاربری طراحی شده‌اند."
           />
           <Link
             href="/categories"

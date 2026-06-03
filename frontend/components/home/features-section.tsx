@@ -86,9 +86,9 @@ export function FeaturesSection() {
       <div className="container relative">
         <div className="flex flex-col items-center mb-16">
           <SectionHeader
-            eyebrow="چرا سام درب"
+            eyebrow="چرا گروه مشعوف"
             title="استانداردهای جهانی در هر درب"
-            description="هر محصول سام درب نتیجه دهه‌ها تحقیق، بهترین متریال و دقیق‌ترین فرایند تولید است."
+            description="هر محصول گروه صنعتی مشعوف نتیجه دهه‌ها تحقیق، بهترین متریال و دقیق‌ترین فرایند تولید است."
             align="center"
             className="max-w-2xl"
           />

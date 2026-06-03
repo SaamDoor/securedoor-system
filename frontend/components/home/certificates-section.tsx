@@ -29,7 +29,7 @@ export function CertificatesSection() {
           <SectionHeader
             eyebrow="گواهینامه‌ها"
             title="معتبرترین استانداردهای جهانی"
-            description="محصولات سام درب دارای معتبرترین گواهینامه‌های ایمنی و کیفیت در سطح ملی و بین‌المللی هستند."
+            description="محصولات گروه صنعتی مشعوف دارای معتبرترین گواهینامه‌های ایمنی و کیفیت در سطح ملی و بین‌المللی هستند."
             align="center"
             className="max-w-2xl"
           />

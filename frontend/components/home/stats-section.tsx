@@ -58,7 +58,7 @@ export function StatsSection() {
             <div className="h-px w-12 bg-gold" />
           </div>
           <h2 className="section-title mb-4">
-            سام درب در یک نگاه
+            گروه صنعتی مشعوف در یک نگاه
           </h2>
           <p className="section-subtitle">
             اعداد و ارقامی که نشان‌دهنده تعهد ما به کیفیت و اعتماد مشتریان است.

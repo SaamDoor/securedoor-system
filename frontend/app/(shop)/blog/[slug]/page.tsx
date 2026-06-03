@@ -18,7 +18,7 @@ const POST_DATA = {
   readingTime: 8,
   viewCount: 4821,
   publishedAt: '2025-01-15',
-  author: { name: 'تیم سام درب', role: 'کارشناس فنی' },
+  author: { name: 'تیم گروه مشعوف', role: 'کارشناس فنی' },
   content: `
 ## چرا انتخاب درب ضد سرقت مناسب مهم است؟
 

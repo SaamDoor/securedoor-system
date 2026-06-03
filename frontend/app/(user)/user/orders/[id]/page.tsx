@@ -45,7 +45,7 @@ const STEP_ORDER: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shippe
 
 export async function generateMetadata({ params }: OrderDetailPageProps): Promise<Metadata> {
   const { id } = await params
-  return { title: `سفارش #${id} | سام درب` }
+  return { title: `سفارش #${id} | گروه صنعتی مشعوف` }
 }
 
 export default async function OrderDetailPage({ params }: OrderDetailPageProps) {

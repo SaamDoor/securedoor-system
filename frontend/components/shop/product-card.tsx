@@ -46,9 +46,13 @@ export function ProductCard({ product, viewMode = 'grid', className }: ProductCa
               sizes="128px"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
-              <Package className="h-8 w-8 text-zinc-700" />
-            </div>
+            <Image
+              src="/placeholder-product.svg"
+              alt="گروه صنعتی مشعوف"
+              fill
+              className="object-cover"
+              sizes="128px"
+            />
           )}
         </div>
 
@@ -138,9 +142,13 @@ export function ProductCard({ product, viewMode = 'grid', className }: ProductCa
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
-            <Package className="h-12 w-12 text-zinc-700" />
-          </div>
+          <Image
+            src="/placeholder-product.svg"
+            alt="گروه صنعتی مشعوف"
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
         )}
 
         {/* Badges */}

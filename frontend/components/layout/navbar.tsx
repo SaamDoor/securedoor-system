@@ -120,10 +120,10 @@ export function Navbar() {
               </div>
               <div className="flex flex-col">
                 <span className="text-xl font-black text-white tracking-tight leading-none">
-                  سام درب
+                  مشعوف
                 </span>
                 <span className="text-2xs text-gold tracking-widest font-medium leading-none mt-0.5">
-                  SAM DOOR
+                  MASHOUF GROUP
                 </span>
               </div>
             </Link>
@@ -342,7 +342,7 @@ export function Navbar() {
                   <div className="w-8 h-8 bg-gold-gradient rounded-lg flex items-center justify-center">
                     <span className="text-black font-black text-base">س</span>
                   </div>
-                  <span className="font-bold text-white">سام درب</span>
+                  <span className="font-bold text-white">گروه صنعتی مشعوف</span>
                 </Link>
                 <button
                   onClick={() => setIsMobileOpen(false)}

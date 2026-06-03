@@ -71,7 +71,7 @@ export default function ContactPage() {
             <span className="text-[#C8A85D] text-sm font-semibold tracking-widest">ارتباط با ما</span>
             <div className="h-px w-10 bg-[#C8A85D]" />
           </div>
-          <h1 className="text-4xl font-black text-white mb-4">تماس با سام درب</h1>
+          <h1 className="text-4xl font-black text-white mb-4">تماس با گروه صنعتی مشعوف</h1>
           <p className="text-[#A0A0A0] max-w-xl mx-auto">
             کارشناسان ما آماده پاسخگویی به سوالات و مشاوره رایگان شما هستند.
           </p>

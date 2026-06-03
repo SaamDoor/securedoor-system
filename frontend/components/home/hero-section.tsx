@@ -124,7 +124,7 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="text-lg text-muted leading-relaxed mb-10 max-w-xl"
           >
-            با بیش از ۲۰ سال تجربه در ساخت درب‌های ضد سرقت، سام درب ترکیب
+            با بیش از ۲۰ سال تجربه در ساخت درب‌های ضد سرقت، گروه صنعتی مشعوف ترکیب
             بی‌نظیری از زیبایی، استحکام و تکنولوژی پیشرفته را به خانه‌های ایران می‌آورد.
           </motion.p>
 

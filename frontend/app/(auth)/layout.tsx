@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { SITE_NAME } from '@/lib/constants'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -26,12 +27,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10 text-center px-12">
           <Link href="/" className="inline-flex items-center gap-4 mb-12 group">
-            <div className="w-16 h-16 bg-gold-gradient rounded-2xl flex items-center justify-center shadow-gold">
-              <span className="text-black font-black text-2xl">س</span>
-            </div>
+            <Image src="/logo-gold.svg" alt="گروه صنعتی مشعوف" width={56} height={56} priority />
             <div className="text-right">
-              <div className="text-3xl font-black text-white">{SITE_NAME}</div>
-              <div className="text-sm text-gold tracking-widest">SAM DOOR CO.</div>
+              <div className="text-2xl font-black text-white">{SITE_NAME}</div>
+              <div className="text-xs text-gold tracking-widest">MASHOUF INDUSTRIAL GROUP</div>
             </div>
           </Link>
 
@@ -40,7 +39,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <span className="text-gold-gradient">برای خانه شما</span>
           </h2>
           <p className="text-muted text-lg leading-relaxed max-w-md">
-            با بیش از ۲۰ سال تجربه، سام درب پیشرو در ساخت درب‌های ضد سرقت لوکس است.
+            با بیش از ۲۰ سال تجربه، گروه صنعتی مشعوف پیشرو در ساخت درب‌های ضد سرقت و محصولات ساختمانی لوکس در مازندران است.
           </p>
 
           {/* Features */}
@@ -62,9 +61,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Mobile logo */}
         <div className="lg:hidden p-6">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gold-gradient rounded-xl flex items-center justify-center">
-              <span className="text-black font-black text-lg">س</span>
-            </div>
+            <Image src="/logo-gold.svg" alt="گروه صنعتی مشعوف" width={36} height={36} />
             <span className="font-bold text-white">{SITE_NAME}</span>
           </Link>
         </div>

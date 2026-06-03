@@ -1,12 +1,14 @@
-export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'سام درب'
+export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'گروه صنعتی مشعوف'
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mashuf.com'
 export const SITE_DESCRIPTION =
   'سام درب، گروه صنعتی مشعوف — پیشرو در تولید درب‌های ضد سرقت، چهارچوب‌های فلزی فرانسوی و مکزیکی، درب‌های اتاقی و درب‌های حیاطی فرفورژه در استان مازندران.'
 
 export const BRAND = {
-  name: 'سام درب',
-  group: 'گروه صنعتی مشعوف',
+  name: 'گروه صنعتی مشعوف',
+  nameShort: 'مشعوف',
+  group: 'گروه صنعتی تولیدی صنایع ساختمانی مشعوف',
   manager: 'حسام مشعوف',
+  english: 'MASHOUF INDUSTRIAL GROUP',
 } as const
 
 export const CONTACT = {
@@ -87,5 +89,5 @@ export const CURRENCY_CODE = 'IRR'
 
 export const WHATSAPP_BUSINESS = {
   phone: '989003286539',
-  defaultMessage: 'سلام، می‌خواهم درباره محصولات سام درب بیشتر بدانم',
+  defaultMessage: 'سلام، می‌خواهم درباره محصولات گروه صنعتی مشعوف بیشتر بدانم',
 } as const

@@ -12,7 +12,7 @@ const footerLinks = {
     { label: 'متعلقات و یراق‌آلات', href: '/products?category=moteallaqat' },
   ],
   company: [
-    { label: 'درباره سام درب', href: '/about' },
+    { label: 'درباره گروه مشعوف', href: '/about' },
     { label: 'افتخارات و گواهینامه‌ها', href: '/certificates' },
     { label: 'نمایندگی‌ها', href: '/branches' },
     { label: 'وبلاگ', href: '/blog' },
@@ -81,8 +81,8 @@ export function Footer() {
                 <span className="text-black font-black text-xl">س</span>
               </div>
               <div>
-                <div className="text-xl font-black text-white">سام درب</div>
-                <div className="text-xs text-gold tracking-widest">SAM DOOR CO.</div>
+                <div className="text-xl font-black text-white">گروه صنعتی مشعوف</div>
+                <div className="text-xs text-gold tracking-widest">MASHOUF INDUSTRIAL GROUP</div>
               </div>
             </Link>
 

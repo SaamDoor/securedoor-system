@@ -47,19 +47,19 @@ export default function AdminSettingsPage() {
 
         <TabsContent value="general">
           <div className="rounded-2xl bg-[#181818] border border-white/8 p-6 space-y-5">
-            <Input label="نام سایت" defaultValue="سام درب" />
-            <Input label="آدرس سایت" defaultValue="https://samdoor.com" leftIcon={<Globe className="h-4 w-4" />} />
-            <Textarea label="توضیحات سایت" defaultValue="پیشرو در ساخت درب‌های ضد سرقت لوکس" />
-            <Input label="ایمیل مدیر" type="email" defaultValue="admin@samdoor.com" leftIcon={<Mail className="h-4 w-4" />} />
+            <Input label="نام سایت" defaultValue="گروه صنعتی مشعوف" />
+            <Input label="آدرس سایت" defaultValue="https://mashuf.com" leftIcon={<Globe className="h-4 w-4" />} />
+            <Textarea label="توضیحات سایت" defaultValue="گروه صنعتی تولیدی صنایع ساختمانی مشعوف — پیشرو در ساخت درب‌های ضد سرقت" />
+            <Input label="ایمیل مدیر" type="email" defaultValue="info@mashuf.com" leftIcon={<Mail className="h-4 w-4" />} />
           </div>
         </TabsContent>
 
         <TabsContent value="contact">
           <div className="rounded-2xl bg-[#181818] border border-white/8 p-6 space-y-5">
-            <Input label="تلفن اصلی" defaultValue="۰۲۱-۸۸۰۰۰۰۰۰" leftIcon={<Phone className="h-4 w-4" />} />
-            <Input label="موبایل" defaultValue="۰۹۱۲-۰۰۰۰۰۰۰" leftIcon={<Phone className="h-4 w-4" />} />
-            <Input label="ایمیل عمومی" type="email" defaultValue="info@samdoor.com" leftIcon={<Mail className="h-4 w-4" />} />
-            <Textarea label="آدرس" defaultValue="تهران، خیابان ولیعصر، برج سام" />
+            <Input label="تلفن اصلی" defaultValue="۰۹۰۰ ۳۲۸ ۶۵۳۹" leftIcon={<Phone className="h-4 w-4" />} />
+            <Input label="موبایل" defaultValue="۰۹۰۰ ۳۲۸ ۶۵۳۹" leftIcon={<Phone className="h-4 w-4" />} />
+            <Input label="ایمیل عمومی" type="email" defaultValue="info@mashuf.com" leftIcon={<Mail className="h-4 w-4" />} />
+            <Textarea label="آدرس" defaultValue="مازندران، شهرستان قائم شهر، بلوار سید نظام‌الدین، جاده قادیکلای بزرگ، بین ولیعصر ۱۵ و ۳۶" />
             <Input label="ساعات کاری" defaultValue="شنبه تا چهارشنبه ۸ تا ۱۷، پنجشنبه ۸ تا ۱۳" leftIcon={<MapPin className="h-4 w-4" />} />
           </div>
         </TabsContent>

@@ -12,12 +12,12 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   keywords: [
-    'درب ضد سرقت', 'درب امنیتی', 'سام درب', 'درب آپارتمانی', 'درب لوکس',
+    'درب ضد سرقت', 'درب امنیتی', 'گروه صنعتی مشعوف', 'درب آپارتمانی', 'درب لوکس',
     'درب ضد حریق', 'قفل امنیتی', 'درب فلزی', 'درب ضد صدا', 'درب ورودی',
   ],
-  authors: [{ name: 'سام درب', url: SITE_URL }],
-  creator: 'سام درب',
-  publisher: 'سام درب',
+  authors: [{ name: 'گروه صنعتی مشعوف', url: SITE_URL }],
+  creator: 'گروه صنعتی مشعوف',
+  publisher: 'گروه صنعتی مشعوف',
   robots: {
     index: true,
     follow: true,
