@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
+type CookieSetOptions = Parameters<typeof NextResponse.prototype.cookies.set>[2]
+
 const PROTECTED_ROUTES = ['/user', '/admin', '/checkout']
 const ADMIN_ROUTES = ['/admin']
 const AUTH_ROUTES = ['/auth/login', '/auth/register']
@@ -17,7 +19,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: CookieSetOptions }[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
