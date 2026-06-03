@@ -61,7 +61,7 @@ export function ProjectForm({ project }: Props) {
 
   const [thumbnail, setThumbnail] = useState<string>(project?.thumbnail_url ?? '')
   const [gallery, setGallery] = useState<{ url: string; caption: string; order: number }[]>(
-    project?.gallery ?? []
+    (project?.gallery ?? []).map((item) => ({ ...item, caption: item.caption ?? '' }))
   )
   const [uploadingThumb, setUploadingThumb] = useState(false)
   const [uploadingGallery, setUploadingGallery] = useState(false)
