@@ -187,56 +187,6 @@ function PriceTable({ rows, klaf4Label }: { rows: PriceRow[]; klaf4Label: string
   )
 }
 
-// ─── French/Mexican profile SVG diagrams ──────────────────────────────────────
-
-function FrenchProfileDiagram() {
-  return (
-    <svg viewBox="0 0 200 130" className="w-full h-full" fill="none" aria-label="نقشه چهارچوب فرانسوی">
-      {/* base plate */}
-      <rect x="10" y="100" width="180" height="8" fill="#C8A85D" rx="1" />
-      {/* left leg */}
-      <rect x="10" y="40" width="8" height="60" fill="#C8A85D" rx="1" />
-      {/* top horizontal */}
-      <rect x="10" y="40" width="55" height="8" fill="#C8A85D" rx="1" />
-      {/* right leg */}
-      <rect x="182" y="40" width="8" height="60" fill="#C8A85D" rx="1" />
-      {/* inner step left */}
-      <rect x="18" y="62" width="20" height="6" fill="#9A7832" rx="1" />
-      {/* inner step right */}
-      <rect x="162" y="62" width="20" height="6" fill="#9A7832" rx="1" />
-      {/* dimension lines */}
-      <line x1="10" y1="120" x2="190" y2="120" stroke="#C8A85D" strokeWidth="0.5" strokeDasharray="3,3" />
-      <text x="100" y="128" textAnchor="middle" fill="#C8A85D" fontSize="8" fontFamily="sans-serif">۱۴۰</text>
-      <line x1="5" y1="40" x2="5" y2="108" stroke="#C8A85D" strokeWidth="0.5" strokeDasharray="3,3" />
-      <text x="2" y="75" textAnchor="middle" fill="#C8A85D" fontSize="8" fontFamily="sans-serif" transform="rotate(-90,2,75)">۶۰</text>
-    </svg>
-  )
-}
-
-function MexicanProfileDiagram() {
-  return (
-    <svg viewBox="0 0 200 140" className="w-full h-full" fill="none" aria-label="نقشه چهارچوب مکزیکی">
-      {/* base plate */}
-      <rect x="10" y="108" width="180" height="8" fill="#C8A85D" rx="1" />
-      {/* left outer leg */}
-      <rect x="10" y="40" width="8" height="68" fill="#C8A85D" rx="1" />
-      {/* top */}
-      <rect x="10" y="40" width="55" height="8" fill="#C8A85D" rx="1" />
-      {/* right outer leg */}
-      <rect x="182" y="40" width="8" height="68" fill="#C8A85D" rx="1" />
-      {/* curved step left */}
-      <path d="M18 68 Q30 68 32 80 L32 108" stroke="#9A7832" strokeWidth="6" fill="none" strokeLinecap="round" />
-      {/* curved step right */}
-      <path d="M182 68 Q170 68 168 80 L168 108" stroke="#9A7832" strokeWidth="6" fill="none" strokeLinecap="round" />
-      {/* inner shelf */}
-      <rect x="52" y="66" width="96" height="6" fill="#9A7832" rx="1" />
-      {/* dimension */}
-      <line x1="10" y1="128" x2="190" y2="128" stroke="#C8A85D" strokeWidth="0.5" strokeDasharray="3,3" />
-      <text x="100" y="136" textAnchor="middle" fill="#C8A85D" fontSize="8" fontFamily="sans-serif">۱۵۰</text>
-    </svg>
-  )
-}
-
 // ─── Main Section ─────────────────────────────────────────────────────────────
 
 export function FramePriceListSection() {
@@ -321,7 +271,6 @@ export function FramePriceListSection() {
             <div className="flex items-center justify-between px-5 py-4 rounded-2xl bg-surface border border-white/8">
               <div>
                 <div className="text-white font-black text-lg">لیست قیمت چهارچوب ۳ کلاف</div>
-                <div className="text-muted text-sm mt-0.5">قیمت‌ها به تومان — مالیات جداگانه محاسبه می‌شود</div>
               </div>
               <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold/10 border border-gold/25">
                 <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
@@ -384,14 +333,14 @@ export function FramePriceListSection() {
             </div>
 
             {/* CTA */}
-            <div className="flex flex-wrap gap-3">
-              <Button asChild variant="gold" size="md">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button asChild variant="gold" size="md" className="w-full sm:w-auto justify-center">
                 <Link href="/contact">
                   <Phone className="h-4 w-4 ml-2" />
                   مشاوره و استعلام قیمت
                 </Link>
               </Button>
-              <Button asChild variant="gold-outline" size="md">
+              <Button asChild variant="gold-outline" size="md" className="w-full sm:w-auto justify-center">
                 <Link href="/products">
                   مشاهده محصولات
                   <ChevronLeft className="h-4 w-4 mr-2" />
@@ -422,28 +371,6 @@ export function FramePriceListSection() {
               <p className="text-muted text-xs mt-4 leading-relaxed">
                 رنگ‌آمیزی با فرآیند کوره‌ای الکترواستاتیک — پوشش یکنواخت و مقاوم در برابر خراش و رطوبت.
               </p>
-            </div>
-
-            {/* Profile diagrams */}
-            <div className="rounded-2xl bg-surface border border-white/8 p-5">
-              <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gold-gradient" />
-                پروفیل مقطع
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="h-24 mb-2">
-                    <FrenchProfileDiagram />
-                  </div>
-                  <p className="text-center text-xs text-gold font-semibold">فرانسوی</p>
-                </div>
-                <div>
-                  <div className="h-24 mb-2">
-                    <MexicanProfileDiagram />
-                  </div>
-                  <p className="text-center text-xs text-gold font-semibold">مکزیکی</p>
-                </div>
-              </div>
             </div>
 
             {/* Features */}
