@@ -145,12 +145,13 @@ export function normalizePhone(phone: string): string {
 
 /**
  * Derive a stable internal email from a phone number for Supabase Auth.
- * Supabase requires an email; we use this as a non-guessable internal identifier.
- * The domain `auth.internal` is not a real MX — no email is ever sent to it.
+ * Supabase requires a valid-format email; we map phone → fake-but-valid email.
+ * The domain mashuf.auth.local is never reachable — no email is ever sent to it.
+ * NOTE: must use a TLD Supabase accepts (.com / .net / etc.) — .internal is rejected.
  */
 export function phoneToAuthEmail(phone: string): string {
   const digits = normalizePhone(phone).replace(/\D/g, '')
-  return `ph_${digits}@auth.internal`
+  return `ph_${digits}@mashuf-auth.com`
 }
 
 export function isValidNationalId(id: string): boolean {

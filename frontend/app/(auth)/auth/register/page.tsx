@@ -39,13 +39,20 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>
 
 function mapRegisterError(message: string): string {
-  if (message.includes('User already registered') || message.includes('already been registered'))
+  const m = message.toLowerCase()
+  if (m.includes('user already registered') || m.includes('already been registered') || m.includes('already registered'))
     return 'این شماره موبایل قبلاً ثبت شده است. لطفاً وارد شوید'
-  if (message.includes('Too many requests'))
-    return 'تعداد تلاش‌ها بیش از حد مجاز است. کمی صبر کنید'
-  if (message.includes('Password should be at least'))
+  if (m.includes('too many requests') || m.includes('rate limit') || m.includes('over_email_send_rate_limit'))
+    return 'تعداد تلاش‌ها بیش از حد مجاز است. چند دقیقه صبر کنید'
+  if (m.includes('password should be at least') || m.includes('weak_password'))
     return 'رمز عبور باید حداقل ۸ کاراکتر باشد'
-  return 'خطا در ثبت‌نام. لطفاً دوباره تلاش کنید'
+  if (m.includes('email address is invalid') || m.includes('invalid email') || m.includes('email_address_invalid'))
+    return 'خطای داخلی در فرمت ایمیل. لطفاً با پشتیبانی تماس بگیرید'
+  if (m.includes('signup_disabled') || m.includes('signups not allowed'))
+    return 'ثبت‌نام در حال حاضر غیرفعال است. لطفاً بعداً تلاش کنید'
+  if (m.includes('database error') || m.includes('unexpected_failure'))
+    return 'خطای موقت سرور. لطفاً دوباره تلاش کنید'
+  return `خطا در ثبت‌نام: ${message}`
 }
 
 export default function RegisterPage() {
@@ -85,7 +92,8 @@ export default function RegisterPage() {
     })
 
     if (error) {
-      toast.error(mapRegisterError(error.message), { duration: 6000 })
+      console.error('[Register] Supabase signUp error:', error)
+      toast.error(mapRegisterError(error.message), { duration: 8000 })
       return
     }
 
