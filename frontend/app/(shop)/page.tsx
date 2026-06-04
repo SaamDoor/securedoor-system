@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { HeroSection } from '@/components/home/hero-section'
+import { FramePriceListSection } from '@/components/home/frame-price-list-section'
 import { FeaturesSection } from '@/components/home/features-section'
 import { CategoriesSection } from '@/components/home/categories-section'
 import { StatsSection } from '@/components/home/stats-section'
@@ -28,6 +29,7 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
+      <FramePriceListSection />
       <FeaturedProductsSection />
       <FeaturesSection />
       <CategoriesSection />

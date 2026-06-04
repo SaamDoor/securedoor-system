@@ -21,7 +21,7 @@ securedoor-system/
 │   │   └── admin/            # Admin panel
 │   ├── lib/
 │   │   ├── supabase/         # Supabase client + storage
-│   │   ├── api/              # Data fetching layer
+│   │   ├── api/              # Data fSaamDoor@2025ASC2#GitHubSaamDoor@2025ASC2#GitHubپ ۷etching layer
 │   │   ├── utils.ts          # Utilities (Persian, Jalali, etc.)
 │   │   ├── constants.ts      # App constants
 │   │   └── seo.ts            # SEO + JSON-LD schemas
