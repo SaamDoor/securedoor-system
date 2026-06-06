@@ -7,136 +7,17 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────
-   PERSIAN FONTS
+   PERSIAN FONTS — Vazirmatn (self-hosted via @fontsource/vazirmatn)
+   وزن‌های موجود: ۱۰۰ تا ۹۰۰ — بدون نیاز به CDN یا اینترنت خارجی
 ───────────────────────────────────────────── */
 
-@font-face {
-  font-family: 'Peyda';
-  src: url('/fonts/Peyda/Peyda-Thin.woff2') format('woff2');
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Peyda';
-  src: url('/fonts/Peyda/Peyda-ExtraLight.woff2') format('woff2');
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Peyda';
-  src: url('/fonts/Peyda/Peyda-Light.woff2') format('woff2');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Peyda';
-  src: url('/fonts/Peyda/Peyda-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Peyda';
-  src: url('/fonts/Peyda/Peyda-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Peyda';
-  src: url('/fonts/Peyda/Peyda-SemiBold.woff2') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Peyda';
-  src: url('/fonts/Peyda/Peyda-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Peyda';
-  src: url('/fonts/Peyda/Peyda-ExtraBold.woff2') format('woff2');
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Peyda';
-  src: url('/fonts/Peyda/Peyda-Black.woff2') format('woff2');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'IRANSansX';
-  src: url('/fonts/IRANSansX/IRANSansX-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'IRANSansX';
-  src: url('/fonts/IRANSansX/IRANSansX-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'IRANSansX';
-  src: url('/fonts/IRANSansX/IRANSansX-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Vazirmatn';
-  src: url('/fonts/Vazirmatn/Vazirmatn-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Vazirmatn';
-  src: url('/fonts/Vazirmatn/Vazirmatn-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Vazirmatn';
-  src: url('/fonts/Vazirmatn/Vazirmatn-SemiBold.woff2') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Vazirmatn';
-  src: url('/fonts/Vazirmatn/Vazirmatn-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+@import '@fontsource/vazirmatn/300.css';
+@import '@fontsource/vazirmatn/400.css';
+@import '@fontsource/vazirmatn/500.css';
+@import '@fontsource/vazirmatn/600.css';
+@import '@fontsource/vazirmatn/700.css';
+@import '@fontsource/vazirmatn/800.css';
+@import '@fontsource/vazirmatn/900.css';
 
 /* ─────────────────────────────────────────────
    CSS CUSTOM PROPERTIES (Design Tokens)
@@ -192,8 +73,8 @@
   --shadow-gold-lg:  0 8px 40px rgba(200, 168, 93, 0.35);
 
   /* Typography */
-  --font-primary:  'Peyda', 'Vazirmatn', 'IRANSansX', sans-serif;
-  --font-secondary: 'IRANSansX', 'Peyda', 'Vazirmatn', sans-serif;
+  --font-primary:   'Vazirmatn', system-ui, sans-serif;
+  --font-secondary: 'Vazirmatn', system-ui, sans-serif;
 
   /* Transitions */
   --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);

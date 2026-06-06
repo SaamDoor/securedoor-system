@@ -120,11 +120,9 @@ const config: Config = {
       },
 
       fontFamily: {
-        peyda: ['Peyda', 'Vazirmatn', 'IRANSansX', 'sans-serif'],
-        iran: ['IRANSansX', 'Peyda', 'Vazirmatn', 'sans-serif'],
-        vazir: ['Vazirmatn', 'IRANSansX', 'Peyda', 'sans-serif'],
-        sans: ['Peyda', 'Vazirmatn', 'IRANSansX', 'sans-serif'],
-        mono: ['Courier New', 'monospace'],
+        vazir: ['Vazirmatn', 'system-ui', 'sans-serif'],
+        sans:  ['Vazirmatn', 'system-ui', 'sans-serif'],
+        mono:  ['Courier New', 'monospace'],
       },
 
       fontSize: {

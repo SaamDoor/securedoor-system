@@ -17,22 +17,17 @@ import {
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import type { PriceRow } from '@/lib/api/google-sheets'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type FrameType = 'french' | 'mexican'
 
-interface PriceRow {
-  colorName: string
-  colorHex: string
-  hasHinge: boolean
-  price3klaf: number
-  klaf4Addon: number
-}
+export type { PriceRow }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// ─── Fallback data (used when live sheet is unavailable) ──────────────────────
 
-const frenchPrices: PriceRow[] = [
+const FALLBACK_FRENCH_PRICES: PriceRow[] = [
   { colorName: 'قهوه‌ای',         colorHex: '#5C3317', hasHinge: true,  price3klaf: 3_700_000, klaf4Addon: 600_000 },
   { colorName: 'طوسی',            colorHex: '#7A8599', hasHinge: true,  price3klaf: 3_600_000, klaf4Addon: 600_000 },
   { colorName: 'مشکی',            colorHex: '#232323', hasHinge: true,  price3klaf: 3_700_000, klaf4Addon: 600_000 },
@@ -40,7 +35,7 @@ const frenchPrices: PriceRow[] = [
   { colorName: 'طوسی بدون لولا',  colorHex: '#7A8599', hasHinge: false, price3klaf: 3_500_000, klaf4Addon: 600_000 },
 ]
 
-const mexicanPrices: PriceRow[] = [
+const FALLBACK_MEXICAN_PRICES: PriceRow[] = [
   { colorName: 'قهوه‌ای',         colorHex: '#5C3317', hasHinge: true,  price3klaf: 4_500_000, klaf4Addon: 900_000 },
   { colorName: 'طوسی',            colorHex: '#7A8599', hasHinge: true,  price3klaf: 4_400_000, klaf4Addon: 900_000 },
   { colorName: 'مشکی',            colorHex: '#232323', hasHinge: true,  price3klaf: 4_500_000, klaf4Addon: 900_000 },
@@ -189,10 +184,20 @@ function PriceTable({ rows, klaf4Label }: { rows: PriceRow[]; klaf4Label: string
 
 // ─── Main Section ─────────────────────────────────────────────────────────────
 
-export function FramePriceListSection() {
+interface FramePriceListSectionProps {
+  frenchPrices?: PriceRow[]
+  mexicanPrices?: PriceRow[]
+}
+
+export function FramePriceListSection({
+  frenchPrices = FALLBACK_FRENCH_PRICES,
+  mexicanPrices = FALLBACK_MEXICAN_PRICES,
+}: FramePriceListSectionProps) {
   const [activeTab, setActiveTab] = useState<FrameType>('french')
 
-  const currentRows = activeTab === 'french' ? frenchPrices : mexicanPrices
+  const resolvedFrench = frenchPrices.length > 0 ? frenchPrices : FALLBACK_FRENCH_PRICES
+  const resolvedMexican = mexicanPrices.length > 0 ? mexicanPrices : FALLBACK_MEXICAN_PRICES
+  const currentRows = activeTab === 'french' ? resolvedFrench : resolvedMexican
   const klaf4Label = activeTab === 'french' ? 'چهارچوب فرانسوی ۴ کلاف' : 'چهارچوب مکزیکی ۴ کلاف'
 
   return (

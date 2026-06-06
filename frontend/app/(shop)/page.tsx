@@ -12,6 +12,7 @@ import { CertificatesSection } from '@/components/home/certificates-section'
 import { BlogHighlightsSection } from '@/components/home/blog-highlights-section'
 import { ContactCtaSection } from '@/components/home/contact-cta-section'
 import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/constants'
+import { fetchFramePrices } from '@/lib/api/google-sheets'
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — درب ضد سرقت لوکس`,
@@ -23,13 +24,15 @@ export const metadata: Metadata = {
   },
 }
 
-export const revalidate = 3600
+export const revalidate = 600
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { frenchPrices, mexicanPrices } = await fetchFramePrices()
+
   return (
     <>
       <HeroSection />
-      <FramePriceListSection />
+      <FramePriceListSection frenchPrices={frenchPrices} mexicanPrices={mexicanPrices} />
       <FeaturedProductsSection />
       <FeaturesSection />
       <CategoriesSection />
