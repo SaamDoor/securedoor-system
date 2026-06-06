@@ -1,5 +1,16 @@
+// ─── Config ───────────────────────────────────────────────────────────────────
+
 const SHEET_ID = '1TLZ3rWizte5QKKIiqt7b-pCvAtkbQa6zi-fr3xAhUh8'
-const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`
+// GID of the "مشتری" (Customer) tab
+const SHEET_GID = '1456944364'
+const CSV_URL =
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`
+
+// Product codes for the frame rows we care about (مشتری tab)
+const FRAME_CODE_MIN = 1101
+const FRAME_CODE_MAX = 1110
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface PriceRow {
   colorName: string
@@ -14,20 +25,75 @@ export interface SheetFramePrices {
   mexicanPrices: PriceRow[]
 }
 
-// Maps Persian color keywords found in product names to hex codes
-const COLOR_MAP: [string, string][] = [
-  ['قهوه‌ای', '#5C3317'], // قهوه‌ای (with ZWNJ)
-  ['طوسی', '#7A8599'], // طوسی
-  ['مشکی', '#232323'], // مشکی
-  ['سفید', '#EFEFEF'], // سفید
+// ─── Color map ────────────────────────────────────────────────────────────────
+
+// Keys intentionally use a single ZWNJ (U+200C). Names from the sheet are
+// ZWNJ-normalised before matching, so double-ZWNJ variants (e.g. row 1107) are
+// handled transparently.
+const COLOR_ENTRIES: ReadonlyArray<[string, string]> = [
+  ['قهوه‌ای', '#5C3317'],
+  ['طوسی',          '#7A8599'],
+  ['مشکی',          '#232323'],
+  ['سفید',          '#EFEFEF'],
 ]
 
-function extractColorInfo(name: string): { colorName: string; colorHex: string } | null {
-  for (const [color, hex] of COLOR_MAP) {
-    if (name.includes(color)) {
-      const noHinge = name.includes('بدون لولا') // بدون لولا
+// ─── CSV parser (RFC 4180 subset) ─────────────────────────────────────────────
+
+/**
+ * Splits a single CSV line into fields, respecting double-quoted values.
+ * Handles prices exported as "3,600,000" without breaking on the internal commas.
+ */
+function parseCSVLine(line: string): string[] {
+  const fields: string[] = []
+  let field = ''
+  let inQuotes = false
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        // Escaped double-quote inside a quoted field
+        field += '"'
+        i++
+      } else {
+        inQuotes = !inQuotes
+      }
+    } else if (ch === ',' && !inQuotes) {
+      fields.push(field.trim())
+      field = ''
+    } else {
+      field += ch
+    }
+  }
+
+  fields.push(field.trim())
+  return fields
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Replace one-or-more consecutive ZWNJs with a single ZWNJ for safe comparison. */
+function normalizeZwnj(s: string): string {
+  return s.replace(/‌+/g, '‌')
+}
+
+/** Strip surrounding quotes, then remove commas/whitespace and parse as integer. */
+function parsePrice(raw: string): number {
+  const cleaned = raw
+    .replace(/^["'\s]+|["'\s]+$/g, '') // leading/trailing quotes and whitespace
+    .replace(/[,\s]/g, '')             // thousand-separator commas and spaces
+  return parseInt(cleaned, 10)
+}
+
+function extractColorInfo(
+  name: string,
+): { colorName: string; colorHex: string } | null {
+  for (const [colorKey, hex] of COLOR_ENTRIES) {
+    if (name.includes(colorKey)) {
+      const noHinge = name.includes('بدون لولا')
       return {
-        colorName: noHinge ? `${color} بدون لولا` : color,
+        colorName: noHinge ? `${colorKey} بدون لولا` : colorKey,
         colorHex: hex,
       }
     }
@@ -35,14 +101,7 @@ function extractColorInfo(name: string): { colorName: string; colorHex: string }
   return null
 }
 
-// Simple CSV parser — handles CRLF and LF, does not handle quoted commas
-function parseCSVRows(text: string): string[][] {
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => line.split(','))
-}
+// ─── Main fetcher ─────────────────────────────────────────────────────────────
 
 export async function fetchFramePrices(): Promise<SheetFramePrices> {
   try {
@@ -55,48 +114,53 @@ export async function fetchFramePrices(): Promise<SheetFramePrices> {
     }
 
     const text = await res.text()
-    const rows = parseCSVRows(text)
 
     const frenchPrices: PriceRow[] = []
     const mexicanPrices: PriceRow[] = []
 
-    for (const row of rows) {
-      const code = parseInt(row[0]?.trim() ?? '', 10)
-      // Only process frame product codes (1100+)
-      if (isNaN(code) || code < 1100) continue
+    for (const rawLine of text.split(/\r?\n/)) {
+      const line = rawLine.trim()
+      if (!line) continue
 
-      const name = row[1]?.trim() ?? ''
-      const rawPrice = row[2]?.trim().replace(/\D/g, '') ?? ''
-      const price = parseInt(rawPrice, 10)
+      const cols = parseCSVLine(line)
 
-      if (!name || isNaN(price) || price <= 0) continue
+      // Column 0: product code
+      const code = parseInt(cols[0] ?? '', 10)
+      if (isNaN(code) || code < FRAME_CODE_MIN || code > FRAME_CODE_MAX) continue
 
-      const isFrench = name.includes('فرانسوی') // فرانسوی
-      const isMexican = name.includes('مکزیکی') // مکزیکی
+      // Column 1: product name — normalise ZWNJ before any string matching
+      const name = normalizeZwnj(cols[1] ?? '')
+      if (!name) continue
 
+      // Column 2: price
+      const price = parsePrice(cols[2] ?? '')
+      if (isNaN(price) || price <= 0) continue
+
+      const isFrench  = name.includes('فرانسوی')
+      const isMexican = name.includes('مکزیکی')
       if (!isFrench && !isMexican) continue
 
       const colorInfo = extractColorInfo(name)
       if (!colorInfo) continue
 
-      const hasHinge = !name.includes('بدون لولا') // بدون لولا
+      const hasHinge   = !name.includes('بدون لولا')
       const klaf4Addon = isFrench ? 600_000 : 900_000
 
-      const priceRow: PriceRow = {
-        colorName: colorInfo.colorName,
-        colorHex: colorInfo.colorHex,
+      const row: PriceRow = {
+        colorName:  colorInfo.colorName,
+        colorHex:   colorInfo.colorHex,
         hasHinge,
         price3klaf: price,
         klaf4Addon,
       }
 
-      if (isFrench) frenchPrices.push(priceRow)
-      else mexicanPrices.push(priceRow)
+      if (isFrench) frenchPrices.push(row)
+      else           mexicanPrices.push(row)
     }
 
     return { frenchPrices, mexicanPrices }
   } catch (err) {
-    console.error('[fetchFramePrices] Failed to load Google Sheet prices:', err)
+    console.error('[fetchFramePrices] Failed to load prices from Google Sheet:', err)
     return { frenchPrices: [], mexicanPrices: [] }
   }
 }
