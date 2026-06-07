@@ -39,7 +39,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <span className="text-gold-gradient">برای خانه شما</span>
           </h2>
           <p className="text-muted text-lg leading-relaxed max-w-md">
-            با بیش از ۲۰ سال تجربه، گروه صنعتی مشعوف پیشرو در ساخت درب‌های ضد سرقت و محصولات ساختمانی لوکس در مازندران است.
+            با بیش از یک دهه تجربه، گروه صنعتی مشعوف پیشرو در ساخت درب‌های ضد سرقت و محصولات ساختمانی لوکس در مازندران است.
           </p>
 
           {/* Features */}

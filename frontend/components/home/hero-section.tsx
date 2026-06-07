@@ -117,7 +117,7 @@ export function HeroSection() {
                 صنایع ساختمانی مشعوف
               </span>
               <div className="h-3 w-px bg-gold/40" />
-              <span className="text-gold/70 text-xs">از ۱۳۸۳</span>
+              <span className="text-gold/70 text-xs">از ۱۳۹۰</span>
             </div>
           </motion.div>
 
