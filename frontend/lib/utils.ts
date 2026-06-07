@@ -22,8 +22,12 @@ export function formatPrice(
     }
   }
 
-  const formatted = new Intl.NumberFormat('fa-IR').format(amount)
-  return `${formatted} ${currency}`
+  try {
+    const formatted = new Intl.NumberFormat('fa-IR').format(amount)
+    return `${formatted} ${currency}`
+  } catch {
+    return `${amount.toLocaleString()} ${currency}`
+  }
 }
 
 export function toPersianNumber(num: number | string): string {

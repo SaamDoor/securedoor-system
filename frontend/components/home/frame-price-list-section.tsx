@@ -62,7 +62,7 @@ const features = [
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatIranPrice(n: number): string {
-  return n.toLocaleString('fa-IR')
+  try { return n.toLocaleString('fa-IR') } catch { return n.toLocaleString() }
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────

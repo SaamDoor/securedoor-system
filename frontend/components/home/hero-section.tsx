@@ -17,7 +17,8 @@ const stats = [
 
 const features = [
   { icon: Shield, label: 'امنیت بالا' },
-  { icon: Award,  label: 'گارانتی ۱۰ ساله' },
+  { icon: Award,  label: 'گارانتی ۱۰ ساله روکش' },
+  { icon: Award,  label: 'گارانتی ۵ ساله یراق' },
   { icon: Wrench, label: 'نصب حرفه‌ای' },
 ]
 
@@ -282,7 +283,7 @@ function CountUp({ value, suffix, className }: { value: number; suffix: string; 
         animate={{ opacity: 1 }}
         transition={{ duration: 2, ease: 'easeOut' }}
       >
-        {toPersianNumber(value.toLocaleString('fa-IR'))}{suffix}
+        {toPersianNumber(value.toLocaleString())}{suffix}
       </motion.span>
     </motion.div>
   )

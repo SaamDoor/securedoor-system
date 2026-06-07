@@ -22,11 +22,11 @@ export const CONTACT = {
 } as const
 
 export const SOCIAL_LINKS = {
-  instagram: 'https://instagram.com/mashuf.industrial',
-  telegram: 'https://t.me/mashuf',
-  whatsapp: 'https://wa.me/989003286539',
-  linkedin: 'https://linkedin.com/company/mashuf',
-  youtube: 'https://youtube.com/@mashuf',
+  instagram:  'https://www.instagram.com/mashoufdoor',
+  telegram:   'https://t.me/MashufDoor',
+  eitaa:      'https://eitaa.com/MashufDoor',
+  rubika:     'https://rubika.ir/MashufDoor',
+  soroush:    'https://splus.ir/MashufDoor',
 } as const
 
 export const PAGINATION_DEFAULTS = {

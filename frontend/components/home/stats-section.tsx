@@ -5,7 +5,7 @@ import { motion, useInView } from 'framer-motion'
 import { toPersianNumber } from '@/lib/utils'
 
 const stats = [
-  { value: 10, suffix: '+', unit: 'سال', label: 'سابقه تولید', description: 'فعالیت تخصصی از ۱۳۹۷' },
+  { value: 10, suffix: '+', unit: 'سال', label: 'سابقه تولید', description: 'فعالیت تخصصی از ۱۳۹۵' },
   { value: 15000, suffix: '+', unit: '', label: 'درب نصب شده', description: 'در سراسر کشور' },
   { value: 850, suffix: '+', unit: '', label: 'نمایندگی فعال', description: 'در ۳۱ استان' },
   { value: 12, suffix: '', unit: '', label: 'جایزه ملی', description: 'کیفیت و نوآوری' },
@@ -134,7 +134,7 @@ function AnimatedNumber({
       animate={isInView ? { opacity: 1 } : {}}
       transition={{ duration: 0.3, delay }}
     >
-      {toPersianNumber(value.toLocaleString('fa-IR'))}{suffix}
+      {toPersianNumber((value).toLocaleString())}{suffix}
       {unit && <span className="text-xl font-semibold text-gold mr-1">{unit}</span>}
     </motion.div>
   )

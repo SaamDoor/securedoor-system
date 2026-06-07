@@ -286,7 +286,7 @@ export function ProductDetailClient({ slug }: ProductDetailClientProps) {
                 <div className="text-xs text-muted">کارشناسان ما آماده پاسخگویی هستند</div>
               </div>
               <a
-                href="tel:02188000000"
+                href="tel:09003286539"
                 className="px-4 py-2 rounded-lg bg-gold text-black text-sm font-bold hover:bg-gold-light transition-colors"
               >
                 تماس بگیرید

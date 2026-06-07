@@ -101,7 +101,7 @@ export function organizationSchema() {
     logo: `${SITE_URL}/logo.png`,
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+98-21-88000000',
+      telephone: '+98-900-328-6539',
       contactType: 'customer service',
       availableLanguage: 'Persian',
       areaServed: 'IR',
