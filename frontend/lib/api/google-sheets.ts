@@ -10,6 +10,9 @@ const CSV_URL =
 const FRAME_CODE_MIN = 1101
 const FRAME_CODE_MAX = 1110
 
+// Supabase key in the price_snapshots table
+const SNAPSHOT_KEY = 'frame_prices'
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface PriceRow {
@@ -23,15 +26,18 @@ export interface PriceRow {
 export interface SheetFramePrices {
   frenchPrices: PriceRow[]
   mexicanPrices: PriceRow[]
-  /** Pre-formatted Persian datetime string in Asia/Tehran timezone (set at fetch time). */
+  /**
+   * Persian (Shamsi) datetime of the last time prices actually changed in the
+   * Google Sheet — NOT the last time the page was revalidated.
+   * Empty string when the value cannot be determined.
+   */
   lastUpdated: string
 }
 
 // ─── Color map ────────────────────────────────────────────────────────────────
 
-// Keys intentionally use a single ZWNJ (U+200C). Names from the sheet are
-// ZWNJ-normalised before matching, so double-ZWNJ variants (e.g. row 1107) are
-// handled transparently.
+// Keys use a single ZWNJ (U+200C). Names from the sheet are ZWNJ-normalised
+// before matching, so double-ZWNJ variants (e.g. row 1107) work transparently.
 const COLOR_ENTRIES: ReadonlyArray<[string, string]> = [
   ['قهوه‌ای', '#5C3317'],
   ['طوسی',          '#7A8599'],
@@ -41,10 +47,7 @@ const COLOR_ENTRIES: ReadonlyArray<[string, string]> = [
 
 // ─── CSV parser (RFC 4180 subset) ─────────────────────────────────────────────
 
-/**
- * Splits a single CSV line into fields, respecting double-quoted values.
- * Handles prices exported as "3,600,000" without breaking on the internal commas.
- */
+/** Splits a single CSV line respecting double-quoted fields (e.g. "3,600,000"). */
 function parseCSVLine(line: string): string[] {
   const fields: string[] = []
   let field = ''
@@ -52,52 +55,36 @@ function parseCSVLine(line: string): string[] {
 
   for (let i = 0; i < line.length; i++) {
     const ch = line[i]
-
     if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        // Escaped double-quote inside a quoted field
-        field += '"'
-        i++
-      } else {
-        inQuotes = !inQuotes
-      }
+      if (inQuotes && line[i + 1] === '"') { field += '"'; i++ }
+      else inQuotes = !inQuotes
     } else if (ch === ',' && !inQuotes) {
-      fields.push(field.trim())
-      field = ''
+      fields.push(field.trim()); field = ''
     } else {
       field += ch
     }
   }
-
   fields.push(field.trim())
   return fields
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Replace one-or-more consecutive ZWNJs with a single ZWNJ for safe comparison. */
+/** Collapse consecutive ZWNJs → single ZWNJ for reliable color matching. */
 function normalizeZwnj(s: string): string {
   return s.replace(/‌+/g, '‌')
 }
 
-/** Strip surrounding quotes, then remove commas/whitespace and parse as integer. */
+/** Strip quotes/commas/whitespace then parse price integer. */
 function parsePrice(raw: string): number {
-  const cleaned = raw
-    .replace(/^["'\s]+|["'\s]+$/g, '') // leading/trailing quotes and whitespace
-    .replace(/[,\s]/g, '')             // thousand-separator commas and spaces
-  return parseInt(cleaned, 10)
+  return parseInt(raw.replace(/^["'\s]+|["'\s]+$/g, '').replace(/[,\s]/g, ''), 10)
 }
 
-function extractColorInfo(
-  name: string,
-): { colorName: string; colorHex: string } | null {
-  for (const [colorKey, hex] of COLOR_ENTRIES) {
-    if (name.includes(colorKey)) {
+function extractColorInfo(name: string): { colorName: string; colorHex: string } | null {
+  for (const [key, hex] of COLOR_ENTRIES) {
+    if (name.includes(key)) {
       const noHinge = name.includes('بدون لولا')
-      return {
-        colorName: noHinge ? `${colorKey} بدون لولا` : colorKey,
-        colorHex: hex,
-      }
+      return { colorName: noHinge ? `${key} بدون لولا` : key, colorHex: hex }
     }
   }
   return null
@@ -106,94 +93,166 @@ function extractColorInfo(
 // ─── Date formatter ───────────────────────────────────────────────────────────
 
 /**
- * Returns a Persian (Shamsi) date-time string in Asia/Tehran timezone.
- * Runs server-side so the formatted string is consistent across server/client
- * and avoids React hydration mismatches.
- * Example output: "۱۷ خرداد ۱۴۰۵ — ۱۴:۳۰"
+ * Converts a UTC Date to a Persian (Shamsi) datetime string in Asia/Tehran
+ * timezone. Runs server-side; safe from hydration mismatches.
+ * Example: "۱۷ خرداد ۱۴۰۵ — ۱۴:۳۰"
  */
 function formatPersianDateTime(date: Date): string {
   const datePart = new Intl.DateTimeFormat('fa-IR', {
     timeZone: 'Asia/Tehran',
-    calendar:  'persian',
-    year:  'numeric',
-    month: 'long',
-    day:   'numeric',
+    calendar: 'persian',
+    year: 'numeric', month: 'long', day: 'numeric',
   }).format(date)
 
   const timePart = new Intl.DateTimeFormat('fa-IR', {
     timeZone: 'Asia/Tehran',
-    hour:   '2-digit',
-    minute: '2-digit',
-    hour12: false,
+    hour: '2-digit', minute: '2-digit', hour12: false,
   }).format(date)
 
   return `${datePart} — ${timePart}`
 }
 
+// ─── Price hash ───────────────────────────────────────────────────────────────
+
+/**
+ * Produces a stable string fingerprint of the parsed price rows.
+ * We only hash the values that matter to users (price3klaf per colorName).
+ */
+function hashPrices(french: PriceRow[], mexican: PriceRow[]): string {
+  const key = (rows: PriceRow[]) =>
+    rows.map((r) => `${r.colorName}:${r.price3klaf}`).join('|')
+  return `${key(french)}||${key(mexican)}`
+}
+
+// ─── Supabase snapshot helpers ─────────────────────────────────────────────
+
+interface Snapshot { price_hash: string; changed_at: string }
+
+async function readSnapshot(): Promise<Snapshot | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+
+  if (!url || !key) return null
+
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/price_snapshots?key=eq.${SNAPSHOT_KEY}&select=price_hash,changed_at`,
+      {
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store',
+      },
+    )
+    if (!res.ok) return null
+    const rows: Snapshot[] = await res.json()
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
+}
+
+async function upsertSnapshot(newHash: string): Promise<string> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  // Writes require the service role key; fall back to anon key if not set
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+
+  const changedAt = new Date().toISOString()
+
+  if (!url || !key) return changedAt
+
+  try {
+    await fetch(`${url}/rest/v1/price_snapshots`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify({ key: SNAPSHOT_KEY, price_hash: newHash, changed_at: changedAt }),
+      cache: 'no-store',
+    })
+  } catch (err) {
+    console.error('[upsertSnapshot] error:', err)
+  }
+
+  return changedAt
+}
+
 // ─── Main fetcher ─────────────────────────────────────────────────────────────
 
 export async function fetchFramePrices(): Promise<SheetFramePrices> {
+  const empty: SheetFramePrices = { frenchPrices: [], mexicanPrices: [], lastUpdated: '' }
+
   try {
-    const res = await fetch(CSV_URL, {
-      next: { revalidate: 600 },
-    })
-
-    if (!res.ok) {
-      throw new Error(`Google Sheets fetch failed: HTTP ${res.status}`)
-    }
-
+    // 1. Fetch CSV from Google Sheets (ISR: revalidated every 10 min by the page)
+    const res = await fetch(CSV_URL, { next: { revalidate: 600 } })
+    if (!res.ok) throw new Error(`Google Sheets HTTP ${res.status}`)
     const text = await res.text()
 
+    // 2. Parse CSV rows
     const frenchPrices: PriceRow[] = []
     const mexicanPrices: PriceRow[] = []
 
     for (const rawLine of text.split(/\r?\n/)) {
       const line = rawLine.trim()
       if (!line) continue
-
       const cols = parseCSVLine(line)
 
-      // Column 0: product code
       const code = parseInt(cols[0] ?? '', 10)
       if (isNaN(code) || code < FRAME_CODE_MIN || code > FRAME_CODE_MAX) continue
 
-      // Column 1: product name — normalise ZWNJ before any string matching
       const name = normalizeZwnj(cols[1] ?? '')
       if (!name) continue
 
-      // Column 2: price
       const price = parsePrice(cols[2] ?? '')
       if (isNaN(price) || price <= 0) continue
 
-      const isFrench  = name.includes('فرانسوی')
+      const isFrench = name.includes('فرانسوی')
       const isMexican = name.includes('مکزیکی')
       if (!isFrench && !isMexican) continue
 
       const colorInfo = extractColorInfo(name)
       if (!colorInfo) continue
 
-      const hasHinge   = !name.includes('بدون لولا')
-      const klaf4Addon = isFrench ? 600_000 : 900_000
-
       const row: PriceRow = {
-        colorName:  colorInfo.colorName,
-        colorHex:   colorInfo.colorHex,
-        hasHinge,
+        colorName: colorInfo.colorName,
+        colorHex: colorInfo.colorHex,
+        hasHinge: !name.includes('بدون لولا'),
         price3klaf: price,
-        klaf4Addon,
+        klaf4Addon: isFrench ? 600_000 : 900_000,
       }
 
       if (isFrench) frenchPrices.push(row)
-      else           mexicanPrices.push(row)
+      else mexicanPrices.push(row)
     }
 
-    return {
-      frenchPrices,
-      mexicanPrices,
-      lastUpdated: formatPersianDateTime(new Date()),
+    // 3. Compute fingerprint of the current prices
+    const currentHash = hashPrices(frenchPrices, mexicanPrices)
+
+    // 4. Read the previously stored snapshot from Supabase
+    const snapshot = await readSnapshot()
+
+    let changedAtIso: string
+
+    if (!snapshot || snapshot.price_hash !== currentHash) {
+      // Prices changed (or first run) → write new snapshot, timestamp = now
+      changedAtIso = await upsertSnapshot(currentHash)
+    } else {
+      // Prices are identical → keep the original change timestamp
+      changedAtIso = snapshot.changed_at
     }
+
+    const lastUpdated = formatPersianDateTime(new Date(changedAtIso))
+
+    return { frenchPrices, mexicanPrices, lastUpdated }
   } catch (err) {
-    console.error('[fetchFramePrices] Failed to load prices from Google Sheet:', err)
-    return { frenchPrices: [], mexicanPrices: [], lastUpdated: '' }
+    console.error('[fetchFramePrices] error:', err)
+    return empty
   }
 }

@@ -151,7 +151,7 @@ export function normalizePhone(phone: string): string {
  */
 export function phoneToAuthEmail(phone: string): string {
   const digits = normalizePhone(phone).replace(/\D/g, '')
-  return `ph_${digits}@mashuf-auth.com`
+  return `ph_${digits}@mashuf.com`
 }
 
 export function isValidNationalId(id: string): boolean {
