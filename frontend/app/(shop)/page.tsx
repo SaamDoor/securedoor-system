@@ -27,12 +27,16 @@ export const metadata: Metadata = {
 export const revalidate = 600
 
 export default async function HomePage() {
-  const { frenchPrices, mexicanPrices } = await fetchFramePrices()
+  const { frenchPrices, mexicanPrices, lastUpdated } = await fetchFramePrices()
 
   return (
     <>
       <HeroSection />
-      <FramePriceListSection frenchPrices={frenchPrices} mexicanPrices={mexicanPrices} />
+      <FramePriceListSection
+        frenchPrices={frenchPrices}
+        mexicanPrices={mexicanPrices}
+        lastUpdated={lastUpdated}
+      />
       <FeaturedProductsSection />
       <FeaturesSection />
       <CategoriesSection />

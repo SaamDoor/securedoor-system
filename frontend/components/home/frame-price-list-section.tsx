@@ -187,11 +187,13 @@ function PriceTable({ rows, klaf4Label }: { rows: PriceRow[]; klaf4Label: string
 interface FramePriceListSectionProps {
   frenchPrices?: PriceRow[]
   mexicanPrices?: PriceRow[]
+  lastUpdated?: string
 }
 
 export function FramePriceListSection({
   frenchPrices = FALLBACK_FRENCH_PRICES,
   mexicanPrices = FALLBACK_MEXICAN_PRICES,
+  lastUpdated,
 }: FramePriceListSectionProps) {
   const [activeTab, setActiveTab] = useState<FrameType>('french')
 
@@ -277,9 +279,14 @@ export function FramePriceListSection({
               <div>
                 <div className="text-white font-black text-lg">لیست قیمت چهارچوب ۳ کلاف</div>
               </div>
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold/10 border border-gold/25">
-                <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-                <span className="text-gold text-xs font-bold">بروزرسانی ۱۴۰۳</span>
+              <div className="flex flex-col items-end gap-0.5 px-3 py-2 rounded-lg bg-gold/10 border border-gold/25">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+                  <span className="text-gold/70 text-2xs">آخرین بروزرسانی</span>
+                </div>
+                <span className="text-gold text-xs font-bold leading-tight">
+                  {lastUpdated || '—'}
+                </span>
               </div>
             </div>
 

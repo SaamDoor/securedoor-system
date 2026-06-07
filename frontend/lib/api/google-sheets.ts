@@ -23,6 +23,8 @@ export interface PriceRow {
 export interface SheetFramePrices {
   frenchPrices: PriceRow[]
   mexicanPrices: PriceRow[]
+  /** Pre-formatted Persian datetime string in Asia/Tehran timezone (set at fetch time). */
+  lastUpdated: string
 }
 
 // ─── Color map ────────────────────────────────────────────────────────────────
@@ -101,6 +103,33 @@ function extractColorInfo(
   return null
 }
 
+// ─── Date formatter ───────────────────────────────────────────────────────────
+
+/**
+ * Returns a Persian (Shamsi) date-time string in Asia/Tehran timezone.
+ * Runs server-side so the formatted string is consistent across server/client
+ * and avoids React hydration mismatches.
+ * Example output: "۱۷ خرداد ۱۴۰۵ — ۱۴:۳۰"
+ */
+function formatPersianDateTime(date: Date): string {
+  const datePart = new Intl.DateTimeFormat('fa-IR', {
+    timeZone: 'Asia/Tehran',
+    calendar:  'persian',
+    year:  'numeric',
+    month: 'long',
+    day:   'numeric',
+  }).format(date)
+
+  const timePart = new Intl.DateTimeFormat('fa-IR', {
+    timeZone: 'Asia/Tehran',
+    hour:   '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date)
+
+  return `${datePart} — ${timePart}`
+}
+
 // ─── Main fetcher ─────────────────────────────────────────────────────────────
 
 export async function fetchFramePrices(): Promise<SheetFramePrices> {
@@ -158,9 +187,13 @@ export async function fetchFramePrices(): Promise<SheetFramePrices> {
       else           mexicanPrices.push(row)
     }
 
-    return { frenchPrices, mexicanPrices }
+    return {
+      frenchPrices,
+      mexicanPrices,
+      lastUpdated: formatPersianDateTime(new Date()),
+    }
   } catch (err) {
     console.error('[fetchFramePrices] Failed to load prices from Google Sheet:', err)
-    return { frenchPrices: [], mexicanPrices: [] }
+    return { frenchPrices: [], mexicanPrices: [], lastUpdated: '' }
   }
 }
