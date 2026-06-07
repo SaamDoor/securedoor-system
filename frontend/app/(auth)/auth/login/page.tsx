@@ -99,8 +99,8 @@ function LoginForm() {
       ? `${profile.first_name} ${profile.last_name ?? ''}`.trim()
       : data.phone
 
-    const maxAge = data.rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24
-    document.cookie = `user_role=${role}; path=/; SameSite=Lax; Max-Age=${maxAge}`
+    // 30-day persistent cookie — user stays logged in until explicit logout
+    document.cookie = `user_role=${role}; path=/; SameSite=Lax; Max-Age=${60 * 60 * 24 * 30}`
 
     toast.success(`خوش آمدید، ${displayName}!`, { duration: 3000 })
 

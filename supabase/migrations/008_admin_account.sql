@@ -12,7 +12,7 @@
 DO $$
 DECLARE
   v_uid  UUID;
-  v_email TEXT := 'ph_09003286539@mashuf-auth.com';
+  v_email TEXT := 'ph_09003286539@mashuf.com';
 BEGIN
 
   -- اگر قبلاً اکانت وجود داشته باشد، فقط نقش را به‌روز کن

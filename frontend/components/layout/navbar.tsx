@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 import {
   ShoppingCart,
@@ -12,12 +13,28 @@ import {
   X,
   ChevronDown,
   Phone,
+  LayoutDashboard,
+  ShieldCheck,
+  LogOut,
+  Settings,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Logo } from '@/components/ui/logo'
-import { CONTACT, SOCIAL_LINKS } from '@/lib/constants'
+import { CONTACT } from '@/lib/constants'
+import { createClient } from '@/lib/supabase/client'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface AuthUser {
+  name: string
+  initials: string
+  role: string
+}
+
+const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support']
+
+// ─── Nav items ────────────────────────────────────────────────────────────────
 
 const navItems = [
   { label: 'خانه', href: '/' },
@@ -25,12 +42,12 @@ const navItems = [
     label: 'محصولات',
     href: '/products',
     children: [
-      { label: 'درب ضد سرقت', href: '/products?category=darb-zed-sereqat' },
-      { label: 'درب ضد حریق', href: '/products?category=darb-zed-hariq' },
+      { label: 'درب ضد سرقت',  href: '/products?category=darb-zed-sereqat' },
+      { label: 'درب ضد حریق',  href: '/products?category=darb-zed-hariq' },
       { label: 'درب آپارتمانی', href: '/products?category=darb-apartmani' },
-      { label: 'درب ویلایی', href: '/products?category=darb-villaei' },
-      { label: 'درب اداری', href: '/products?category=darb-edari' },
-      { label: 'متعلقات', href: '/products?category=moteallaqat' },
+      { label: 'درب ویلایی',   href: '/products?category=darb-villaei' },
+      { label: 'درب اداری',    href: '/products?category=darb-edari' },
+      { label: 'متعلقات',      href: '/products?category=moteallaqat' },
     ],
   },
   {
@@ -38,48 +55,208 @@ const navItems = [
     href: '/projects',
     children: [
       { label: 'همه پروژه‌ها', href: '/projects' },
-      { label: 'پیش‌فروش', href: '/projects?status=pre_sale' },
-      { label: 'برای فروش', href: '/projects?status=for_sale' },
-      { label: 'تحویل‌شده', href: '/projects?status=delivered' },
+      { label: 'پیش‌فروش',    href: '/projects?status=pre_sale' },
+      { label: 'برای فروش',   href: '/projects?status=for_sale' },
+      { label: 'تحویل‌شده',   href: '/projects?status=delivered' },
     ],
   },
   { label: 'دسته‌بندی‌ها', href: '/categories' },
-  { label: 'وبلاگ', href: '/blog' },
-  { label: 'درباره ما', href: '/about' },
-  { label: 'تماس با ما', href: '/contact' },
+  { label: 'وبلاگ',       href: '/blog' },
+  { label: 'درباره ما',   href: '/about' },
+  { label: 'تماس با ما',  href: '/contact' },
 ]
 
+// ─── User menu dropdown ───────────────────────────────────────────────────────
+
+function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const isAdmin = ADMIN_ROLES.includes(user.role)
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          'flex items-center gap-2 px-3 py-1.5 rounded-xl',
+          'border border-gold/30 hover:border-gold/60',
+          'bg-gold/5 hover:bg-gold/10 transition-all duration-200',
+        )}
+        aria-label="منوی کاربر"
+      >
+        {/* Avatar circle */}
+        <div className="w-7 h-7 rounded-lg bg-gold-gradient flex items-center justify-center flex-shrink-0">
+          <span className="text-black text-xs font-black">{user.initials}</span>
+        </div>
+        <span className="hidden sm:block text-white text-sm font-semibold max-w-[100px] truncate">
+          {user.name || 'حساب من'}
+        </span>
+        <ChevronDown
+          className={cn('h-3.5 w-3.5 text-gold transition-transform duration-200', open && 'rotate-180')}
+        />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.97 }}
+            transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className={cn(
+              'absolute top-full left-0 mt-2 w-56 py-2',
+              'bg-surface/98 backdrop-blur-xl',
+              'border border-white/10 rounded-2xl shadow-luxury',
+              'z-50',
+            )}
+          >
+            {/* User info header */}
+            <div className="px-4 pb-3 pt-1 border-b border-white/8 mb-1">
+              <div className="text-white font-bold text-sm truncate">{user.name || 'کاربر'}</div>
+              <div className="text-muted text-xs mt-0.5">
+                {isAdmin ? '🛡 مدیر سیستم' : '👤 کاربر'}
+              </div>
+            </div>
+
+            {/* Admin panel — only for admins */}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 transition-colors"
+              >
+                <ShieldCheck className="h-4 w-4 flex-shrink-0" />
+                پنل مدیریت
+              </Link>
+            )}
+
+            {/* Dashboard */}
+            <Link
+              href="/user/dashboard"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
+              داشبورد من
+            </Link>
+
+            {/* Profile */}
+            <Link
+              href="/user/profile"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <Settings className="h-4 w-4 flex-shrink-0" />
+              ویرایش پروفایل
+            </Link>
+
+            <div className="mx-4 my-1.5 border-t border-white/8" />
+
+            {/* Logout */}
+            <button
+              onClick={() => { setOpen(false); onLogout() }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+            >
+              <LogOut className="h-4 w-4 flex-shrink-0" />
+              خروج از حساب
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ─── Main Navbar ──────────────────────────────────────────────────────────────
+
 export function Navbar() {
+  const router = useRouter()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null)
   const { scrollY } = useScroll()
   const dropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useMotionValueEvent(scrollY, 'change', (latest) => {
-    setIsScrolled(latest > 60)
-  })
+  // ── Auth state ──────────────────────────────────────────────────────────────
+
+  const buildAuthUser = useCallback((meta: Record<string, unknown>, roleCookie: string): AuthUser => {
+    const firstName = (meta.first_name as string) ?? ''
+    const lastName  = (meta.last_name  as string) ?? ''
+    const name = [firstName, lastName].filter(Boolean).join(' ')
+    const initials = [firstName[0], lastName[0]].filter(Boolean).join('').toUpperCase() || 'U'
+    return { name, initials, role: roleCookie || 'customer' }
+  }, [])
 
   useEffect(() => {
-    if (isMobileOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
+    const supabase = createClient()
+
+    // Helper: read user_role cookie
+    function getRoleCookie(): string {
+      return document.cookie.match(/user_role=([^;]+)/)?.[1] ?? ''
     }
+
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setAuthUser(buildAuthUser(session.user.user_metadata ?? {}, getRoleCookie()))
+      }
+    })
+
+    // Real-time updates: login / logout / token refresh
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setAuthUser(buildAuthUser(session.user.user_metadata ?? {}, getRoleCookie()))
+      } else {
+        setAuthUser(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [buildAuthUser])
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    // Clear role cookie
+    document.cookie = 'user_role=; path=/; Max-Age=0; SameSite=Lax'
+    setAuthUser(null)
+    router.push('/')
+    router.refresh()
+  }
+
+  // ── Scroll ──────────────────────────────────────────────────────────────────
+
+  useMotionValueEvent(scrollY, 'change', (latest) => setIsScrolled(latest > 60))
+
+  // ── Mobile menu scroll lock ─────────────────────────────────────────────────
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [isMobileOpen])
+
+  // ── Dropdown hover ──────────────────────────────────────────────────────────
 
   const handleDropdownEnter = (label: string) => {
     if (dropdownTimer.current) clearTimeout(dropdownTimer.current)
     setActiveDropdown(label)
   }
-
   const handleDropdownLeave = () => {
-    dropdownTimer.current = setTimeout(() => {
-      setActiveDropdown(null)
-    }, 150)
+    dropdownTimer.current = setTimeout(() => setActiveDropdown(null), 150)
   }
+
+  // ────────────────────────────────────────────────────────────────────────────
 
   return (
     <>
@@ -99,9 +276,15 @@ export function Navbar() {
               پیگیری سفارش
             </Link>
             <span className="text-white/20">|</span>
-            <Link href="/auth/login" className="hover:text-gold transition-colors">
-              ورود / ثبت‌نام
-            </Link>
+            {authUser ? (
+              <span className="text-gold font-medium">
+                {authUser.name || 'حساب من'}
+              </span>
+            ) : (
+              <Link href="/auth/login" className="hover:text-gold transition-colors">
+                ورود / ثبت‌نام
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -178,7 +361,6 @@ export function Navbar() {
                               'hover:pr-6',
                             )}
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-gold ml-3 opacity-0 group-hover:opacity-100" />
                             {child.label}
                           </Link>
                         ))}
@@ -240,15 +422,18 @@ export function Navbar() {
                 </span>
               </Link>
 
-              {/* User */}
-              <Link
-                href="/auth/login"
-                className="hidden lg:flex"
-              >
-                <Button variant="gold-outline" size="sm" leftIcon={<User className="h-4 w-4" />}>
-                  ورود
-                </Button>
-              </Link>
+              {/* User area — logged in: dropdown, logged out: login button */}
+              <div className="hidden lg:flex">
+                {authUser ? (
+                  <UserMenu user={authUser} onLogout={handleLogout} />
+                ) : (
+                  <Link href="/auth/login">
+                    <Button variant="gold-outline" size="sm" leftIcon={<User className="h-4 w-4" />}>
+                      ورود
+                    </Button>
+                  </Link>
+                )}
+              </div>
 
               {/* Mobile menu toggle */}
               <button
@@ -297,6 +482,7 @@ export function Navbar() {
                     'focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20',
                     'transition-all duration-250',
                   )}
+                  onKeyDown={(e) => e.key === 'Escape' && setIsSearchOpen(false)}
                 />
                 <button
                   onClick={() => setIsSearchOpen(false)}
@@ -327,22 +513,36 @@ export function Navbar() {
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setIsMobileOpen(false)}
             />
-            <div className="absolute top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-surface border-l border-white/8 overflow-y-auto">
+            <div className="absolute top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-surface border-l border-white/8 overflow-y-auto flex flex-col">
               {/* Header */}
               <div className="flex items-center justify-between p-5 border-b border-white/8">
                 <div onClick={() => setIsMobileOpen(false)}>
                   <Logo variant="default" size="sm" />
                 </div>
-                <button
-                  onClick={() => setIsMobileOpen(false)}
-                  className="text-muted hover:text-white transition-colors"
-                >
+                <button onClick={() => setIsMobileOpen(false)} className="text-muted hover:text-white transition-colors">
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
+              {/* Logged-in user info strip */}
+              {authUser && (
+                <div className="px-5 py-4 border-b border-white/8 bg-gold/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gold-gradient flex items-center justify-center flex-shrink-0">
+                      <span className="text-black font-black">{authUser.initials}</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-bold text-sm">{authUser.name || 'کاربر'}</div>
+                      <div className="text-muted text-xs">
+                        {ADMIN_ROLES.includes(authUser.role) ? '🛡 مدیر سیستم' : '👤 کاربر'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Nav links */}
-              <nav className="p-4">
+              <nav className="p-4 flex-1">
                 {navItems.map((item, i) => (
                   <motion.div
                     key={item.label}
@@ -381,11 +581,37 @@ export function Navbar() {
 
               {/* Bottom actions */}
               <div className="p-4 border-t border-white/8 space-y-3">
-                <Button asChild variant="gold" size="md" className="w-full">
-                  <Link href="/auth/login" onClick={() => setIsMobileOpen(false)}>
-                    ورود / ثبت‌نام
-                  </Link>
-                </Button>
+                {authUser ? (
+                  <>
+                    {ADMIN_ROLES.includes(authUser.role) && (
+                      <Button asChild variant="gold-outline" size="md" className="w-full">
+                        <Link href="/admin" onClick={() => setIsMobileOpen(false)}>
+                          <ShieldCheck className="h-4 w-4 ml-2" />
+                          پنل مدیریت
+                        </Link>
+                      </Button>
+                    )}
+                    <Button asChild variant="gold-outline" size="md" className="w-full">
+                      <Link href="/user/dashboard" onClick={() => setIsMobileOpen(false)}>
+                        <LayoutDashboard className="h-4 w-4 ml-2" />
+                        داشبورد من
+                      </Link>
+                    </Button>
+                    <button
+                      onClick={() => { setIsMobileOpen(false); handleLogout() }}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm font-semibold transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      خروج از حساب
+                    </button>
+                  </>
+                ) : (
+                  <Button asChild variant="gold" size="md" className="w-full">
+                    <Link href="/auth/login" onClick={() => setIsMobileOpen(false)}>
+                      ورود / ثبت‌نام
+                    </Link>
+                  </Button>
+                )}
 
                 <div className="flex items-center gap-2 text-sm text-muted">
                   <Phone className="h-4 w-4 text-gold" />

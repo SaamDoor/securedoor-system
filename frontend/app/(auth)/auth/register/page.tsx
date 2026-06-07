@@ -129,7 +129,7 @@ export default function RegisterPage() {
         .eq('id', sessionData.user.id)
         .single()
       const role = profile?.role ?? 'customer'
-      document.cookie = `user_role=${role}; path=/; SameSite=Lax; Max-Age=${60 * 60 * 24}`
+      document.cookie = `user_role=${role}; path=/; SameSite=Lax; Max-Age=${60 * 60 * 24 * 30}`
     }
 
     router.push('/user/dashboard')
