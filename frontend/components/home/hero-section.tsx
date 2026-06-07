@@ -100,14 +100,9 @@ export function HeroSection() {
             transition={{ duration: 0.9, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="text-display font-black text-white mb-6 leading-[1.05]"
           >
-            امنیت{' '}
-            <span className="text-gold-gradient">
-              سلطنتی
-            </span>
-            <br />
-            برای{' '}
+            گروه تولیدی{' '}
             <span className="relative inline-block">
-              خانه شما
+              مشعوف
               <motion.span
                 className="absolute -bottom-2 right-0 left-0 h-1 bg-gold-gradient rounded-full"
                 initial={{ scaleX: 0 }}
@@ -124,8 +119,9 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="text-lg text-muted leading-relaxed mb-10 max-w-xl"
           >
-            با بیش از ۲۰ سال تجربه در ساخت درب‌های ضد سرقت، گروه صنعتی مشعوف ترکیب
-            بی‌نظیری از زیبایی، استحکام و تکنولوژی پیشرفته را به خانه‌های ایران می‌آورد.
+            گروه تولیدی صنایع ساختمانی مشعوف با بیش از ۱۰ سال سابقه در زمینه تولید چهارچوب‌های فلزی و درب‌های ضد سرقت، ترکیب بی‌نظیری از زیبایی و استحکام را به خانه‌های شما می‌آورد.
+            <br className="hidden sm:block" />
+            در گروه صنعتی مشعوف، تیمی از نیروهای مجرب و متخصص با دقتِ تمام بر روی روند تولید و کیفیت عمومی و تخصصی محصولات نظارت دارند.
           </motion.p>
 
           {/* Feature pills */}
