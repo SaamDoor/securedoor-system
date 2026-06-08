@@ -717,7 +717,7 @@ CREATE TABLE settings (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   "key"       VARCHAR(200) UNIQUE NOT NULL,
   value       JSONB NOT NULL,
-  group       VARCHAR(100) NOT NULL DEFAULT 'general',
+  "group"       VARCHAR(100) NOT NULL DEFAULT 'general',
   description TEXT,
   is_public   BOOLEAN NOT NULL DEFAULT FALSE,
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),

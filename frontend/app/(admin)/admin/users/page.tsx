@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Shield, UserCheck, UserX, X, Percent, ChevronDown } from 'lucide-react'
+import { Search, Shield, UserCheck, UserX, X, Percent, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/badge'
 import type { BadgeVariant } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -51,19 +52,51 @@ const tierBadgeClass: Record<CustomerTier, string> = {
   reseller:     'bg-amber-500/15 text-amber-300 border-amber-500/35',
 }
 
-const USERS: AdminUser[] = [
-  { id: '1', firstName: 'مهندس', lastName: 'رضایی', email: 'rezaei@example.com', phone: '09121234567', role: 'customer', isActive: true,  isVerified: true,  orderCount: 5, createdAt: '2024-06-01', customerTier: 'regular',      specialDiscountPercent: 0  },
-  { id: '2', firstName: 'خانم',  lastName: 'موسوی', email: 'mousavi@example.com', phone: '09112345678', role: 'customer', isActive: true,  isVerified: true,  orderCount: 3, createdAt: '2024-08-15', customerTier: 'mass_builder', specialDiscountPercent: 10 },
-  { id: '3', firstName: 'علی',   lastName: 'احمدی', email: 'ahmadi@example.com',  role: 'customer',     isActive: false, isVerified: false, orderCount: 0, createdAt: '2025-01-10', customerTier: 'regular',      specialDiscountPercent: 0  },
-  { id: '4', firstName: 'سارا',  lastName: 'نجفی',  email: 'najafi@example.com',  role: 'admin',        isActive: true,  isVerified: true,  orderCount: 0, createdAt: '2024-01-01', customerTier: 'reseller',     specialDiscountPercent: 15 },
-]
-
 export default function AdminUsersPage() {
-  const [search, setSearch]     = useState('')
-  const [users, setUsers]       = useState<AdminUser[]>(USERS)
-  const [editing, setEditing]   = useState<AdminUser | null>(null)
+  const supabase = createClient()
+
+  const [search, setSearch]               = useState('')
+  const [users, setUsers]                 = useState<AdminUser[]>([])
+  const [loading, setLoading]             = useState(true)
+  const [saving, setSaving]               = useState(false)
+  const [error, setError]                 = useState<string | null>(null)
+  const [editing, setEditing]             = useState<AdminUser | null>(null)
   const [tierDraft, setTierDraft]         = useState<CustomerTier>('regular')
   const [discountDraft, setDiscountDraft] = useState<number>(0)
+
+  // ── Fetch users from Supabase ─────────────────────────────────────────────
+  const fetchUsers = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    const { data, error: err } = await supabase
+      .from('users')
+      .select('id, first_name, last_name, email, phone, role, is_active, is_verified, created_at, customer_tier, special_discount_percent')
+      .order('created_at', { ascending: false })
+
+    if (err) {
+      setError('خطا در دریافت کاربران: ' + err.message)
+    } else {
+      setUsers(
+        (data ?? []).map((r) => ({
+          id:                     r.id,
+          firstName:              r.first_name ?? '',
+          lastName:               r.last_name  ?? '',
+          email:                  r.email,
+          phone:                  r.phone,
+          role:                   r.role as UserRole,
+          isActive:               r.is_active  ?? true,
+          isVerified:             r.is_verified ?? false,
+          orderCount:             0,
+          createdAt:              r.created_at,
+          customerTier:           (r.customer_tier ?? 'regular') as CustomerTier,
+          specialDiscountPercent: Number(r.special_discount_percent ?? 0),
+        })),
+      )
+    }
+    setLoading(false)
+  }, [supabase])
+
+  useEffect(() => { fetchUsers() }, [fetchUsers])
 
   const filtered = users.filter(
     (u) =>
@@ -78,16 +111,31 @@ export default function AdminUsersPage() {
     setDiscountDraft(user.specialDiscountPercent)
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     if (!editing) return
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === editing.id
-          ? { ...u, customerTier: tierDraft, specialDiscountPercent: discountDraft }
-          : u,
-      ),
-    )
-    setEditing(null)
+    setSaving(true)
+
+    const { error: err } = await supabase
+      .from('users')
+      .update({
+        customer_tier:            tierDraft,
+        special_discount_percent: discountDraft,
+      })
+      .eq('id', editing.id)
+
+    if (err) {
+      alert('خطا در ذخیره: ' + err.message)
+    } else {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === editing.id
+            ? { ...u, customerTier: tierDraft, specialDiscountPercent: discountDraft }
+            : u,
+        ),
+      )
+      setEditing(null)
+    }
+    setSaving(false)
   }
 
   return (
@@ -115,6 +163,10 @@ export default function AdminUsersPage() {
         ))}
       </div>
 
+      {error && (
+        <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-sm">{error}</div>
+      )}
+
       <div className="max-w-xs">
         <Input
           placeholder="جستجو در کاربران..."
@@ -125,7 +177,13 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="rounded-2xl bg-[#181818] border border-white/8 overflow-hidden">
-        <Table>
+        {loading && (
+          <div className="flex items-center justify-center gap-2 py-16 text-[#A0A0A0]">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="text-sm">در حال بارگذاری...</span>
+          </div>
+        )}
+        {!loading && (<Table>
           <TableHeader>
             <TableRow>
               <TableHead>کاربر</TableHead>
@@ -218,7 +276,7 @@ export default function AdminUsersPage() {
               </motion.tr>
             ))}
           </TableBody>
-        </Table>
+        </Table>)}
       </div>
 
       {/* ── Tier / Discount edit modal ── */}
@@ -301,9 +359,11 @@ export default function AdminUsersPage() {
               <div className="flex gap-2 px-5 pb-5">
                 <button
                   onClick={saveEdit}
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#C8A85D] to-[#E7D3A5] text-black font-bold text-sm hover:opacity-90 transition-opacity"
+                  disabled={saving}
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#C8A85D] to-[#E7D3A5] text-black font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
                 >
-                  ذخیره تغییرات
+                  {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {saving ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
                 </button>
                 <button
                   onClick={() => setEditing(null)}
