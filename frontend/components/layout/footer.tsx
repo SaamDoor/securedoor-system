@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Phone, Mail, MapPin, Instagram, Send, Youtube, Linkedin } from 'lucide-react'
+import { Phone, Mail, MapPin, Instagram, Send } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { CONTACT, SITE_NAME, SOCIAL_LINKS } from '@/lib/constants'
 
@@ -31,9 +31,25 @@ const footerLinks = {
 
 const socialLinks = [
   { href: SOCIAL_LINKS.instagram, icon: Instagram, label: 'اینستاگرام' },
-  { href: SOCIAL_LINKS.telegram, icon: Send, label: 'تلگرام' },
-  { href: SOCIAL_LINKS.youtube, icon: Youtube, label: 'یوتیوب' },
-  { href: SOCIAL_LINKS.linkedin, icon: Linkedin, label: 'لینکدین' },
+  { href: SOCIAL_LINKS.telegram,  icon: Send,      label: 'تلگرام' },
+  {
+    href: SOCIAL_LINKS.eitaa,
+    label: 'ایتا',
+    icon: ({ className }: { className?: string }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.23.23 0 0 0-.07-.2c-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.25.38-.51 1.07-.78 4.19-1.82 6.98-3.02 8.38-3.61 3.99-1.66 4.82-1.95 5.36-1.96.12 0 .38.03.55.18.14.12.18.29.2.46l-.03.18z" />
+      </svg>
+    ),
+  },
+  {
+    href: SOCIAL_LINKS.rubika,
+    label: 'روبیکا',
+    icon: ({ className }: { className?: string }) => (
+      <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+      </svg>
+    ),
+  },
 ]
 
 export function Footer() {
