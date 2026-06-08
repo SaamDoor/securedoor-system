@@ -1,5 +1,13 @@
 export type UserRole = 'super_admin' | 'admin' | 'manager' | 'support' | 'customer'
 
+export type CustomerTier = 'regular' | 'mass_builder' | 'reseller'
+
+export const CUSTOMER_TIER_LABEL: Record<CustomerTier, string> = {
+  regular:      'مشتری معمولی',
+  mass_builder: 'انبوه‌ساز',
+  reseller:     'همکار درب‌فروش',
+}
+
 export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage'
 
 export interface Permission {
@@ -29,6 +37,8 @@ export interface User {
   isVerified: boolean
   createdAt: string
   updatedAt: string
+  customerTier?: CustomerTier
+  specialDiscountPercent?: number
 }
 
 export interface AuthTokens {

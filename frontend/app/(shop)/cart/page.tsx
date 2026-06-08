@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatPrice, toPersianNumber } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/store/auth.store'
 
 interface CartItem {
   id: string
@@ -54,8 +55,12 @@ export default function CartPage() {
     setItems((prev) => prev.filter((item) => item.id !== id))
   }
 
+  const authUser = useAuthStore((s) => s.user)
+  const userDiscountPct = authUser?.specialDiscountPercent ?? 0
+
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const discount = couponApplied ? Math.round(subtotal * 0.1) : 0
+  const userDiscount = userDiscountPct > 0 ? Math.round(subtotal * (userDiscountPct / 100)) : 0
+  const discount = (couponApplied ? Math.round(subtotal * 0.1) : 0) + userDiscount
   const shipping = subtotal >= 5_000_000 ? 0 : 350_000
   const total = subtotal - discount + shipping
 
@@ -166,10 +171,16 @@ export default function CartPage() {
                   <span className="text-[#A0A0A0]">جمع کل</span>
                   <span className="text-white font-medium">{formatPrice(subtotal)}</span>
                 </div>
-                {discount > 0 && (
+                {userDiscount > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#A0A0A0]">تخفیف</span>
-                    <span className="text-[#27AE60] font-medium">-{formatPrice(discount)}</span>
+                    <span className="text-[#A0A0A0]">تخفیف ویژه ({toPersianNumber(userDiscountPct)}٪)</span>
+                    <span className="text-green-400 font-medium">-{formatPrice(userDiscount)}</span>
+                  </div>
+                )}
+                {couponApplied && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#A0A0A0]">کد تخفیف</span>
+                    <span className="text-[#27AE60] font-medium">-{formatPrice(Math.round(subtotal * 0.1))}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">

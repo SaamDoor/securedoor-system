@@ -8,6 +8,13 @@ const ADMIN_ROUTES = ['/admin']
 const AUTH_ROUTES = ['/auth/login', '/auth/register']
 const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support']
 
+// Routes support/staff can access (prefix match)
+const SUPPORT_ALLOWED = [
+  '/admin/dashboard',
+  '/admin/messages',
+  '/admin/orders',
+]
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -69,12 +76,20 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── Admin routes: cookie is a fast hint; real enforcement is in page ──
-  // If the hint says non-admin we redirect immediately without a DB call.
-  // The individual admin page/layout must re-verify via createAdminClient().
   if (ADMIN_ROUTES.some((r) => pathname.startsWith(r)) && user) {
     const userRole = request.cookies.get('user_role')?.value ?? ''
+
+    // Non-admin → user dashboard
     if (!ADMIN_ROLES.includes(userRole)) {
       return NextResponse.redirect(new URL('/user/dashboard', request.url))
+    }
+
+    // Support/staff → restricted to SUPPORT_ALLOWED only
+    if (userRole === 'support' || userRole === 'staff') {
+      const allowed = SUPPORT_ALLOWED.some((r) => pathname.startsWith(r))
+      if (!allowed) {
+        return NextResponse.redirect(new URL('/admin/messages', request.url))
+      }
     }
   }
 

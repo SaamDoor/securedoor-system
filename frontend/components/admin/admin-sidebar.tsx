@@ -12,72 +12,72 @@ import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SITE_NAME } from '@/lib/constants'
+import type { UserRole } from '@/types'
 
-const navItems = [
-  {
-    label: 'داشبورد',
-    href: '/admin/dashboard',
-    icon: LayoutDashboard,
-  },
+type NavChild = { label: string; href: string; icon: React.ElementType; roles?: UserRole[] }
+type NavItem =
+  | { label: string; href: string; icon: React.ElementType; badge?: string; roles?: UserRole[] }
+  | { label: string; icon: React.ElementType; children: NavChild[]; roles?: UserRole[] }
+
+const FULL_ACCESS: UserRole[] = ['super_admin', 'admin', 'manager']
+const ALL_ADMIN: UserRole[] = ['super_admin', 'admin', 'manager', 'support']
+
+const navItems: NavItem[] = [
+  { label: 'داشبورد', href: '/admin/dashboard', icon: LayoutDashboard, roles: ALL_ADMIN },
   {
     label: 'فروشگاه',
     icon: Store,
+    roles: ALL_ADMIN,
     children: [
-      { label: 'سفارشات', href: '/admin/orders', icon: ShoppingBag },
-      { label: 'محصولات', href: '/admin/products', icon: Package },
-      { label: 'دسته‌بندی‌ها', href: '/admin/categories', icon: Layers },
-      { label: 'کوپن‌ها', href: '/admin/coupons', icon: Tag },
-      { label: 'روش‌های ارسال', href: '/admin/shipping', icon: Package },
+      { label: 'سفارشات',       href: '/admin/orders',     icon: ShoppingBag, roles: ALL_ADMIN },
+      { label: 'محصولات',       href: '/admin/products',   icon: Package,     roles: FULL_ACCESS },
+      { label: 'دسته‌بندی‌ها', href: '/admin/categories', icon: Layers,      roles: FULL_ACCESS },
+      { label: 'کوپن‌ها',       href: '/admin/coupons',    icon: Tag,         roles: FULL_ACCESS },
+      { label: 'روش‌های ارسال', href: '/admin/shipping',   icon: Package,     roles: FULL_ACCESS },
     ],
   },
   {
     label: 'کاربران',
     icon: Users,
+    roles: FULL_ACCESS,
     children: [
-      { label: 'لیست کاربران', href: '/admin/users', icon: Users },
-      { label: 'نقش‌ها و مجوزها', href: '/admin/roles', icon: Shield },
-      { label: 'لاگ فعالیت', href: '/admin/audit-logs', icon: FileText },
+      { label: 'لیست کاربران',   href: '/admin/users',      icon: Users,    roles: FULL_ACCESS },
+      { label: 'نقش‌ها و مجوزها', href: '/admin/roles',     icon: Shield,   roles: ['super_admin'] },
+      { label: 'لاگ فعالیت',    href: '/admin/audit-logs', icon: FileText, roles: FULL_ACCESS },
     ],
   },
   {
     label: 'محتوا',
     icon: FileText,
+    roles: FULL_ACCESS,
     children: [
-      { label: 'وبلاگ', href: '/admin/blog', icon: FileText },
-      { label: 'صفحات', href: '/admin/pages', icon: Globe },
-      { label: 'بنرها', href: '/admin/banners', icon: Image },
-      { label: 'منوها', href: '/admin/menus', icon: Layers },
-      { label: 'سوالات متداول', href: '/admin/faqs', icon: HelpCircle },
+      { label: 'وبلاگ',        href: '/admin/blog',    icon: FileText },
+      { label: 'صفحات',        href: '/admin/pages',   icon: Globe },
+      { label: 'بنرها',        href: '/admin/banners', icon: Image },
+      { label: 'منوها',        href: '/admin/menus',   icon: Layers },
+      { label: 'سوالات متداول', href: '/admin/faqs',   icon: HelpCircle },
     ],
   },
-  {
-    label: 'پیام‌ها',
-    href: '/admin/messages',
-    icon: MessageCircle,
-    badge: '۷',
-  },
-  {
-    label: 'گزارشات',
-    href: '/admin/reports',
-    icon: BarChart3,
-  },
+  { label: 'پیام‌ها', href: '/admin/messages', icon: MessageCircle, badge: '۷', roles: ALL_ADMIN },
+  { label: 'گزارشات', href: '/admin/reports',  icon: BarChart3,                 roles: FULL_ACCESS },
   {
     label: 'یکپارچه‌سازی',
     icon: Plug,
+    roles: ['super_admin', 'admin'],
     children: [
       { label: 'مرکز یکپارچه‌سازی', href: '/admin/integrations', icon: Plug },
-      { label: 'پیکربندی API', href: '/admin/api-config', icon: Settings },
-      { label: 'وب‌هوک‌ها', href: '/admin/webhooks', icon: Webhook },
+      { label: 'پیکربندی API',       href: '/admin/api-config',   icon: Settings },
+      { label: 'وب‌هوک‌ها',         href: '/admin/webhooks',      icon: Webhook },
     ],
   },
-  {
-    label: 'تنظیمات',
-    href: '/admin/settings',
-    icon: Settings,
-  },
+  { label: 'تنظیمات', href: '/admin/settings', icon: Settings, roles: ['super_admin'] },
 ]
 
-export function AdminSidebar() {
+function canSee(roles: UserRole[] | undefined, role: UserRole) {
+  return !roles || roles.includes(role)
+}
+
+export function AdminSidebar({ role }: { role: UserRole }) {
   const pathname = usePathname()
   const [openGroups, setOpenGroups] = useState(['فروشگاه', 'محتوا'])
 
@@ -104,10 +104,11 @@ export function AdminSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-0.5">
-        {navItems.map((item) => {
+        {navItems.filter((item) => canSee(item.roles, role)).map((item) => {
           if ('children' in item && item.children) {
+            const visibleChildren = item.children.filter((c) => canSee(c.roles, role))
             const isGroupOpen = openGroups.includes(item.label)
-            const isGroupActive = item.children.some(
+            const isGroupActive = visibleChildren.some(
               (c) => pathname === c.href || pathname.startsWith(c.href + '/'),
             )
             const GroupIcon = item.icon
@@ -145,7 +146,7 @@ export function AdminSidebar() {
                       className="overflow-hidden"
                     >
                       <div className="mr-4 border-r border-white/8 pr-2 mt-0.5 space-y-0.5 mb-1">
-                        {item.children.map((child) => {
+                        {visibleChildren.map((child) => {
                           const ChildIcon = child.icon
                           const isActive = pathname === child.href
 

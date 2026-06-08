@@ -14,6 +14,8 @@ interface CartState {
   toggleCart: () => void
 
   subtotal: () => number
+  /** Returns subtotal after applying a percentage discount (0–100). */
+  discountedSubtotal: (discountPercent: number) => number
   itemCount: () => number
 }
 
@@ -69,6 +71,12 @@ export const useCartStore = create<CartState>()(
 
       subtotal() {
         return get().items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      },
+
+      discountedSubtotal(discountPercent) {
+        const base = get().subtotal()
+        if (!discountPercent || discountPercent <= 0) return base
+        return base * (1 - Math.min(discountPercent, 100) / 100)
       },
 
       itemCount() {

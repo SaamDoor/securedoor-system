@@ -1,3 +1,5 @@
+import type { CustomerTier } from './auth'
+
 export interface UserProfile {
   id: string
   firstName: string
@@ -11,6 +13,8 @@ export interface UserProfile {
   company?: string
   website?: string
   createdAt: string
+  customerTier?: CustomerTier
+  specialDiscountPercent?: number
 }
 
 export interface UserStats {
