@@ -105,7 +105,7 @@ export function AdminSidebar({ role }: { role: UserRole }) {
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-0.5">
         {navItems.filter((item) => canSee(item.roles, role)).map((item) => {
-          if ('children' in item && item.children) {
+          if ('children' in item) {
             const visibleChildren = item.children.filter((c) => canSee(c.roles, role))
             const isGroupOpen = openGroups.includes(item.label)
             const isGroupActive = visibleChildren.some(
