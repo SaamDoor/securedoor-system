@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingBag, Package, Users, BarChart3,
   Settings, FileText, MessageCircle, Image, Layers,
@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SITE_NAME } from '@/lib/constants'
+import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@/types'
 
 type NavChild = { label: string; href: string; icon: React.ElementType; roles?: UserRole[] }
@@ -79,7 +80,17 @@ function canSee(roles: UserRole[] | undefined, role: UserRole) {
 
 export function AdminSidebar({ role }: { role: UserRole }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [openGroups, setOpenGroups] = useState(['فروشگاه', 'محتوا'])
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    // Clear the role cookie so middleware no longer sees admin access
+    document.cookie = 'user_role=; path=/; Max-Age=0; SameSite=Lax'
+    router.push('/auth/login')
+    router.refresh()
+  }
 
   const toggleGroup = (label: string) => {
     setOpenGroups((prev) =>
@@ -211,7 +222,10 @@ export function AdminSidebar({ role }: { role: UserRole }) {
           <Globe className="h-4 w-4" />
           مشاهده سایت
         </Link>
-        <button className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-danger hover:bg-danger/10 transition-all">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-danger hover:bg-danger/10 transition-all"
+        >
           <LogOut className="h-4 w-4" />
           خروج
         </button>

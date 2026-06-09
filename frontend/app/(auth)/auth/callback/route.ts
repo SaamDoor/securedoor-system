@@ -2,11 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
+const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support']
+const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
 
   // ── Error path: Supabase bounced here with an error ───────────────────
-  // e.g. /auth/callback?error=access_denied&error_code=otp_expired
   const authError = searchParams.get('error')
   const errorCode = searchParams.get('error_code')
   if (authError) {
@@ -40,18 +42,43 @@ export async function GET(request: NextRequest) {
       },
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (!error) {
+    if (!error && sessionData?.user) {
+      // ── Fetch real role from public.users and set the cookie ──────────
+      const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', sessionData.user.id)
+        .single()
+
+      const role = (profile?.role as string | null) ?? 'customer'
+
+      // Build the redirect response first so we can attach the cookie to it
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
+      const destination = ADMIN_ROLES.includes(role) ? '/admin/dashboard' : next
+
+      let redirectTarget: string
       if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`)
+        redirectTarget = `${origin}${destination}`
       } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+        redirectTarget = `https://${forwardedHost}${destination}`
       } else {
-        return NextResponse.redirect(`${origin}${next}`)
+        redirectTarget = `${origin}${destination}`
       }
+
+      const response = NextResponse.redirect(redirectTarget)
+
+      // Set user_role on the redirect response so middleware sees it immediately
+      response.cookies.set('user_role', role, {
+        path: '/',
+        sameSite: 'lax',
+        maxAge: ROLE_COOKIE_MAX_AGE,
+        httpOnly: false, // must be readable by middleware (not httpOnly)
+      })
+
+      return response
     }
   }
 
