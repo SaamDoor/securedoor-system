@@ -1,10 +1,15 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { SectionHeader } from '@/components/ui/section-header'
 import { cn } from '@/lib/utils'
+
+type CategoryImage =
+  | { default: string; desktop?: never; mobile?: never }
+  | { desktop: string; mobile: string; default?: never }
 
 const categories = [
   {
@@ -12,36 +17,42 @@ const categories = [
     slug: 'darb-zed-sereqat',
     count: '۴۸ محصول',
     description: 'بالاترین سطح امنیت با قفل‌های چند نقطه‌ای',
-    gradient: 'from-slate-800 to-slate-900',
     accent: '#C8A85D',
     size: 'large',
+    image: { default: '/images/categories/category-anti-theft-doors.webp' } as CategoryImage,
   },
   {
     name: 'درب ضد حریق',
     slug: 'darb-zed-hariq',
     count: '۲۴ محصول',
     description: 'مقاوم در برابر آتش تا ۱۲۰ دقیقه',
-    gradient: 'from-red-900/40 to-slate-900',
     accent: '#E74C3C',
     size: 'small',
+    image: {
+      desktop: '/images/categories/category-fireproof-doors-desktop.webp',
+      mobile: '/images/categories/category-fireproof-doors-mobile.webp',
+    } as CategoryImage,
   },
   {
     name: 'درب آپارتمانی',
     slug: 'darb-apartmani',
     count: '۳۶ محصول',
     description: 'طراحی مدرن برای فضاهای آپارتمانی',
-    gradient: 'from-zinc-800 to-slate-900',
     accent: '#C8A85D',
     size: 'small',
+    image: { default: '/images/categories/category-apartment-doors.webp' } as CategoryImage,
   },
   {
     name: 'درب ویلایی',
     slug: 'darb-villaei',
     count: '۱۸ محصول',
     description: 'لوکس‌ترین درب‌ها برای ویلا و خانه‌های مستقل',
-    gradient: 'from-emerald-900/40 to-slate-900',
     accent: '#27AE60',
     size: 'large',
+    image: {
+      desktop: '/images/categories/category-villa-doors-desktop.webp',
+      mobile: '/images/categories/category-villa-doors-mobile.webp',
+    } as CategoryImage,
   },
 ]
 
@@ -128,29 +139,62 @@ function CategoryCard({
   category: (typeof categories)[0]
   large?: boolean
 }) {
+  const { image } = category
+  const hasResponsive = 'desktop' in image && image.desktop !== undefined
+
   return (
     <Link href={`/categories/${category.slug}`} className="group block h-full">
       <div
         className={cn(
-          'relative overflow-hidden rounded-2xl',
+          'relative overflow-hidden rounded-2xl bg-slate-900',
           'border border-white/8 group-hover:border-white/20 transition-all duration-400',
           large ? 'min-h-[300px] lg:min-h-[420px]' : 'min-h-[180px]',
-          `bg-gradient-to-br ${category.gradient}`,
         )}
       >
+        {/* Background image — responsive */}
+        {hasResponsive ? (
+          <>
+            <Image
+              src={(image as { desktop: string; mobile: string }).desktop}
+              alt={category.name}
+              fill
+              className="object-cover hidden md:block transition-transform duration-700 group-hover:scale-105"
+              sizes="(min-width: 1024px) 40vw, 100vw"
+              priority={false}
+            />
+            <Image
+              src={(image as { desktop: string; mobile: string }).mobile}
+              alt={category.name}
+              fill
+              className="object-cover block md:hidden transition-transform duration-700 group-hover:scale-105"
+              sizes="100vw"
+              priority={false}
+            />
+          </>
+        ) : (
+          <Image
+            src={(image as { default: string }).default}
+            alt={category.name}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            sizes="(min-width: 1024px) 40vw, 100vw"
+            priority={false}
+          />
+        )}
+
         {/* Gold corner accent */}
         <div
-          className="absolute top-0 right-0 w-24 h-24 opacity-20 transition-opacity duration-300 group-hover:opacity-40"
+          className="absolute top-0 right-0 w-24 h-24 opacity-20 transition-opacity duration-300 group-hover:opacity-40 z-10"
           style={{
             background: `radial-gradient(circle at top right, ${category.accent}, transparent 70%)`,
           }}
         />
 
         {/* Bottom overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
 
         {/* Content */}
-        <div className="absolute bottom-0 right-0 left-0 p-6">
+        <div className="absolute bottom-0 right-0 left-0 p-6 z-20">
           <div
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-2xs font-semibold mb-3"
             style={{
@@ -180,7 +224,7 @@ function CategoryCard({
 
         {/* Hover glow */}
         <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10"
           style={{
             background: `radial-gradient(circle at center, rgba(${hexToRgb(category.accent)}, 0.06), transparent 70%)`,
           }}
