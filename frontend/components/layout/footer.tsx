@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Instagram, Send } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-import { CONTACT, SITE_NAME, SOCIAL_LINKS } from '@/lib/constants'
+import { BRAND, CONTACT, SOCIAL_LINKS } from '@/lib/constants'
 
 const footerLinks = {
   products: [
@@ -239,7 +239,7 @@ export function Footer() {
         <div className="container py-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted">
             <p>
-              © {new Date().getFullYear()} {SITE_NAME} — تمامی حقوق محفوظ است.
+              © {new Date().getFullYear()} {BRAND.name} — تمامی حقوق محفوظ است.
             </p>
             <div className="flex items-center gap-4">
               <Link href="/privacy" className="hover:text-gold transition-colors">

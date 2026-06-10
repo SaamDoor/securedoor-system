@@ -75,20 +75,26 @@ export function CategoriesSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* Large card — left */}
+        {/* items-stretch ensures every column in the row fills the same height */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:items-stretch">
+
+          {/* Large card — left (col-span-5) */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="lg:col-span-5"
+            className="lg:col-span-5 h-full"
           >
             <CategoryCard category={categories[0]} large />
           </motion.div>
 
-          {/* Two small cards — middle */}
-          <div className="lg:col-span-4 grid grid-rows-2 gap-4">
+          {/* Two small cards — middle (col-span-4) */}
+          {/*
+            h-full here lets grid-rows-2 know its container height so the two
+            1fr rows divide evenly rather than collapsing to min-content.
+          */}
+          <div className="lg:col-span-4 grid grid-rows-2 gap-4 h-full">
             {[categories[1], categories[2]].map((cat, i) => (
               <motion.div
                 key={cat.slug}
@@ -100,19 +106,20 @@ export function CategoriesSection() {
                   delay: i * 0.1 + 0.1,
                   ease: [0.25, 0.46, 0.45, 0.94],
                 }}
+                className="h-full"
               >
                 <CategoryCard category={cat} />
               </motion.div>
             ))}
           </div>
 
-          {/* Large card — right */}
+          {/* Large card — right (col-span-3) */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="lg:col-span-3"
+            className="lg:col-span-3 h-full"
           >
             <CategoryCard category={categories[3]} large />
           </motion.div>
@@ -144,45 +151,64 @@ function CategoryCard({
 
   return (
     <Link href={`/categories/${category.slug}`} className="group block h-full">
+      {/*
+        h-full fills the grid cell on desktop.
+        min-h-* acts as the floor on mobile where the grid has no row-height constraint.
+        relative is the containing block for all fill images and absolute overlays.
+      */}
       <div
         className={cn(
           'relative overflow-hidden rounded-2xl bg-slate-900',
           'border border-white/8 group-hover:border-white/20 transition-all duration-400',
-          large ? 'min-h-[300px] lg:min-h-[420px]' : 'min-h-[180px]',
+          large
+            ? 'h-full min-h-[300px] lg:min-h-[420px]'
+            : 'h-full min-h-[180px]',
         )}
       >
-        {/* Background image — responsive */}
+        {/* ── Background images ── */}
         {hasResponsive ? (
           <>
-            <Image
-              src={(image as { desktop: string; mobile: string }).desktop}
-              alt={category.name}
-              fill
-              className="object-cover hidden md:block transition-transform duration-700 group-hover:scale-105"
-              sizes="(min-width: 1024px) 40vw, 100vw"
-              priority={false}
-            />
-            <Image
-              src={(image as { desktop: string; mobile: string }).mobile}
-              alt={category.name}
-              fill
-              className="object-cover block md:hidden transition-transform duration-700 group-hover:scale-105"
-              sizes="100vw"
-              priority={false}
-            />
+            {/*
+              Each variant lives in its own absolute inset-0 wrapper so the
+              responsive visibility class (hidden/block) targets a block element,
+              not the <img> itself. The fill <img> is then relative to this wrapper
+              (which is itself a containing block because position: absolute).
+            */}
+            <div className="absolute inset-0 hidden md:block">
+              <Image
+                src={(image as { desktop: string; mobile: string }).desktop}
+                alt={category.name}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                sizes="(min-width: 1024px) 42vw, 100vw"
+                priority={false}
+              />
+            </div>
+            <div className="absolute inset-0 block md:hidden">
+              <Image
+                src={(image as { desktop: string; mobile: string }).mobile}
+                alt={category.name}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                sizes="100vw"
+                priority={false}
+              />
+            </div>
           </>
         ) : (
-          <Image
-            src={(image as { default: string }).default}
-            alt={category.name}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes="(min-width: 1024px) 40vw, 100vw"
-            priority={false}
-          />
+          <div className="absolute inset-0">
+            <Image
+              src={(image as { default: string }).default}
+              alt={category.name}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              sizes="(min-width: 1024px) 42vw, 100vw"
+              priority={false}
+            />
+          </div>
         )}
 
-        {/* Gold corner accent */}
+        {/* ── Gold corner accent — z-10 sits above images ── */}
         <div
           className="absolute top-0 right-0 w-24 h-24 opacity-20 transition-opacity duration-300 group-hover:opacity-40 z-10"
           style={{
@@ -190,10 +216,10 @@ function CategoryCard({
           }}
         />
 
-        {/* Bottom overlay */}
+        {/* ── Dark bottom gradient overlay — keeps text readable ── */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
 
-        {/* Content */}
+        {/* ── Text content — z-20 sits above all overlays ── */}
         <div className="absolute bottom-0 right-0 left-0 p-6 z-20">
           <div
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-2xs font-semibold mb-3"
@@ -214,7 +240,8 @@ function CategoryCard({
             <p className="text-sm text-muted mb-4">{category.description}</p>
           )}
 
-          <div className="flex items-center gap-2 text-sm font-medium transition-all duration-300"
+          <div
+            className="flex items-center gap-2 text-sm font-medium transition-all duration-300"
             style={{ color: category.accent }}
           >
             مشاهده محصولات
@@ -222,7 +249,7 @@ function CategoryCard({
           </div>
         </div>
 
-        {/* Hover glow */}
+        {/* ── Hover colour glow ── */}
         <div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10"
           style={{
