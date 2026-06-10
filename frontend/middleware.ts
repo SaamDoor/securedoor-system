@@ -3,17 +3,18 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 type CookieSetOptions = Parameters<typeof NextResponse.prototype.cookies.set>[2]
 
-const PROTECTED_ROUTES = ['/user', '/admin', '/checkout']
-const ADMIN_ROUTES = ['/admin']
+const PROTECTED_ROUTES = ['/user', '/checkout']
 const AUTH_ROUTES = ['/auth/login', '/auth/register']
-const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support']
+const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 
-// Routes support/staff can access (prefix match)
-const SUPPORT_ALLOWED = [
-  '/admin/dashboard',
-  '/admin/messages',
-  '/admin/orders',
-]
+function setRoleCookie(response: NextResponse, role: string) {
+  response.cookies.set('user_role', role, {
+    path: '/',
+    sameSite: 'lax',
+    maxAge: ROLE_COOKIE_MAX_AGE,
+    httpOnly: false,
+  })
+}
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -26,18 +27,26 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet: { name: string; value: string; options?: CookieSetOptions }[]) {
+        setAll(
+          cookiesToSet: {
+            name: string
+            value: string
+            options?: CookieSetOptions
+          }[],
+        ) {
           // First mutate the request so downstream code sees updated cookies
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          )
           // Recreate the response so it carries the mutated request
           supabaseResponse = NextResponse.next({ request })
           // Then propagate to the response so the browser stores them
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           )
         },
       },
-    }
+    },
   )
 
   // IMPORTANT: getUser() refreshes the session token when near expiry.
@@ -61,11 +70,44 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  let cachedRole: string | null | undefined
+  async function getUserRole() {
+    if (!user) return null
+    if (cachedRole !== undefined) return cachedRole
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    cachedRole = (profile?.role as string | null) ?? null
+    return cachedRole
+  }
+
   // ── Auth pages: redirect already-logged-in users ──────────────────────
   if (AUTH_ROUTES.some((r) => pathname.startsWith(r)) && user) {
-    const role = request.cookies.get('user_role')?.value ?? ''
-    const dest = ADMIN_ROLES.includes(role) ? '/admin' : '/user/dashboard'
-    return NextResponse.redirect(new URL(dest, request.url))
+    const role = await getUserRole()
+    const dest = role === 'admin' ? '/admin/dashboard' : '/user/dashboard'
+    const response = NextResponse.redirect(new URL(dest, request.url))
+    if (role) setRoleCookie(response, role)
+    return response
+  }
+
+  if (pathname.startsWith('/admin')) {
+    if (!user) {
+      const loginUrl = new URL('/auth/login', request.url)
+      loginUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    const role = await getUserRole()
+    if (role !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+
+    request.cookies.set('user_role', role)
+    setRoleCookie(supabaseResponse, role)
   }
 
   // ── Protected routes: require login ───────────────────────────────────
@@ -75,28 +117,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // ── Admin routes: cookie is a fast hint; real enforcement is in page ──
-  if (ADMIN_ROUTES.some((r) => pathname.startsWith(r)) && user) {
-    const userRole = request.cookies.get('user_role')?.value ?? ''
-
-    // Non-admin → user dashboard
-    if (!ADMIN_ROLES.includes(userRole)) {
-      return NextResponse.redirect(new URL('/user/dashboard', request.url))
-    }
-
-    // Support/staff → restricted to SUPPORT_ALLOWED only
-    if (userRole === 'support' || userRole === 'staff') {
-      const allowed = SUPPORT_ALLOWED.some((r) => pathname.startsWith(r))
-      if (!allowed) {
-        return NextResponse.redirect(new URL('/admin/messages', request.url))
-      }
-    }
-  }
-
   // ── Security & SEO headers ─────────────────────────────────────────────
   supabaseResponse.headers.set(
     'X-Robots-Tag',
-    pathname.startsWith('/admin') ? 'noindex, nofollow' : 'index, follow'
+    pathname.startsWith('/admin') ? 'noindex, nofollow' : 'index, follow',
   )
 
   return supabaseResponse

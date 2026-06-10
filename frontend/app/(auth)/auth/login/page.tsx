@@ -2,7 +2,7 @@
 
 import { useState, Suspense, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,19 +11,21 @@ import { Eye, EyeOff, LogIn, Phone, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/supabase/client'
-import { isValidIranPhone, phoneToAuthEmail } from '@/lib/utils'
+import { signInWithPassword } from '@/app/actions/auth'
+import { isValidIranPhone } from '@/lib/utils'
 
 const loginSchema = z.object({
-  phone: z.string().refine(isValidIranPhone, 'شماره موبایل معتبر وارد کنید (مثال: ۰۹۱۲۳۴۵۶۷۸۹)'),
+  phone: z
+    .string()
+    .refine(
+      isValidIranPhone,
+      'شماره موبایل معتبر وارد کنید (مثال: ۰۹۱۲۳۴۵۶۷۸۹)',
+    ),
   password: z.string().min(6, 'رمز عبور حداقل ۶ کاراکتر باشد'),
   rememberMe: z.boolean().optional(),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
-
-const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support'] as const
-type AdminRole = (typeof ADMIN_ROLES)[number]
 
 function mapAuthError(message: string): string {
   if (message.includes('Invalid login credentials'))
@@ -43,7 +45,6 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
 }
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
 
@@ -51,7 +52,8 @@ function LoginForm() {
   useEffect(() => {
     const authError = searchParams.get('auth_error')
     if (!authError) return
-    const msg = AUTH_ERROR_MESSAGES[authError] ?? 'خطایی رخ داد. لطفاً دوباره تلاش کنید.'
+    const msg =
+      AUTH_ERROR_MESSAGES[authError] ?? 'خطایی رخ داد. لطفاً دوباره تلاش کنید.'
     toast.error(msg, { duration: 8000 })
     const clean = new URL(window.location.href)
     clean.searchParams.delete('auth_error')
@@ -68,51 +70,8 @@ function LoginForm() {
   })
 
   async function onSubmit(data: LoginFormData) {
-    const supabase = createClient()
-
-    // Derive the internal auth email from phone — user never sees this
-    const authEmail = phoneToAuthEmail(data.phone)
-
-    const { data: authData, error } = await supabase.auth.signInWithPassword({
-      email: authEmail,
-      password: data.password,
-    })
-
-    if (error) {
-      toast.error(mapAuthError(error.message), { duration: 5000 })
-      return
-    }
-
-    if (!authData.user) {
-      toast.error('خطا در ورود. لطفاً دوباره تلاش کنید')
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role, first_name, last_name')
-      .eq('id', authData.user.id)
-      .single()
-
-    const role = (profile?.role ?? 'customer') as string
-    const displayName = profile?.first_name
-      ? `${profile.first_name} ${profile.last_name ?? ''}`.trim()
-      : data.phone
-
-    // 30-day persistent cookie — user stays logged in until explicit logout
-    document.cookie = `user_role=${role}; path=/; SameSite=Lax; Max-Age=${60 * 60 * 24 * 30}`
-
-    toast.success(`خوش آمدید، ${displayName}!`, { duration: 3000 })
-
-    const redirect = searchParams.get('redirect')
-    if (redirect?.startsWith('/') && !redirect.startsWith('/auth')) {
-      router.push(redirect)
-      router.refresh()
-      return
-    }
-
-    router.push(ADMIN_ROLES.includes(role as AdminRole) ? '/admin' : '/user/dashboard')
-    router.refresh()
+    const result = await signInWithPassword(data.phone, data.password)
+    toast.error(mapAuthError(result.error), { duration: 5000 })
   }
 
   return (
@@ -125,7 +84,10 @@ function LoginForm() {
         <h1 className="text-3xl font-black text-white mb-2">ورود به حساب</h1>
         <p className="text-muted">
           حساب ندارید؟{' '}
-          <Link href="/auth/register" className="text-gold hover:text-gold-light transition-colors font-medium">
+          <Link
+            href="/auth/register"
+            className="text-gold hover:text-gold-light transition-colors font-medium"
+          >
             ثبت‌نام کنید
           </Link>
         </p>
@@ -156,7 +118,11 @@ function LoginForm() {
               className="text-muted hover:text-white transition-colors"
               aria-label={showPassword ? 'پنهان کردن رمز' : 'نمایش رمز'}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           }
           autoComplete="current-password"
@@ -165,10 +131,17 @@ function LoginForm() {
 
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" className="accent-gold w-4 h-4 rounded" {...register('rememberMe')} />
+            <input
+              type="checkbox"
+              className="accent-gold w-4 h-4 rounded"
+              {...register('rememberMe')}
+            />
             <span className="text-sm text-muted">مرا به یاد بسپار</span>
           </label>
-          <Link href="/auth/forgot-password" className="text-sm text-gold hover:text-gold-light transition-colors">
+          <Link
+            href="/auth/forgot-password"
+            className="text-sm text-gold hover:text-gold-light transition-colors"
+          >
             فراموشی رمز عبور
           </Link>
         </div>
@@ -190,13 +163,15 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="animate-pulse space-y-5">
-        <div className="h-10 bg-white/5 rounded-xl" />
-        <div className="h-10 bg-white/5 rounded-xl" />
-        <div className="h-12 bg-white/10 rounded-xl" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="animate-pulse space-y-5">
+          <div className="h-10 bg-white/5 rounded-xl" />
+          <div className="h-10 bg-white/5 rounded-xl" />
+          <div className="h-12 bg-white/10 rounded-xl" />
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   )

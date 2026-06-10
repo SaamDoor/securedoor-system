@@ -15,18 +15,19 @@ export const CONTACT = {
   phone: '09003286539',
   phoneFa: '۰۹۰۰ ۳۲۸ ۶۵۳۹',
   email: 'info@mashuf.com',
-  address: 'مازندران، شهرستان قائم شهر، بلوار سید نظام‌الدین، جاده قادیکلای بزرگ، بین ولیعصر ۱۵ و ۳۶',
+  address:
+    'مازندران، شهرستان قائم شهر، بلوار سید نظام‌الدین، جاده قادیکلای بزرگ، روبروی ولیعصر ۳۶',
   addressShort: 'قائم شهر، مازندران',
   mapUrl: 'https://nshn.ir/537b1NmyGFj-5d',
   workingHours: 'شنبه تا چهارشنبه ۸ تا ۱۷، پنجشنبه ۸ تا ۱۳',
 } as const
 
 export const SOCIAL_LINKS = {
-  instagram:  'https://www.instagram.com/mashoufdoor',
-  telegram:   'https://t.me/MashufDoor',
-  eitaa:      'https://eitaa.com/MashufDoor',
-  rubika:     'https://rubika.ir/MashufDoor',
-  soroush:    'https://splus.ir/MashufDoor',
+  instagram: 'https://www.instagram.com/mashoufdoor',
+  telegram: 'https://t.me/MashufDoor',
+  eitaa: 'https://eitaa.com/MashufDoor',
+  rubika: 'https://rubika.ir/MashufDoor',
+  soroush: 'https://splus.ir/MashufDoor',
 } as const
 
 export const PAGINATION_DEFAULTS = {
@@ -38,7 +39,12 @@ export const PAGINATION_DEFAULTS = {
 export const IMAGE_QUALITY = 85
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
+export const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/avif',
+]
 export const ALLOWED_DOCUMENT_TYPES = ['application/pdf', 'application/zip']
 
 export const ORDER_STATUSES = {
@@ -77,10 +83,35 @@ export const SORT_OPTIONS = [
 ] as const
 
 export const PROVINCES = [
-  'تهران', 'اصفهان', 'مشهد', 'شیراز', 'تبریز', 'اهواز', 'کرمانشاه',
-  'ارومیه', 'رشت', 'زاهدان', 'همدان', 'کرمان', 'یزد', 'قم', 'بندرعباس',
-  'اراک', 'اردبیل', 'بجنورد', 'بیرجند', 'بوشهر', 'خرم‌آباد', 'زنجان',
-  'ساری', 'سمنان', 'سنندج', 'شهرکرد', 'قزوین', 'گرگان', 'مهاباد',
+  'تهران',
+  'اصفهان',
+  'مشهد',
+  'شیراز',
+  'تبریز',
+  'اهواز',
+  'کرمانشاه',
+  'ارومیه',
+  'رشت',
+  'زاهدان',
+  'همدان',
+  'کرمان',
+  'یزد',
+  'قم',
+  'بندرعباس',
+  'اراک',
+  'اردبیل',
+  'بجنورد',
+  'بیرجند',
+  'بوشهر',
+  'خرم‌آباد',
+  'زنجان',
+  'ساری',
+  'سمنان',
+  'سنندج',
+  'شهرکرد',
+  'قزوین',
+  'گرگان',
+  'مهاباد',
   'یاسوج',
 ]
 

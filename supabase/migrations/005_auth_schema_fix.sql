@@ -257,7 +257,7 @@ VALUES
   ('site_phone',   '"09003286539"',                                                     'contact', 'شماره تماس',        TRUE),
   ('site_mobile',  '"09003286539"',                                                     'contact', 'موبایل',            TRUE),
   ('site_email',   '"info@mashuf.com"',                                                 'contact', 'ایمیل',             TRUE),
-  ('site_address', '"مازندران، شهرستان قائم شهر، بلوار سید نظام‌الدین، جاده قادیکلای بزرگ، بین ولیعصر ۱۵ و ۳۶"',
+  ('site_address', '"مازندران، شهرستان قائم شهر، بلوار سید نظام‌الدین، جاده قادیکلای بزرگ، روبروی ولیعصر ۳۶"',
                                                                                         'contact', 'آدرس کامل',        TRUE),
   ('site_map_url', '"https://nshn.ir/537b1NmyGFj-5d"',                                 'contact', 'لینک نقشه نشان',   TRUE),
   ('working_hours','"شنبه تا چهارشنبه ۸ تا ۱۷، پنجشنبه ۸ تا ۱۳"',                   'contact', 'ساعات کاری',        TRUE),

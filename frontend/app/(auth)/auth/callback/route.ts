@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
-const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support']
 const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
 
 export async function GET(request: NextRequest) {
@@ -33,7 +32,13 @@ export async function GET(request: NextRequest) {
           getAll() {
             return cookieStore.getAll()
           },
-          setAll(cookiesToSet: { name: string; value: string; options?: CookieSetOptions }[]) {
+          setAll(
+            cookiesToSet: {
+              name: string
+              value: string
+              options?: CookieSetOptions
+            }[],
+          ) {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options),
             )
@@ -42,7 +47,8 @@ export async function GET(request: NextRequest) {
       },
     )
 
-    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: sessionData, error } =
+      await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && sessionData?.user) {
       // ── Fetch real role from public.users and set the cookie ──────────
@@ -57,7 +63,7 @@ export async function GET(request: NextRequest) {
       // Build the redirect response first so we can attach the cookie to it
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
-      const destination = ADMIN_ROLES.includes(role) ? '/admin/dashboard' : next
+      const destination = role === 'admin' ? '/admin/dashboard' : next
 
       let redirectTarget: string
       if (isLocalEnv) {
@@ -83,5 +89,7 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Fallback: something unexpected happened ───────────────────────────
-  return NextResponse.redirect(`${origin}/auth/login?auth_error=auth_callback_failed`)
+  return NextResponse.redirect(
+    `${origin}/auth/login?auth_error=auth_callback_failed`,
+  )
 }

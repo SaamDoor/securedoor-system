@@ -3,7 +3,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useMotionValueEvent,
+} from 'framer-motion'
 import {
   ShoppingCart,
   Heart,
@@ -32,7 +37,7 @@ interface AuthUser {
   role: string
 }
 
-const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support']
+const ADMIN_ROLES = ['admin']
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
@@ -42,12 +47,12 @@ const navItems = [
     label: 'محصولات',
     href: '/products',
     children: [
-      { label: 'درب ضد سرقت',  href: '/products?category=darb-zed-sereqat' },
-      { label: 'درب ضد حریق',  href: '/products?category=darb-zed-hariq' },
+      { label: 'درب ضد سرقت', href: '/products?category=darb-zed-sereqat' },
+      { label: 'درب ضد حریق', href: '/products?category=darb-zed-hariq' },
       { label: 'درب آپارتمانی', href: '/products?category=darb-apartmani' },
-      { label: 'درب ویلایی',   href: '/products?category=darb-villaei' },
-      { label: 'درب اداری',    href: '/products?category=darb-edari' },
-      { label: 'متعلقات',      href: '/products?category=moteallaqat' },
+      { label: 'درب ویلایی', href: '/products?category=darb-villaei' },
+      { label: 'درب اداری', href: '/products?category=darb-edari' },
+      { label: 'متعلقات', href: '/products?category=moteallaqat' },
     ],
   },
   {
@@ -55,20 +60,26 @@ const navItems = [
     href: '/projects',
     children: [
       { label: 'همه پروژه‌ها', href: '/projects' },
-      { label: 'پیش‌فروش',    href: '/projects?status=pre_sale' },
-      { label: 'برای فروش',   href: '/projects?status=for_sale' },
-      { label: 'تحویل‌شده',   href: '/projects?status=delivered' },
+      { label: 'پیش‌فروش', href: '/projects?status=pre_sale' },
+      { label: 'برای فروش', href: '/projects?status=for_sale' },
+      { label: 'تحویل‌شده', href: '/projects?status=delivered' },
     ],
   },
   { label: 'دسته‌بندی‌ها', href: '/categories' },
-  { label: 'وبلاگ',       href: '/blog' },
-  { label: 'درباره ما',   href: '/about' },
-  { label: 'تماس با ما',  href: '/contact' },
+  { label: 'وبلاگ', href: '/blog' },
+  { label: 'درباره ما', href: '/about' },
+  { label: 'تماس با ما', href: '/contact' },
 ]
 
 // ─── User menu dropdown ───────────────────────────────────────────────────────
 
-function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
+function UserMenu({
+  user,
+  onLogout,
+}: {
+  user: AuthUser
+  onLogout: () => void
+}) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const isAdmin = ADMIN_ROLES.includes(user.role)
@@ -101,7 +112,10 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
           {user.name || 'حساب من'}
         </span>
         <ChevronDown
-          className={cn('h-3.5 w-3.5 text-gold transition-transform duration-200', open && 'rotate-180')}
+          className={cn(
+            'h-3.5 w-3.5 text-gold transition-transform duration-200',
+            open && 'rotate-180',
+          )}
         />
       </button>
 
@@ -121,7 +135,9 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
           >
             {/* User info header */}
             <div className="px-4 pb-3 pt-1 border-b border-white/8 mb-1">
-              <div className="text-white font-bold text-sm truncate">{user.name || 'کاربر'}</div>
+              <div className="text-white font-bold text-sm truncate">
+                {user.name || 'کاربر'}
+              </div>
               <div className="text-muted text-xs mt-0.5">
                 {isAdmin ? '🛡 مدیر سیستم' : '👤 کاربر'}
               </div>
@@ -163,7 +179,10 @@ function UserMenu({ user, onLogout }: { user: AuthUser; onLogout: () => void }) 
 
             {/* Logout */}
             <button
-              onClick={() => { setOpen(false); onLogout() }}
+              onClick={() => {
+                setOpen(false)
+                onLogout()
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
             >
               <LogOut className="h-4 w-4 flex-shrink-0" />
@@ -190,13 +209,18 @@ export function Navbar() {
 
   // ── Auth state ──────────────────────────────────────────────────────────────
 
-  const buildAuthUser = useCallback((meta: Record<string, unknown>, roleCookie: string): AuthUser => {
-    const firstName = (meta.first_name as string) ?? ''
-    const lastName  = (meta.last_name  as string) ?? ''
-    const name = [firstName, lastName].filter(Boolean).join(' ')
-    const initials = [firstName[0], lastName[0]].filter(Boolean).join('').toUpperCase() || 'U'
-    return { name, initials, role: roleCookie || 'customer' }
-  }, [])
+  const buildAuthUser = useCallback(
+    (meta: Record<string, unknown>, roleCookie: string): AuthUser => {
+      const firstName = (meta.first_name as string) ?? ''
+      const lastName = (meta.last_name as string) ?? ''
+      const name = [firstName, lastName].filter(Boolean).join(' ')
+      const initials =
+        [firstName[0], lastName[0]].filter(Boolean).join('').toUpperCase() ||
+        'U'
+      return { name, initials, role: roleCookie || 'customer' }
+    },
+    [],
+  )
 
   useEffect(() => {
     const supabase = createClient()
@@ -209,14 +233,20 @@ export function Navbar() {
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        setAuthUser(buildAuthUser(session.user.user_metadata ?? {}, getRoleCookie()))
+        setAuthUser(
+          buildAuthUser(session.user.user_metadata ?? {}, getRoleCookie()),
+        )
       }
     })
 
     // Real-time updates: login / logout / token refresh
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setAuthUser(buildAuthUser(session.user.user_metadata ?? {}, getRoleCookie()))
+        setAuthUser(
+          buildAuthUser(session.user.user_metadata ?? {}, getRoleCookie()),
+        )
       } else {
         setAuthUser(null)
       }
@@ -243,7 +273,9 @@ export function Navbar() {
 
   useEffect(() => {
     document.body.style.overflow = isMobileOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [isMobileOpen])
 
   // ── Dropdown hover ──────────────────────────────────────────────────────────
@@ -272,7 +304,10 @@ export function Navbar() {
             <span>{CONTACT.workingHours}</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/track-order" className="hover:text-gold transition-colors">
+            <Link
+              href="/track-order"
+              className="hover:text-gold transition-colors"
+            >
               پیگیری سفارش
             </Link>
             <span className="text-white/20">|</span>
@@ -281,7 +316,10 @@ export function Navbar() {
                 {authUser.name || 'حساب من'}
               </span>
             ) : (
-              <Link href="/auth/login" className="hover:text-gold transition-colors">
+              <Link
+                href="/auth/login"
+                className="hover:text-gold transition-colors"
+              >
                 ورود / ثبت‌نام
               </Link>
             )}
@@ -303,7 +341,6 @@ export function Navbar() {
       >
         <div className="container">
           <div className="flex items-center justify-between h-18">
-
             {/* ── Logo ── */}
             <Logo variant="default" size="md" />
 
@@ -313,7 +350,9 @@ export function Navbar() {
                 <div
                   key={item.label}
                   className="relative"
-                  onMouseEnter={() => item.children && handleDropdownEnter(item.label)}
+                  onMouseEnter={() =>
+                    item.children && handleDropdownEnter(item.label)
+                  }
                   onMouseLeave={handleDropdownLeave}
                 >
                   <Link
@@ -342,7 +381,10 @@ export function Navbar() {
                         initial={{ opacity: 0, y: 8, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                        transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        transition={{
+                          duration: 0.2,
+                          ease: [0.25, 0.46, 0.45, 0.94],
+                        }}
                         className={cn(
                           'absolute top-full right-0 mt-2 w-56 py-2',
                           'bg-surface/95 backdrop-blur-xl',
@@ -428,7 +470,11 @@ export function Navbar() {
                   <UserMenu user={authUser} onLogout={handleLogout} />
                 ) : (
                   <Link href="/auth/login">
-                    <Button variant="gold-outline" size="sm" leftIcon={<User className="h-4 w-4" />}>
+                    <Button
+                      variant="gold-outline"
+                      size="sm"
+                      leftIcon={<User className="h-4 w-4" />}
+                    >
                       ورود
                     </Button>
                   </Link>
@@ -444,7 +490,11 @@ export function Navbar() {
                 )}
                 aria-label="منو"
               >
-                {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isMobileOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
@@ -460,7 +510,9 @@ export function Navbar() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-60 bg-black/90 backdrop-blur-xl flex items-start justify-center pt-24"
-            onClick={(e) => e.target === e.currentTarget && setIsSearchOpen(false)}
+            onClick={(e) =>
+              e.target === e.currentTarget && setIsSearchOpen(false)
+            }
           >
             <motion.div
               initial={{ opacity: 0, y: -20, scale: 0.97 }}
@@ -482,7 +534,9 @@ export function Navbar() {
                     'focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20',
                     'transition-all duration-250',
                   )}
-                  onKeyDown={(e) => e.key === 'Escape' && setIsSearchOpen(false)}
+                  onKeyDown={(e) =>
+                    e.key === 'Escape' && setIsSearchOpen(false)
+                  }
                 />
                 <button
                   onClick={() => setIsSearchOpen(false)}
@@ -519,7 +573,10 @@ export function Navbar() {
                 <div onClick={() => setIsMobileOpen(false)}>
                   <Logo variant="default" size="sm" />
                 </div>
-                <button onClick={() => setIsMobileOpen(false)} className="text-muted hover:text-white transition-colors">
+                <button
+                  onClick={() => setIsMobileOpen(false)}
+                  className="text-muted hover:text-white transition-colors"
+                >
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -529,12 +586,18 @@ export function Navbar() {
                 <div className="px-5 py-4 border-b border-white/8 bg-gold/5">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gold-gradient flex items-center justify-center flex-shrink-0">
-                      <span className="text-black font-black">{authUser.initials}</span>
+                      <span className="text-black font-black">
+                        {authUser.initials}
+                      </span>
                     </div>
                     <div>
-                      <div className="text-white font-bold text-sm">{authUser.name || 'کاربر'}</div>
+                      <div className="text-white font-bold text-sm">
+                        {authUser.name || 'کاربر'}
+                      </div>
                       <div className="text-muted text-xs">
-                        {ADMIN_ROLES.includes(authUser.role) ? '🛡 مدیر سیستم' : '👤 کاربر'}
+                        {ADMIN_ROLES.includes(authUser.role)
+                          ? '🛡 مدیر سیستم'
+                          : '👤 کاربر'}
                       </div>
                     </div>
                   </div>
@@ -559,7 +622,9 @@ export function Navbar() {
                       )}
                     >
                       {item.label}
-                      {item.children && <ChevronDown className="h-4 w-4 text-muted" />}
+                      {item.children && (
+                        <ChevronDown className="h-4 w-4 text-muted" />
+                      )}
                     </Link>
                     {item.children && (
                       <div className="mr-3 border-r border-white/8 pr-3 mb-1">
@@ -584,21 +649,40 @@ export function Navbar() {
                 {authUser ? (
                   <>
                     {ADMIN_ROLES.includes(authUser.role) && (
-                      <Button asChild variant="gold-outline" size="md" className="w-full">
-                        <Link href="/admin" onClick={() => setIsMobileOpen(false)}>
+                      <Button
+                        asChild
+                        variant="gold-outline"
+                        size="md"
+                        className="w-full"
+                      >
+                        <Link
+                          href="/admin"
+                          onClick={() => setIsMobileOpen(false)}
+                        >
                           <ShieldCheck className="h-4 w-4 ml-2" />
                           پنل مدیریت
                         </Link>
                       </Button>
                     )}
-                    <Button asChild variant="gold-outline" size="md" className="w-full">
-                      <Link href="/user/dashboard" onClick={() => setIsMobileOpen(false)}>
+                    <Button
+                      asChild
+                      variant="gold-outline"
+                      size="md"
+                      className="w-full"
+                    >
+                      <Link
+                        href="/user/dashboard"
+                        onClick={() => setIsMobileOpen(false)}
+                      >
                         <LayoutDashboard className="h-4 w-4 ml-2" />
                         داشبورد من
                       </Link>
                     </Button>
                     <button
-                      onClick={() => { setIsMobileOpen(false); handleLogout() }}
+                      onClick={() => {
+                        setIsMobileOpen(false)
+                        handleLogout()
+                      }}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm font-semibold transition-colors"
                     >
                       <LogOut className="h-4 w-4" />
@@ -607,7 +691,10 @@ export function Navbar() {
                   </>
                 ) : (
                   <Button asChild variant="gold" size="md" className="w-full">
-                    <Link href="/auth/login" onClick={() => setIsMobileOpen(false)}>
+                    <Link
+                      href="/auth/login"
+                      onClick={() => setIsMobileOpen(false)}
+                    >
                       ورود / ثبت‌نام
                     </Link>
                   </Button>

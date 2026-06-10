@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Instagram, Send } from 'lucide-react'
-import { Separator } from '@/components/ui/separator'
-import { BRAND, CONTACT, SOCIAL_LINKS } from '@/lib/constants'
+import { CONTACT, SOCIAL_LINKS } from '@/lib/constants'
 
 const footerLinks = {
   products: [
@@ -31,7 +30,7 @@ const footerLinks = {
 
 const socialLinks = [
   { href: SOCIAL_LINKS.instagram, icon: Instagram, label: 'اینستاگرام' },
-  { href: SOCIAL_LINKS.telegram,  icon: Send,      label: 'تلگرام' },
+  { href: SOCIAL_LINKS.telegram, icon: Send, label: 'تلگرام' },
   {
     href: SOCIAL_LINKS.eitaa,
     label: 'ایتا',
@@ -89,7 +88,6 @@ export function Footer() {
       {/* ── Main footer ── */}
       <div className="container py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-
           {/* Brand column */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-6 group w-fit">
@@ -97,14 +95,18 @@ export function Footer() {
                 <span className="text-black font-black text-xl">س</span>
               </div>
               <div>
-                <div className="text-xl font-black text-white">گروه صنعتی مشعوف</div>
-                <div className="text-xs text-gold tracking-widest">MASHOUF INDUSTRIAL GROUP</div>
+                <div className="text-xl font-black text-white">
+                  گروه صنعتی مشعوف
+                </div>
+                <div className="text-xs text-gold tracking-widest">
+                  MASHOUF INDUSTRIAL GROUP
+                </div>
               </div>
             </Link>
 
             <p className="text-muted text-sm leading-relaxed mb-6 max-w-xs">
-              پیشرو در ساخت درب‌های ضد سرقت لوکس با بیش از یک دهه تجربه.
-              ترکیب بی‌نظیر طراحی مدرن، متریال‌های برتر و تکنولوژی پیشرفته.
+              پیشرو در ساخت درب‌های ضد سرقت لوکس با بیش از یک دهه تجربه. ترکیب
+              بی‌نظیر طراحی مدرن، متریال‌های برتر و تکنولوژی پیشرفته.
             </p>
 
             {/* Contact info */}
@@ -137,18 +139,21 @@ export function Footer() {
 
             {/* Socials */}
             <div className="flex items-center gap-2">
-              {socialLinks.map(({ href, icon: Icon, label }) => href && (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-muted hover:text-gold hover:border-gold/30 hover:bg-gold/10 transition-all duration-300"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+              {socialLinks.map(
+                ({ href, icon: Icon, label }) =>
+                  href && (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      className="w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-muted hover:text-gold hover:border-gold/30 hover:bg-gold/10 transition-all duration-300"
+                    >
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  ),
+              )}
             </div>
           </div>
 
@@ -225,7 +230,10 @@ export function Footer() {
               { icon: '📞', label: 'پشتیبانی ۲۴/۷' },
               { icon: '↩️', label: 'ضمانت بازگشت کالا' },
             ].map(({ icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-sm text-muted">
+              <div
+                key={label}
+                className="flex items-center gap-2 text-sm text-muted"
+              >
                 <span className="text-base">{icon}</span>
                 {label}
               </div>
@@ -238,17 +246,21 @@ export function Footer() {
       <div className="border-t border-white/5 bg-black/40">
         <div className="container py-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted">
-            <p>
-              © {new Date().getFullYear()} {BRAND.name} — تمامی حقوق محفوظ است.
-            </p>
+            <p>© 2026 گروه صنعتی مشعوف — تمامی حقوق محفوظ است.</p>
             <div className="flex items-center gap-4">
-              <Link href="/privacy" className="hover:text-gold transition-colors">
+              <Link
+                href="/privacy"
+                className="hover:text-gold transition-colors"
+              >
                 حریم خصوصی
               </Link>
               <Link href="/terms" className="hover:text-gold transition-colors">
                 قوانین استفاده
               </Link>
-              <Link href="/sitemap.xml" className="hover:text-gold transition-colors">
+              <Link
+                href="/sitemap.xml"
+                className="hover:text-gold transition-colors"
+              >
                 نقشه سایت
               </Link>
             </div>

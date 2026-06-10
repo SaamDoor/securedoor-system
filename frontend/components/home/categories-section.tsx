@@ -19,7 +19,9 @@ const categories = [
     description: 'بالاترین سطح امنیت با قفل‌های چند نقطه‌ای',
     accent: '#C8A85D',
     size: 'large',
-    image: { default: '/images/categories/category-anti-theft-doors.webp' } as CategoryImage,
+    image: {
+      default: '/images/categories/category-anti-theft-doors.webp',
+    } as CategoryImage,
   },
   {
     name: 'درب ضد حریق',
@@ -40,7 +42,9 @@ const categories = [
     description: 'طراحی مدرن برای فضاهای آپارتمانی',
     accent: '#C8A85D',
     size: 'small',
-    image: { default: '/images/categories/category-apartment-doors.webp' } as CategoryImage,
+    image: {
+      default: '/images/categories/category-apartment-doors.webp',
+    } as CategoryImage,
   },
   {
     name: 'درب ویلایی',
@@ -75,26 +79,20 @@ export function CategoriesSection() {
           </Link>
         </div>
 
-        {/* items-stretch ensures every column in the row fills the same height */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:items-stretch">
-
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
           {/* Large card — left (col-span-5) */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="lg:col-span-5 h-full"
+            className="lg:col-span-5"
           >
             <CategoryCard category={categories[0]} large />
           </motion.div>
 
           {/* Two small cards — middle (col-span-4) */}
-          {/*
-            h-full here lets grid-rows-2 know its container height so the two
-            1fr rows divide evenly rather than collapsing to min-content.
-          */}
-          <div className="lg:col-span-4 grid grid-rows-2 gap-4 h-full">
+          <div className="lg:col-span-4 grid gap-4">
             {[categories[1], categories[2]].map((cat, i) => (
               <motion.div
                 key={cat.slug}
@@ -106,7 +104,6 @@ export function CategoriesSection() {
                   delay: i * 0.1 + 0.1,
                   ease: [0.25, 0.46, 0.45, 0.94],
                 }}
-                className="h-full"
               >
                 <CategoryCard category={cat} />
               </motion.div>
@@ -118,8 +115,12 @@ export function CategoriesSection() {
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="lg:col-span-3 h-full"
+            transition={{
+              duration: 0.7,
+              delay: 0.2,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+            className="lg:col-span-3"
           >
             <CategoryCard category={categories[3]} large />
           </motion.div>
@@ -150,19 +151,14 @@ function CategoryCard({
   const hasResponsive = 'desktop' in image && image.desktop !== undefined
 
   return (
-    <Link href={`/categories/${category.slug}`} className="group block h-full">
-      {/*
-        h-full fills the grid cell on desktop.
-        min-h-* acts as the floor on mobile where the grid has no row-height constraint.
-        relative is the containing block for all fill images and absolute overlays.
-      */}
+    <Link href={`/categories/${category.slug}`} className="group block">
       <div
         className={cn(
           'relative overflow-hidden rounded-2xl bg-slate-900',
           'border border-white/8 group-hover:border-white/20 transition-all duration-400',
           large
-            ? 'h-full min-h-[300px] lg:min-h-[420px]'
-            : 'h-full min-h-[180px]',
+            ? 'aspect-[4/3] lg:aspect-[3/4]'
+            : 'aspect-[4/3] lg:aspect-[3/2]',
         )}
       >
         {/* ── Background images ── */}
@@ -179,7 +175,7 @@ function CategoryCard({
                 src={(image as { desktop: string; mobile: string }).desktop}
                 alt={category.name}
                 fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                className="object-cover"
                 sizes="(min-width: 1024px) 42vw, 100vw"
                 priority={false}
               />
@@ -189,7 +185,7 @@ function CategoryCard({
                 src={(image as { desktop: string; mobile: string }).mobile}
                 alt={category.name}
                 fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                className="object-cover"
                 sizes="100vw"
                 priority={false}
               />
@@ -201,7 +197,7 @@ function CategoryCard({
               src={(image as { default: string }).default}
               alt={category.name}
               fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              className="object-cover"
               sizes="(min-width: 1024px) 42vw, 100vw"
               priority={false}
             />
@@ -232,7 +228,12 @@ function CategoryCard({
             {category.count}
           </div>
 
-          <h3 className={cn('font-black text-white mb-1', large ? 'text-xl' : 'text-base')}>
+          <h3
+            className={cn(
+              'font-black text-white mb-1',
+              large ? 'text-xl' : 'text-base',
+            )}
+          >
             {category.name}
           </h3>
 

@@ -1,14 +1,66 @@
 'use server'
 
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 import { phoneToAuthEmail } from '@/lib/utils'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mashuf.com'
 const RESEND_API_KEY = process.env.RESEND_API_KEY
+const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 
 export interface PasswordResetResult {
   ok: boolean
   emailSent: boolean
+}
+
+export interface SignInWithPasswordResult {
+  ok: false
+  error: string
+}
+
+export async function signInWithPassword(
+  phone: string,
+  password: string,
+): Promise<SignInWithPasswordResult> {
+  const supabase = await createServerSupabaseClient()
+  const authEmail = phoneToAuthEmail(phone)
+
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
+    email: authEmail,
+    password,
+  })
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  if (!authData.user) {
+    return { ok: false, error: 'User not found' }
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', authData.user.id)
+    .single()
+
+  const role = (profile?.role as string | null) ?? 'customer'
+  const cookieStore = await cookies()
+
+  cookieStore.set('user_role', role, {
+    path: '/',
+    sameSite: 'lax',
+    maxAge: ROLE_COOKIE_MAX_AGE,
+    httpOnly: false,
+  })
+
+  if (role === 'admin') {
+    redirect('/admin/dashboard')
+  }
+
+  redirect('/user/dashboard')
 }
 
 /**
@@ -26,14 +78,15 @@ export async function requestPasswordReset(
     const authEmail = phoneToAuthEmail(phone) // ph_09XXXXXXXXX@mashuf.com
 
     // Generate a PKCE recovery link — error if user doesn't exist
-    const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
-      type: 'recovery',
-      email: authEmail,
-      options: {
-        // Callback route exchanges the code → sets session → redirects to update-password
-        redirectTo: `${SITE_URL}/auth/callback?next=/auth/update-password`,
-      },
-    })
+    const { data: linkData, error: linkErr } =
+      await admin.auth.admin.generateLink({
+        type: 'recovery',
+        email: authEmail,
+        options: {
+          // Callback route exchanges the code → sets session → redirects to update-password
+          redirectTo: `${SITE_URL}/auth/callback?next=/auth/update-password`,
+        },
+      })
 
     if (linkErr || !linkData?.properties?.action_link) {
       // User not found or other server error — don't leak info
@@ -50,7 +103,9 @@ export async function requestPasswordReset(
     }
 
     if (!RESEND_API_KEY) {
-      console.warn('[requestPasswordReset] RESEND_API_KEY not set — cannot send email')
+      console.warn(
+        '[requestPasswordReset] RESEND_API_KEY not set — cannot send email',
+      )
       return { ok: true, emailSent: false }
     }
 
