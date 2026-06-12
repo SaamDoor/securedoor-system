@@ -107,8 +107,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url))
     }
 
-    request.cookies.set('user_role', role)
-    setRoleCookie(supabaseResponse, role)
+    request.cookies.set('user_role', role!)
+    setRoleCookie(supabaseResponse, role!)
   }
 
   // ── Protected routes: require login ───────────────────────────────────
