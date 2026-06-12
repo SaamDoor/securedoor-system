@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useState, useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useSettingsStore } from '@/store/settings.store'
 
 const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
 
@@ -47,6 +48,13 @@ function AuthStateListener() {
   return null
 }
 
+/** Loads public global settings into the Zustand store once on app boot. */
+function SettingsInitializer() {
+  const loadPublic = useSettingsStore((s) => s.loadPublic)
+  useEffect(() => { loadPublic() }, [loadPublic])
+  return null
+}
+
 interface ProvidersProps {
   children: ReactNode
 }
@@ -69,6 +77,7 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthStateListener />
+      <SettingsInitializer />
       {children}
       {process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools initialIsOpen={false} position="bottom" />
