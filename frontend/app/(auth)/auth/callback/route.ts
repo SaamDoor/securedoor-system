@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { ADMIN_ROLES, type UserRole } from '@/types/auth'
 
 const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
 
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
       // Build the redirect response first so we can attach the cookie to it
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
-      const destination = role === 'admin' ? '/admin/dashboard' : next
+      const destination = ADMIN_ROLES.includes(role as UserRole) ? '/admin/dashboard' : next
 
       let redirectTarget: string
       if (isLocalEnv) {

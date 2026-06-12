@@ -1,5 +1,7 @@
 export type UserRole = 'super_admin' | 'admin' | 'manager' | 'support' | 'customer'
 
+export const ADMIN_ROLES: readonly UserRole[] = ['super_admin', 'admin', 'manager']
+
 export type CustomerTier = 'regular' | 'mass_builder' | 'reseller'
 
 export const CUSTOMER_TIER_LABEL: Record<CustomerTier, string> = {

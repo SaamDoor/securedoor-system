@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
 import { phoneToAuthEmail } from '@/lib/utils'
+import { ADMIN_ROLES, type UserRole } from '@/types/auth'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mashuf.com'
 const RESEND_API_KEY = process.env.RESEND_API_KEY
@@ -56,7 +57,7 @@ export async function signInWithPassword(
     httpOnly: false,
   })
 
-  if (role === 'admin') {
+  if (ADMIN_ROLES.includes(role as UserRole)) {
     redirect('/admin/dashboard')
   }
 

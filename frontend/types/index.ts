@@ -1,4 +1,4 @@
-export type * from './auth'
+export * from './auth'
 export type * from './product'
 export type * from './order'
 export type * from './user'

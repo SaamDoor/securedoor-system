@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
+import { ADMIN_ROLES, type UserRole } from '@/types/auth'
 
 type CookieSetOptions = Parameters<typeof NextResponse.prototype.cookies.set>[2]
 
@@ -88,7 +89,7 @@ export async function middleware(request: NextRequest) {
   // ── Auth pages: redirect already-logged-in users ──────────────────────
   if (AUTH_ROUTES.some((r) => pathname.startsWith(r)) && user) {
     const role = await getUserRole()
-    const dest = role === 'admin' ? '/admin/dashboard' : '/user/dashboard'
+    const dest = ADMIN_ROLES.includes(role as UserRole) ? '/admin/dashboard' : '/user/dashboard'
     const response = NextResponse.redirect(new URL(dest, request.url))
     if (role) setRoleCookie(response, role)
     return response
@@ -102,7 +103,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const role = await getUserRole()
-    if (role !== 'admin') {
+    if (!ADMIN_ROLES.includes(role as UserRole)) {
       return NextResponse.redirect(new URL('/', request.url))
     }
 
