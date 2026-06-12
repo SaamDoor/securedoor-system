@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
---  سام درب — Auth Schema Fix & Real Business Categories
+--  گروه صنعتی مشعوف — Auth Schema Fix & Real Business Categories
 --  Migration: 005_auth_schema_fix
 --
 --  Changes:
@@ -251,7 +251,7 @@ ON CONFLICT (slug) DO UPDATE
 
 INSERT INTO public.settings ("key", value, "group", description, is_public)
 VALUES
-  ('site_name',    '"سام درب — گروه صنعتی مشعوف"',                                   'general', 'نام سایت',          TRUE),
+  ('site_name',    '"گروه صنعتی مشعوف"',                                   'general', 'نام سایت',          TRUE),
   ('site_url',     '"https://mashuf.com"',                                              'general', 'آدرس سایت',         TRUE),
   ('manager_name', '"حسام مشعوف"',                                                     'general', 'نام مدیر',          FALSE),
   ('site_phone',   '"09003286539"',                                                     'contact', 'شماره تماس',        TRUE),

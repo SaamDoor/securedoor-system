@@ -1,7 +1,7 @@
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'گروه صنعتی مشعوف'
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mashuf.com'
 export const SITE_DESCRIPTION =
-  'سام درب، گروه صنعتی مشعوف — پیشرو در تولید درب‌های ضد سرقت، چهارچوب‌های فلزی فرانسوی و مکزیکی، درب‌های اتاقی و درب‌های حیاطی فرفورژه در استان مازندران.'
+  'گروه صنعتی مشعوف — پیشرو در تولید درب‌های ضد سرقت، چهارچوب‌های فلزی فرانسوی و مکزیکی، درب‌های اتاقی و درب‌های حیاطی فرفورژه در استان مازندران.'
 
 export const BRAND = {
   name: 'گروه صنعتی مشعوف',

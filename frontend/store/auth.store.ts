@@ -39,7 +39,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'samdoor-auth',
+      name: 'mashuf-auth',
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({ user: state.user, tokens: state.tokens, isAuthenticated: state.isAuthenticated }),
     },

@@ -15,7 +15,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const stored = sessionStorage.getItem('samdoor-auth')
+    const stored = sessionStorage.getItem('mashuf-auth')
     if (stored) {
       try {
         const { state } = JSON.parse(stored)
@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true
 
       try {
-        const stored = sessionStorage.getItem('samdoor-auth')
+        const stored = sessionStorage.getItem('mashuf-auth')
         if (stored) {
           const { state } = JSON.parse(stored)
           const refreshToken = state?.tokens?.refreshToken

@@ -36,7 +36,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://api.samdoor.com/:path*"
+      "destination": "https://api.mashuf.com/:path*"
     }
   ]
 }

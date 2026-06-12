@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from './constants'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_LINKS } from './constants'
 
 interface SeoOptions {
   title?: string
@@ -27,7 +27,7 @@ export function generateSeo(options: SeoOptions = {}): Metadata {
     title: fullTitle,
     description,
     keywords: [
-      'سام درب', 'درب ضد سرقت', 'درب امنیتی', 'درب لوکس',
+      'گروه صنعتی مشعوف', 'درب ضد سرقت', 'درب امنیتی', 'درب لوکس',
       ...keywords,
     ],
     robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
@@ -107,9 +107,10 @@ export function organizationSchema() {
       areaServed: 'IR',
     },
     sameAs: [
-      'https://instagram.com/samdoor',
-      'https://t.me/samdoor',
-      'https://linkedin.com/company/samdoor',
+      SOCIAL_LINKS.instagram,
+      SOCIAL_LINKS.telegram,
+      SOCIAL_LINKS.eitaa,
+      SOCIAL_LINKS.rubika,
     ],
   }
 }

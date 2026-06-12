@@ -84,7 +84,7 @@ export const useCartStore = create<CartState>()(
       },
     })),
     {
-      name: 'samdoor-cart',
+      name: 'mashuf-cart',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ items: state.items }),
     },
