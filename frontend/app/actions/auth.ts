@@ -41,11 +41,13 @@ export async function signInWithPassword(
     return { ok: false, error: 'User not found' }
   }
 
-  const { data: profile } = await supabase
+  // Use the service-role client so RLS never blocks this fetch
+  const admin = createAdminClient()
+  const { data: profile } = await admin
     .from('users')
     .select('role')
     .eq('id', authData.user.id)
-    .single()
+    .maybeSingle()
 
   const role = (profile?.role as string | null) ?? 'customer'
   const cookieStore = await cookies()

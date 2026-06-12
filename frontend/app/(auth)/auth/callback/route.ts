@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { ADMIN_ROLES, type UserRole } from '@/types/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
 
@@ -53,11 +54,13 @@ export async function GET(request: NextRequest) {
 
     if (!error && sessionData?.user) {
       // ── Fetch real role from public.users and set the cookie ──────────
-      const { data: profile } = await supabase
+      // Use service-role client so RLS never blocks this fetch
+      const adminClient = createAdminClient()
+      const { data: profile } = await adminClient
         .from('users')
         .select('role')
         .eq('id', sessionData.user.id)
-        .single()
+        .maybeSingle()
 
       const role = (profile?.role as string | null) ?? 'customer'
 

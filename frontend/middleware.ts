@@ -76,13 +76,10 @@ export async function middleware(request: NextRequest) {
     if (!user) return null
     if (cachedRole !== undefined) return cachedRole
 
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
+    // get_my_role() is SECURITY DEFINER — reads public.users bypassing RLS
+    const { data: role } = await supabase.rpc('get_my_role')
 
-    cachedRole = (profile?.role as string | null) ?? null
+    cachedRole = (role as string | null) ?? null
     return cachedRole
   }
 
