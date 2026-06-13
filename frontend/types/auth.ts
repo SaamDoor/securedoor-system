@@ -1,82 +1,119 @@
-export type UserRole = 'super_admin' | 'admin' | 'manager' | 'support' | 'customer'
+export type UserRole =
+  | "super_admin"
+  | "admin"
+  | "manager"
+  | "support"
+  | "customer";
 
-export const ADMIN_ROLES: readonly UserRole[] = ['super_admin', 'admin', 'manager']
+export const ADMIN_ROLES: readonly UserRole[] = ["admin", "super_admin"];
+export const USER_PANEL_ROLES: readonly UserRole[] = ["customer", "support"];
+export const PARTNER_PANEL_ROLES: readonly UserRole[] = ["manager"];
+export const SUPER_ADMIN_ROLES: readonly UserRole[] = ["super_admin"];
 
-export type CustomerTier = 'regular' | 'mass_builder' | 'reseller'
+export const ROLE_HOME: Record<UserRole, string> = {
+  customer: "/user/dashboard",
+  support: "/user/vip-dashboard",
+  manager: "/partner/dashboard",
+  admin: "/admin/dashboard",
+  super_admin: "/admin/super-dashboard",
+};
+
+export const ROLE_DASHBOARD_LINK: Record<UserRole, string> = {
+  customer: "/user/dashboard",
+  support: "/user/vip-dashboard",
+  manager: "/partner/dashboard",
+  admin: "/admin/dashboard",
+  super_admin: "/admin/dashboard",
+};
+
+export const ROLE_DASHBOARD_LABEL: Record<UserRole, string> = {
+  customer: "پنل کاربری",
+  support: "باشگاه سازندگان",
+  manager: "پنل همکاران",
+  admin: "پنل مدیریت",
+  super_admin: "پنل مدیریت",
+};
+
+export type CustomerTier = "regular" | "mass_builder" | "reseller";
 
 export const CUSTOMER_TIER_LABEL: Record<CustomerTier, string> = {
-  regular:      'مشتری معمولی',
-  mass_builder: 'انبوه‌ساز',
-  reseller:     'همکار درب‌فروش',
-}
+  regular: "مشتری معمولی",
+  mass_builder: "انبوه‌ساز",
+  reseller: "همکار درب‌فروش",
+};
 
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage'
+export type PermissionAction =
+  | "create"
+  | "read"
+  | "update"
+  | "delete"
+  | "manage";
 
 export interface Permission {
-  id: string
-  name: string
-  resource: string
-  action: PermissionAction
+  id: string;
+  name: string;
+  resource: string;
+  action: PermissionAction;
 }
 
 export interface Role {
-  id: string
-  name: string
-  slug: UserRole
-  permissions: Permission[]
-  isSystem: boolean
+  id: string;
+  name: string;
+  slug: UserRole;
+  permissions: Permission[];
+  isSystem: boolean;
 }
 
 export interface User {
-  id: string
-  email: string
-  phone?: string
-  firstName: string
-  lastName: string
-  avatar?: string
-  role: UserRole
-  isActive: boolean
-  isVerified: boolean
-  createdAt: string
-  updatedAt: string
-  customerTier?: CustomerTier
-  specialDiscountPercent?: number
+  id: string;
+  email: string;
+  phone?: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string;
+  role: UserRole;
+  isActive: boolean;
+  isVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+  customerTier?: CustomerTier;
+  specialDiscountPercent?: number;
 }
 
 export interface AuthTokens {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
 }
 
 export interface LoginPayload {
-  email: string
-  password: string
-  rememberMe?: boolean
+  email: string;
+  password: string;
+  rememberMe?: boolean;
 }
 
 export interface RegisterPayload {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  password: string
-  confirmPassword: string
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface AuthState {
-  user: User | null
-  tokens: AuthTokens | null
-  isAuthenticated: boolean
-  isLoading: boolean
+  user: User | null;
+  tokens: AuthTokens | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 export interface Session {
-  id: string
-  userId: string
-  deviceInfo: string
-  ipAddress: string
-  lastActiveAt: string
-  expiresAt: string
-  isActive: boolean
+  id: string;
+  userId: string;
+  deviceInfo: string;
+  ipAddress: string;
+  lastActiveAt: string;
+  expiresAt: string;
+  isActive: boolean;
 }

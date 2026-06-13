@@ -1,69 +1,65 @@
-'use server'
+"use server";
 
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient as createServerSupabaseClient } from '@/lib/supabase/server'
-import { phoneToAuthEmail } from '@/lib/utils'
-import { ADMIN_ROLES, type UserRole } from '@/types/auth'
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient as createServerSupabaseClient } from "@/lib/supabase/server";
+import { phoneToAuthEmail } from "@/lib/utils";
+import { ROLE_HOME, type UserRole } from "@/types/auth";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mashuf.com'
-const RESEND_API_KEY = process.env.RESEND_API_KEY
-const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://mashuf.com";
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
 export interface PasswordResetResult {
-  ok: boolean
-  emailSent: boolean
+  ok: boolean;
+  emailSent: boolean;
 }
 
 export interface SignInWithPasswordResult {
-  ok: false
-  error: string
+  ok: false;
+  error: string;
 }
 
 export async function signInWithPassword(
   phone: string,
   password: string,
 ): Promise<SignInWithPasswordResult> {
-  const supabase = await createServerSupabaseClient()
-  const authEmail = phoneToAuthEmail(phone)
+  const supabase = await createServerSupabaseClient();
+  const authEmail = phoneToAuthEmail(phone);
 
   const { data: authData, error } = await supabase.auth.signInWithPassword({
     email: authEmail,
     password,
-  })
+  });
 
   if (error) {
-    return { ok: false, error: error.message }
+    return { ok: false, error: error.message };
   }
 
   if (!authData.user) {
-    return { ok: false, error: 'User not found' }
+    return { ok: false, error: "User not found" };
   }
 
   // Use the service-role client so RLS never blocks this fetch
-  const admin = createAdminClient()
+  const admin = createAdminClient();
   const { data: profile } = await admin
-    .from('users')
-    .select('role')
-    .eq('id', authData.user.id)
-    .maybeSingle()
+    .from("users")
+    .select("role")
+    .eq("id", authData.user.id)
+    .maybeSingle();
 
-  const role = (profile?.role as string | null) ?? 'customer'
-  const cookieStore = await cookies()
+  const role = (profile?.role as string | null) ?? "customer";
+  const cookieStore = await cookies();
 
-  cookieStore.set('user_role', role, {
-    path: '/',
-    sameSite: 'lax',
+  cookieStore.set("user_role", role, {
+    path: "/",
+    sameSite: "lax",
     maxAge: ROLE_COOKIE_MAX_AGE,
     httpOnly: false,
-  })
+  });
 
-  if (ADMIN_ROLES.includes(role as UserRole)) {
-    redirect('/admin/dashboard')
-  }
-
-  redirect('/user/dashboard')
+  redirect(ROLE_HOME[role as UserRole] ?? ROLE_HOME.customer);
 }
 
 /**
@@ -77,64 +73,67 @@ export async function requestPasswordReset(
   phone: string,
 ): Promise<PasswordResetResult> {
   try {
-    const admin = createAdminClient()
-    const authEmail = phoneToAuthEmail(phone) // ph_09XXXXXXXXX@mashuf.com
+    const admin = createAdminClient();
+    const authEmail = phoneToAuthEmail(phone); // ph_09XXXXXXXXX@mashuf.com
 
     // Generate a PKCE recovery link — error if user doesn't exist
     const { data: linkData, error: linkErr } =
       await admin.auth.admin.generateLink({
-        type: 'recovery',
+        type: "recovery",
         email: authEmail,
         options: {
           // Callback route exchanges the code → sets session → redirects to update-password
           redirectTo: `${SITE_URL}/auth/callback?next=/auth/update-password`,
         },
-      })
+      });
 
     if (linkErr || !linkData?.properties?.action_link) {
       // User not found or other server error — don't leak info
-      return { ok: true, emailSent: false }
+      return { ok: true, emailSent: false };
     }
 
     const contactEmail = linkData.user?.user_metadata?.contact_email as
       | string
-      | undefined
+      | undefined;
 
     if (!contactEmail) {
       // User never provided a contact email — they must contact support
-      return { ok: true, emailSent: false }
+      return { ok: true, emailSent: false };
     }
 
     if (!RESEND_API_KEY) {
       console.warn(
-        '[requestPasswordReset] RESEND_API_KEY not set — cannot send email',
-      )
-      return { ok: true, emailSent: false }
+        "[requestPasswordReset] RESEND_API_KEY not set — cannot send email",
+      );
+      return { ok: true, emailSent: false };
     }
 
-    const emailRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
+    const emailRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: 'گروه صنعتی مشعوف <noreply@mashuf.com>',
+        from: "گروه صنعتی مشعوف <noreply@mashuf.com>",
         to: [contactEmail],
-        subject: 'بازیابی رمز عبور — گروه صنعتی مشعوف',
+        subject: "بازیابی رمز عبور — گروه صنعتی مشعوف",
         html: buildResetEmailHtml(linkData.properties.action_link),
       }),
-    })
+    });
 
     if (!emailRes.ok) {
-      console.error('[requestPasswordReset] Resend API error:', emailRes.status)
-      return { ok: false, emailSent: false }
+      console.error(
+        "[requestPasswordReset] Resend API error:",
+        emailRes.status,
+      );
+      return { ok: false, emailSent: false };
     }
 
-    return { ok: true, emailSent: true }
+    return { ok: true, emailSent: true };
   } catch (err) {
-    console.error('[requestPasswordReset] unexpected error:', err)
-    return { ok: false, emailSent: false }
+    console.error("[requestPasswordReset] unexpected error:", err);
+    return { ok: false, emailSent: false };
   }
 }
 
@@ -186,5 +185,5 @@ function buildResetEmailHtml(link: string): string {
     </td></tr>
   </table>
 </body>
-</html>`
+</html>`;
 }

@@ -1,60 +1,89 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, ShoppingBag, Heart, User, MapPin,
-  MessageCircle, Bell, Download, Settings, LogOut, FileText,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+  LayoutDashboard,
+  ShoppingBag,
+  Heart,
+  User,
+  MapPin,
+  MessageCircle,
+  Bell,
+  Download,
+  Settings,
+  LogOut,
+  FileText,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth.store";
+import { USER_PANEL_ROLES } from "@/types";
 
-const navItems = [
-  { label: 'داشبورد', href: '/user/dashboard', icon: LayoutDashboard },
-  { label: 'سفارشات', href: '/user/orders', icon: ShoppingBag },
-  { label: 'فاکتورها', href: '/user/invoices', icon: FileText },
-  { label: 'علاقه‌مندی‌ها', href: '/user/wishlist', icon: Heart },
-  { label: 'پروفایل', href: '/user/profile', icon: User },
-  { label: 'آدرس‌ها', href: '/user/addresses', icon: MapPin },
-  { label: 'پیام‌ها', href: '/user/messages', icon: MessageCircle, badge: 2 },
-  { label: 'اعلانات', href: '/user/notifications', icon: Bell, badge: 5 },
-  { label: 'دانلودها', href: '/user/downloads', icon: Download },
-  { label: 'تنظیمات', href: '/user/settings', icon: Settings },
-]
+const baseNavItems = [
+  { label: "سفارشات", href: "/user/orders", icon: ShoppingBag },
+  { label: "فاکتورها", href: "/user/invoices", icon: FileText },
+  { label: "علاقه‌مندی‌ها", href: "/user/wishlist", icon: Heart },
+  { label: "پروفایل", href: "/user/profile", icon: User },
+  { label: "آدرس‌ها", href: "/user/addresses", icon: MapPin },
+  { label: "پیام‌ها", href: "/user/messages", icon: MessageCircle, badge: 2 },
+  { label: "اعلانات", href: "/user/notifications", icon: Bell, badge: 5 },
+  { label: "دانلودها", href: "/user/downloads", icon: Download },
+  { label: "تنظیمات", href: "/user/settings", icon: Settings },
+];
 
 export function UserSidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const role = useAuthStore((state) => state.role);
+  const dashboardHref = useAuthStore((state) => state.dashboardHref);
+  const dashboardLabel = useAuthStore((state) => state.dashboardLabel);
+  const storeUser = useAuthStore((state) => state.user);
+  const resolvedDashboardHref = dashboardHref ?? "/user/dashboard";
+  const resolvedDashboardLabel = dashboardLabel ?? "داشبورد";
+
+  const canUseUserPanel = !!role && USER_PANEL_ROLES.includes(role);
+  const navItems = [
+    {
+      label: canUseUserPanel ? resolvedDashboardLabel : "داشبورد",
+      href: canUseUserPanel ? resolvedDashboardHref : "/user/dashboard",
+      icon: LayoutDashboard,
+    },
+    ...baseNavItems,
+  ];
+
+  const displayName =
+    [storeUser?.firstName, storeUser?.lastName].filter(Boolean).join(" ") ||
+    "حساب کاربری";
+  const displayRole = role === "support" ? "باشگاه سازندگان" : "پنل کاربری";
 
   return (
-    <aside className="hidden md:block w-64 flex-shrink-0">
-      {/* User card */}
-      <div className="p-5 rounded-2xl bg-surface border border-white/8 mb-4">
+    <aside className="hidden w-64 flex-shrink-0 md:block">
+      <div className="mb-4 rounded-2xl border border-white/8 bg-surface p-5">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center text-xl font-black text-gold">
-            م
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-gold/20 bg-gold/10 text-xl font-black text-gold">
+            {(storeUser?.firstName?.[0] ?? "م").toUpperCase()}
           </div>
           <div>
-            <div className="font-bold text-white text-sm">مهمان کاربری</div>
-            <div className="text-xs text-gold">مشتری ویژه</div>
+            <div className="text-sm font-bold text-white">{displayName}</div>
+            <div className="text-xs text-gold">{displayRole}</div>
           </div>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="rounded-2xl bg-surface border border-white/8 overflow-hidden">
-        {navItems.map((item, i) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+      <nav className="overflow-hidden rounded-2xl border border-white/8 bg-surface">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/");
 
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center justify-between px-4 py-3 text-sm transition-all duration-200',
-                'border-b border-white/5 last:border-b-0',
+                "flex items-center justify-between border-b border-white/5 px-4 py-3 text-sm transition-all duration-200 last:border-b-0",
                 isActive
-                  ? 'bg-gold/10 text-gold border-r-2 border-r-gold'
-                  : 'text-muted hover:text-white hover:bg-white/5',
+                  ? "border-r-2 border-r-gold bg-gold/10 text-gold"
+                  : "text-muted hover:bg-white/5 hover:text-white",
               )}
             >
               <div className="flex items-center gap-3">
@@ -62,20 +91,19 @@ export function UserSidebar() {
                 {item.label}
               </div>
               {item.badge && (
-                <span className="w-5 h-5 rounded-full bg-danger text-white text-2xs font-bold flex items-center justify-center">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-danger text-2xs font-bold text-white">
                   {item.badge}
                 </span>
               )}
             </Link>
-          )
+          );
         })}
 
-        {/* Logout */}
-        <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-danger hover:bg-danger/10 transition-colors border-t border-white/8">
+        <button className="flex w-full items-center gap-3 border-t border-white/8 px-4 py-3 text-sm text-danger transition-colors hover:bg-danger/10">
           <LogOut className="h-4 w-4" />
           خروج
         </button>
       </nav>
     </aside>
-  )
+  );
 }

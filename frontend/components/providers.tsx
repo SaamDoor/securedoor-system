@@ -1,62 +1,74 @@
-'use client'
+"use client";
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { useState, useEffect, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { useSettingsStore } from '@/store/settings.store'
-
-const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { startTransition, useState, useEffect, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { useSettingsStore } from "@/store/settings.store";
+import { useAuthStore } from "@/store/auth.store";
 
 /**
- * Listens to Supabase auth events and keeps the `user_role` cookie in sync
- * with what is stored in `public.users`. This is the single source of truth
- * for the server-side middleware/layout role check.
+ * Hydrates the auth store from the role cookie immediately, then confirms
+ * the active session and authoritative DB role via Supabase.
  */
 function AuthStateListener() {
-  const router = useRouter()
+  const router = useRouter();
+  const initializeFromCookie = useAuthStore(
+    (state) => state.initializeFromCookie,
+  );
+  const setLoading = useAuthStore((state) => state.setLoading);
+  const syncSession = useAuthStore((state) => state.syncSession);
 
   useEffect(() => {
-    const supabase = createClient()
+    const supabase = createClient();
+    let isMounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Always re-fetch from public.users so a role change in the DB is
-        // reflected immediately on the next auth event (login, token refresh).
-        const { data: profile } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
+    initializeFromCookie();
+    setLoading(true);
 
-        const role = (profile?.role as string | null) ?? 'customer'
-        document.cookie = `user_role=${role}; path=/; SameSite=Lax; Max-Age=${ROLE_COOKIE_MAX_AGE}`
-        // Refresh server components so the new role is picked up immediately
-        router.refresh()
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!isMounted) return;
+      await syncSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
+      await syncSession(session);
+
+      if (
+        event === "SIGNED_IN" ||
+        event === "SIGNED_OUT" ||
+        event === "TOKEN_REFRESHED" ||
+        event === "USER_UPDATED"
+      ) {
+        startTransition(() => router.refresh());
       }
+    });
 
-      if (event === 'SIGNED_OUT') {
-        document.cookie = 'user_role=; path=/; Max-Age=0; SameSite=Lax'
-        router.refresh()
-      }
-    })
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [initializeFromCookie, router, setLoading, syncSession]);
 
-    return () => subscription.unsubscribe()
-  }, [router])
-
-  return null
+  return null;
 }
 
 /** Loads public global settings into the Zustand store once on app boot. */
 function SettingsInitializer() {
-  const loadPublic = useSettingsStore((s) => s.loadPublic)
-  useEffect(() => { loadPublic() }, [loadPublic])
-  return null
+  const loadPublic = useSettingsStore((s) => s.loadPublic);
+  useEffect(() => {
+    loadPublic();
+  }, [loadPublic]);
+  return null;
 }
 
 interface ProvidersProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function Providers({ children }: ProvidersProps) {
@@ -72,16 +84,16 @@ export function Providers({ children }: ProvidersProps) {
           },
         },
       }),
-  )
+  );
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthStateListener />
       <SettingsInitializer />
       {children}
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools initialIsOpen={false} position="bottom" />
       )}
     </QueryClientProvider>
-  )
+  );
 }
