@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import type { Product, ProductFilter } from '@/types'
+import type { Product, ProductFilter, StockStatus } from '@/types'
 
 export async function getProducts(filter: ProductFilter = {}) {
   const supabase = createClient()
@@ -126,4 +126,207 @@ export async function getCategories() {
 
   if (error) throw error
   return data
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  ADMIN CRUD
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AdminProductImageInput {
+  url: string
+  alt?: string
+  isPrimary?: boolean
+  order?: number
+}
+
+export interface AdminProductInput {
+  name: string
+  slug: string
+  sku: string
+  category_id: string
+  short_description?: string | null
+  description: string
+  price: number
+  compare_price?: number | null
+  stock: number
+  stock_status: StockStatus
+  is_active: boolean
+  is_featured: boolean
+  is_new: boolean
+  meta_title?: string | null
+  meta_description?: string | null
+  linked_frame_ids?: string[]
+}
+
+function toProductRow(input: AdminProductInput) {
+  return {
+    name: input.name,
+    slug: input.slug,
+    sku: input.sku,
+    category_id: input.category_id,
+    short_description: input.short_description || null,
+    description: input.description,
+    price: input.price,
+    compare_price: input.compare_price || null,
+    stock: input.stock,
+    stock_status: input.stock_status,
+    is_active: input.is_active,
+    is_featured: input.is_featured,
+    is_new: input.is_new,
+    meta_title: input.meta_title || null,
+    meta_description: input.meta_description || null,
+    linked_frame_ids: input.linked_frame_ids ?? [],
+  }
+}
+
+/** Replaces a product's image set — deletes existing rows then inserts the new ones. */
+async function replaceProductImages(productId: string, images: AdminProductImageInput[]) {
+  const supabase = createClient()
+
+  const { error: deleteError } = await supabase
+    .from('product_images')
+    .delete()
+    .eq('product_id', productId)
+  if (deleteError) throw deleteError
+
+  if (!images.length) return
+
+  const rows = images.map((img, idx) => ({
+    product_id: productId,
+    url: img.url,
+    alt: img.alt ?? null,
+    is_primary: img.isPrimary ?? idx === 0,
+    order: img.order ?? idx,
+  }))
+
+  const { error: insertError } = await supabase.from('product_images').insert(rows)
+  if (insertError) throw insertError
+}
+
+/** Fetches the full product list for the admin table — no `is_active` filter. */
+export async function getAdminProducts(search = '') {
+  const supabase = createClient()
+
+  let query = supabase
+    .from('products')
+    .select(`
+      id, sku, name, price, stock, stock_status, is_active, is_featured, view_count, created_at,
+      category:product_categories(id, name),
+      images:product_images(url, is_primary)
+    `)
+    .order('created_at', { ascending: false })
+
+  if (search.trim()) {
+    query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%`)
+  }
+
+  const { data, error } = await query
+  if (error) throw error
+  return data ?? []
+}
+
+/** Fetches a single product (with its images) for the edit form. */
+export async function getAdminProductById(id: string) {
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, images:product_images(*)')
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function createProduct(input: AdminProductInput, images: AdminProductImageInput[] = []) {
+  const supabase = createClient()
+
+  const { data: product, error } = await supabase
+    .from('products')
+    .insert(toProductRow(input))
+    .select('*')
+    .single()
+
+  if (error) throw error
+
+  if (images.length) {
+    await replaceProductImages(product.id, images)
+  }
+
+  return product
+}
+
+export async function updateProduct(
+  id: string,
+  input: AdminProductInput,
+  images?: AdminProductImageInput[],
+) {
+  const supabase = createClient()
+
+  const { data: product, error } = await supabase
+    .from('products')
+    .update({ ...toProductRow(input), updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select('*')
+    .single()
+
+  if (error) throw error
+
+  if (images) {
+    await replaceProductImages(id, images)
+  }
+
+  return product
+}
+
+export async function deleteProduct(id: string) {
+  const supabase = createClient()
+  const { error } = await supabase.from('products').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function toggleProductActive(id: string, isActive: boolean) {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('products')
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw error
+}
+
+/** Uploads images to the public `products` storage bucket and returns their public URLs. */
+export async function uploadProductImages(files: File[]): Promise<string[]> {
+  const supabase = createClient()
+  const urls: string[] = []
+
+  for (const file of files) {
+    const ext = file.name.split('.').pop()
+    const path = `gallery/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+    const { error } = await supabase.storage.from('products').upload(path, file, {
+      cacheControl: '31536000',
+      upsert: false,
+    })
+    if (error) throw error
+
+    const { data } = supabase.storage.from('products').getPublicUrl(path)
+    urls.push(data.publicUrl)
+  }
+
+  return urls
+}
+
+/** Fetches active frame price rows for the product-form's frame-linking section. */
+export async function getFramePriceOptions() {
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from('frame_price_list')
+    .select('id, frame_type, color_name, price_3klaf')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+
+  if (error) throw error
+  return data ?? []
 }

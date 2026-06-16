@@ -91,6 +91,7 @@ export interface Product {
   viewCount: number
   reviewCount: number
   averageRating: number
+  linkedFrameIds?: string[]
   createdAt: string
   updatedAt: string
 }
