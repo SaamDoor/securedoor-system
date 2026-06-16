@@ -147,7 +147,7 @@ export interface AdminProductInput {
   short_description?: string | null
   description: string
   price: number
-  compare_price?: number | null
+  compare_price?: number | '' | null
   stock: number
   stock_status: StockStatus
   is_active: boolean
