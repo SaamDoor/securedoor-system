@@ -4,8 +4,20 @@ import { Providers } from '@/components/providers'
 import '@/app/globals.css'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/constants'
 
+// A misconfigured NEXT_PUBLIC_SITE_URL (empty string, missing protocol) makes
+// `new URL()` throw synchronously inside this Server Component on every
+// request — crashing the entire site for every visitor with no error
+// boundary able to catch it. Fall back to the known-good default instead.
+function safeMetadataBase(url: string): URL {
+  try {
+    return new URL(url)
+  } catch {
+    return new URL('https://mashuf.com')
+  }
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: safeMetadataBase(SITE_URL),
   title: {
     default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,

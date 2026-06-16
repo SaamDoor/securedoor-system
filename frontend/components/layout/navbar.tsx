@@ -66,7 +66,7 @@ const navItems = [
       { label: "تحویل‌شده", href: "/projects?status=delivered" },
     ],
   },
-  { label: "دسته‌بندی‌ها", href: "/categories" },
+  { label: "دسته‌بندی‌ها", href: "/products" },
   { label: "وبلاگ", href: "/blog" },
   { label: "درباره ما", href: "/about" },
   { label: "تماس با ما", href: "/contact" },
@@ -272,7 +272,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              href="/track-order"
+              href="/user/orders"
               className="transition-colors hover:text-gold"
             >
               پیگیری سفارش

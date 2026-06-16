@@ -12,18 +12,18 @@ const footerLinks = {
   ],
   company: [
     { label: 'درباره گروه مشعوف', href: '/about' },
-    { label: 'افتخارات و گواهینامه‌ها', href: '/certificates' },
-    { label: 'نمایندگی‌ها', href: '/branches' },
+    { label: 'افتخارات و گواهینامه‌ها', href: '/certificates', prefetch: false },
+    { label: 'نمایندگی‌ها', href: '/branches', prefetch: false },
     { label: 'وبلاگ', href: '/blog' },
     { label: 'تماس با ما', href: '/contact' },
-    { label: 'فرصت‌های شغلی', href: '/careers' },
+    { label: 'فرصت‌های شغلی', href: '/careers', prefetch: false },
   ],
   support: [
-    { label: 'راهنمای خرید', href: '/guide/buying' },
-    { label: 'راهنمای نصب', href: '/guide/installation' },
-    { label: 'ضمانت‌نامه', href: '/warranty' },
-    { label: 'پیگیری سفارش', href: '/track-order' },
-    { label: 'سوالات متداول', href: '/faq' },
+    { label: 'راهنمای خرید', href: '/guide/buying', prefetch: false },
+    { label: 'راهنمای نصب', href: '/guide/installation', prefetch: false },
+    { label: 'ضمانت‌نامه', href: '/warranty', prefetch: false },
+    { label: 'پیگیری سفارش', href: '/user/orders' },
+    { label: 'سوالات متداول', href: '/faq', prefetch: false },
     { label: 'قوانین و مقررات', href: '/terms' },
   ],
 }
@@ -188,6 +188,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={'prefetch' in link ? link.prefetch : undefined}
                     className="text-sm text-muted hover:text-gold transition-colors hover:translate-x-[-4px] inline-block duration-200"
                   >
                     {link.label}
@@ -208,6 +209,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={'prefetch' in link ? link.prefetch : undefined}
                     className="text-sm text-muted hover:text-gold transition-colors hover:translate-x-[-4px] inline-block duration-200"
                   >
                     {link.label}
