@@ -1,22 +1,17 @@
 import { createBrowserClient } from '@supabase/ssr'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
-// Singleton pattern: reuse one client instance per browser tab.
-// Re-creating the client on every render breaks session continuity.
-let _client: SupabaseClient | null = null
+// یک متغیر سراسری برای جلوگیری از ساخت چندباره کلاینت در طول رندر
+let _client: ReturnType<typeof createBrowserClient> | null = null
 
-export function createClient(): SupabaseClient {
+export function createClient() {
   if (_client) return _client
 
-  // createBrowserClient throws synchronously if either arg is falsy. A
-  // missing/misconfigured env var must never escape as an uncaught throw
-  // here — that would unmount the whole React tree with no error boundary
-  // to catch it. Fall back to empty strings so the client builds (auth
-  // calls will simply fail/no-op instead of crashing the app).
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? ''
-
-  _client = createBrowserClient(url, key)
+  // بسیار مهم: استفاده از ?? "" به جای ! 
+  // در صورتی که در مرورگر متغیر محیطی گم شده باشد، برنامه به جای کرش قطعی، به کار خود ادامه می‌دهد
+  _client = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
+  )
 
   return _client
 }

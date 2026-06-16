@@ -1,98 +1,50 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { immer } from 'zustand/middleware/immer'
-import type { CartItem, Product } from '@/types'
+import { Product } from '@/types/product'
 
-interface CartState {
-  items: CartItem[]
-  isOpen: boolean
-
-  addItem: (product: Product, quantity?: number) => void
-  removeItem: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
-  clearCart: () => void
-  toggleCart: () => void
-
-  subtotal: () => number
-  /** Returns subtotal after applying a percentage discount (0–100). */
-  discountedSubtotal: (discountPercent: number) => number
-  itemCount: () => number
+export interface CartItem {
+  product: Product
+  quantity: number
+  selectedOptions?: Record<string, string>
 }
 
-export const useCartStore = create<CartState>()(
+interface CartStore {
+  items: CartItem[]
+  addItem: (item: CartItem) => void
+  removeItem: (productId: string) => void
+  clearCart: () => void
+  totalItems: number
+}
+
+export const useCartStore = create<CartStore>()(
   persist(
-    immer((set, get) => ({
+    (set, get) => ({
       items: [],
-      isOpen: false,
-
-      addItem(product, quantity = 1) {
-        set((state) => {
-          const existing = state.items.find((item) => item.productId === product.id)
-          if (existing) {
-            existing.quantity += quantity
-          } else {
-            state.items.push({
-              productId: product.id,
-              product,
-              quantity,
-              price: product.price,
-            })
-          }
-          state.isOpen = true
-        })
+      addItem: (item) => {
+        const existingItem = get().items.find((i) => i.product.id === item.product.id)
+        if (existingItem) {
+          set({
+            items: get().items.map((i) =>
+              i.product.id === item.product.id
+                ? { ...i, quantity: i.quantity + item.quantity }
+                : i
+            ),
+          })
+        } else {
+          set({ items: [...get().items, item] })
+        }
       },
-
-      removeItem(productId) {
-        set((state) => {
-          state.items = state.items.filter((item) => item.productId !== productId)
-        })
+      removeItem: (productId) =>
+        set({ items: get().items.filter((i) => i.product.id !== productId) }),
+      clearCart: () => set({ items: [] }),
+      get totalItems() {
+        return get().items.reduce((total, item) => total + item.quantity, 0)
       },
-
-      updateQuantity(productId, quantity) {
-        set((state) => {
-          const item = state.items.find((i) => i.productId === productId)
-          if (item) {
-            if (quantity <= 0) {
-              state.items = state.items.filter((i) => i.productId !== productId)
-            } else {
-              item.quantity = quantity
-            }
-          }
-        })
-      },
-
-      clearCart() {
-        set((state) => { state.items = [] })
-      },
-
-      toggleCart() {
-        set((state) => { state.isOpen = !state.isOpen })
-      },
-
-      subtotal() {
-        return get().items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-      },
-
-      discountedSubtotal(discountPercent) {
-        const base = get().subtotal()
-        if (!discountPercent || discountPercent <= 0) return base
-        return base * (1 - Math.min(discountPercent, 100) / 100)
-      },
-
-      itemCount() {
-        return get().items.reduce((sum, item) => sum + item.quantity, 0)
-      },
-    })),
+    }),
     {
       name: 'mashuf-cart',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ items: state.items }),
-      // Server has no localStorage and SSR markup is rendered with the
-      // default empty state. Hydrating automatically at store-creation time
-      // would touch localStorage during SSR (throws) and produce a
-      // client/server markup mismatch. Rehydrate manually after mount
-      // instead (see providers.tsx).
-      skipHydration: true,
-    },
-  ),
+      storage: createJSONStorage(() => typeof window !== 'undefined' ? localStorage : ({} as any)),
+      skipHydration: true, // CRITICAL FIX: جلوگیری از کرش صفحه سیاه
+    }
+  )
 )
