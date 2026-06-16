@@ -1,5 +1,4 @@
 import { createClient } from './client'
-import { createServerClient as _createServerClient } from './server'
 import type { SettingKey, SettingRecord, SettingsMap } from '@/types/dashboard'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,7 +98,7 @@ export async function upsertSetting(
 /** Convert the flat settings array into a typed Record for O(1) lookup. */
 export function buildSettingsMap(records: SettingRecord[]): SettingsMap {
   return records.reduce<SettingsMap>((acc, r) => {
-    ;(acc as Record<string, unknown>)[r.key] = r.value
+    ;(acc as unknown as Record<string, unknown>)[r.key] = r.value
     return acc
   }, {} as SettingsMap)
 }
