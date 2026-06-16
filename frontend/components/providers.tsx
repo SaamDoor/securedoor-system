@@ -21,16 +21,36 @@ function AuthStateListener() {
   const syncSession = useAuthStore((state) => state.syncSession);
 
   useEffect(() => {
-    const supabase = createClient();
     let isMounted = true;
 
     initializeFromCookie();
     setLoading(true);
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!isMounted) return;
-      await syncSession(session);
-    });
+    // A missing/misconfigured Supabase env var makes createClient() throw
+    // synchronously. Without this guard, that exception escapes the effect
+    // and — since there is no error boundary anywhere in the tree — React
+    // unmounts the entire app to a blank screen for every visitor. Fail
+    // soft instead: log it and treat the visitor as unauthenticated so the
+    // rest of the site (which doesn't need auth) stays usable.
+    let supabase: ReturnType<typeof createClient>;
+    try {
+      supabase = createClient();
+    } catch (err) {
+      console.error("[AuthStateListener] Supabase client init failed:", err);
+      setLoading(false);
+      return;
+    }
+
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session } }) => {
+        if (!isMounted) return;
+        await syncSession(session);
+      })
+      .catch((err) => {
+        console.error("[AuthStateListener] getSession failed:", err);
+        if (isMounted) setLoading(false);
+      });
 
     const {
       data: { subscription },

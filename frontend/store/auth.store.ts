@@ -41,9 +41,17 @@ function isUserRole(value: string | null | undefined): value is UserRole {
 function getRoleFromCookie(): UserRole | null {
   if (typeof document === "undefined") return null;
 
-  const match = document.cookie.match(/(?:^|;\s*)user_role=([^;]+)/);
-  const value = match?.[1] ? decodeURIComponent(match[1]) : null;
-  return isUserRole(value) ? value : null;
+  try {
+    const match = document.cookie.match(/(?:^|;\s*)user_role=([^;]+)/);
+    // decodeURIComponent throws on a malformed cookie value (e.g. a stray
+    // "%" from a previous bug or manual edit) — a stale cookie should never
+    // be able to crash the whole app on every page load.
+    const value = match?.[1] ? decodeURIComponent(match[1]) : null;
+    return isUserRole(value) ? value : null;
+  } catch (err) {
+    console.error("[auth.store] malformed user_role cookie:", err);
+    return null;
+  }
 }
 
 function writeRoleCookie(role: UserRole) {
@@ -238,16 +246,24 @@ export const useAuthStore = create<AuthState>()(
           return;
         }
 
-        const supabase = createClient();
-        const { data } = await supabase
-          .from("users")
-          .select(
-            "role, first_name, last_name, email, phone, is_active, is_verified, created_at, updated_at",
-          )
-          .eq("id", session.user.id)
-          .maybeSingle();
-
-        const profile = (data ?? null) as UserProfileRow | null;
+        // A Supabase client/query failure here (missing env vars, network
+        // error) must never throw out of this store method — it runs from
+        // Providers on every page, and an uncaught error there blanks the
+        // entire app for every visitor. Fall back to the role cookie.
+        let profile: UserProfileRow | null = null;
+        try {
+          const supabase = createClient();
+          const { data } = await supabase
+            .from("users")
+            .select(
+              "role, first_name, last_name, email, phone, is_active, is_verified, created_at, updated_at",
+            )
+            .eq("id", session.user.id)
+            .maybeSingle();
+          profile = (data ?? null) as UserProfileRow | null;
+        } catch (err) {
+          console.error("[auth.store] syncSession profile fetch failed:", err);
+        }
 
         const role = isUserRole(profile?.role)
           ? profile.role

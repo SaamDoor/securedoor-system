@@ -41,6 +41,21 @@ function setRoleCookie(response: NextResponse, role: UserRole) {
 }
 
 export async function middleware(request: NextRequest) {
+  // This middleware runs on almost every request (including the homepage
+  // and any crawler/bot hitting it). If anything below throws unguarded —
+  // a missing env var, a network blip talking to Supabase — Vercel returns
+  // a hard 500 for that request instead of the page, taking the whole site
+  // (and any verification bot) down with it. Fail open: on any unexpected
+  // error, just let the request through unauthenticated rather than crash.
+  try {
+    return await handleMiddleware(request);
+  } catch (err) {
+    console.error("[middleware] unhandled error, failing open:", err);
+    return NextResponse.next({ request });
+  }
+}
+
+async function handleMiddleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -72,7 +87,10 @@ export async function middleware(request: NextRequest) {
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser().catch((err) => {
+    console.error("[middleware] supabase.auth.getUser failed:", err);
+    return { data: { user: null } };
+  });
 
   const { pathname, searchParams } = request.nextUrl;
   const supabaseError = searchParams.get("error");
