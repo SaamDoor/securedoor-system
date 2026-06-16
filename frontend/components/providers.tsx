@@ -7,6 +7,22 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useSettingsStore } from "@/store/settings.store";
 import { useAuthStore } from "@/store/auth.store";
+import { useCartStore } from "@/store/cart.store";
+
+/**
+ * auth.store / cart.store use `persist` with `skipHydration: true`, so
+ * `localStorage`/`sessionStorage` are never read during SSR or the initial
+ * client render — server and first client paint both show default state,
+ * so there is no hydration mismatch. This rehydrates them from storage
+ * once mounted, before anything else runs.
+ */
+function StoreHydrator() {
+  useEffect(() => {
+    useAuthStore.persist.rehydrate();
+    useCartStore.persist.rehydrate();
+  }, []);
+  return null;
+}
 
 /**
  * Hydrates the auth store from the role cookie immediately, then confirms
@@ -108,6 +124,7 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <StoreHydrator />
       <AuthStateListener />
       <SettingsInitializer />
       {children}

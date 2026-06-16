@@ -87,6 +87,12 @@ export const useCartStore = create<CartState>()(
       name: 'mashuf-cart',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ items: state.items }),
+      // Server has no localStorage and SSR markup is rendered with the
+      // default empty state. Hydrating automatically at store-creation time
+      // would touch localStorage during SSR (throws) and produce a
+      // client/server markup mismatch. Rehydrate manually after mount
+      // instead (see providers.tsx).
+      skipHydration: true,
     },
   ),
 )

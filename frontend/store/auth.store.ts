@@ -291,6 +291,10 @@ export const useAuthStore = create<AuthState>()(
         tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
       }),
+      // Same reasoning as cart.store.ts: never touch sessionStorage during
+      // SSR / initial render. Rehydrated manually after mount in
+      // providers.tsx, ahead of initializeFromCookie/syncSession.
+      skipHydration: true,
     },
   ),
 );
