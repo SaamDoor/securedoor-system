@@ -7,7 +7,11 @@ export type UserRole =
 
 export const ADMIN_ROLES: readonly UserRole[] = ["admin", "super_admin"];
 export const USER_PANEL_ROLES: readonly UserRole[] = ["customer", "support"];
-export const PARTNER_PANEL_ROLES: readonly UserRole[] = ["manager"];
+export const PARTNER_PANEL_ROLES: readonly UserRole[] = [
+  "manager",
+  "admin",
+  "super_admin",
+];
 export const SUPER_ADMIN_ROLES: readonly UserRole[] = ["super_admin"];
 
 export const ROLE_HOME: Record<UserRole, string> = {

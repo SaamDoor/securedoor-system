@@ -1,18 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff, UserPlus, Mail, Lock, Phone, User } from 'lucide-react'
+import { Eye, EyeOff, UserPlus, Mail, Lock, Phone, User, Gift } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { isValidIranPhone, phoneToAuthEmail } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { attachReferral } from '@/app/actions/auth'
 
 const registerSchema = z
   .object({
@@ -29,6 +30,7 @@ const registerSchema = z
       .regex(/[A-Z]/, 'رمز عبور باید حداقل یک حرف بزرگ انگلیسی داشته باشد')
       .regex(/[0-9]/, 'رمز عبور باید حداقل یک عدد داشته باشد'),
     confirmPassword: z.string(),
+    referralCode: z.string().optional(),
     acceptTerms: z.boolean().refine(Boolean, 'پذیرش قوانین الزامی است'),
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -55,25 +57,34 @@ function mapRegisterError(message: string): string {
   return `خطا در ثبت‌نام: ${message}`
 }
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const refCode = searchParams.get('ref') ?? ''
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { acceptTerms: false },
+    defaultValues: { acceptTerms: false, referralCode: refCode },
   })
+
+  // Auto-fill the referral code field if the user arrived via a `?ref=` link
+  useEffect(() => {
+    if (refCode) setValue('referralCode', refCode)
+  }, [refCode, setValue])
 
   async function onSubmit(data: RegisterFormData) {
     const supabase = createClient()
 
     // Build the internal auth email from phone — never shown to user
     const authEmail = phoneToAuthEmail(data.phone)
+    const referralCode = data.referralCode?.trim() || null
 
     const { error } = await supabase.auth.signUp({
       email: authEmail,
@@ -85,6 +96,8 @@ export default function RegisterPage() {
           phone: data.phone.trim(),
           // Store real email in metadata if provided; used for contact/notifications only
           contact_email: data.email?.trim().toLowerCase() || null,
+          // Code of the partner/affiliate who referred this signup, if any
+          referral_code: referralCode,
         },
         // No email redirect needed — phone-based accounts skip email confirmation
         emailRedirectTo: undefined,
@@ -130,6 +143,10 @@ export default function RegisterPage() {
         .single()
       const role = profile?.role ?? 'customer'
       document.cookie = `user_role=${role}; path=/; SameSite=Lax; Max-Age=${60 * 60 * 24 * 30}`
+
+      if (referralCode) {
+        attachReferral(sessionData.user.id, referralCode).catch(() => {})
+      }
     }
 
     router.push('/user/dashboard')
@@ -194,6 +211,16 @@ export default function RegisterPage() {
           autoComplete="email"
           hint="برای دریافت اطلاعیه‌ها و پشتیبانی (الزامی نیست)"
           {...register('email')}
+        />
+
+        {/* Referral code — optional, auto-filled from ?ref= query param */}
+        <Input
+          label="کد معرف (اختیاری)"
+          placeholder="کد معرف همکار"
+          error={errors.referralCode?.message}
+          leftIcon={<Gift className="h-4 w-4" />}
+          dir="ltr"
+          {...register('referralCode')}
         />
 
         <Input
@@ -271,5 +298,13 @@ export default function RegisterPage() {
         </Button>
       </form>
     </motion.div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
   )
 }

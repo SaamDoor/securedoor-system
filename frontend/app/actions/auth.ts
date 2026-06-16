@@ -21,6 +21,53 @@ export interface SignInWithPasswordResult {
   error: string;
 }
 
+export interface AttachReferralResult {
+  ok: boolean;
+}
+
+/**
+ * Resolves a referral code (entered at registration) to the referring user
+ * and stamps `referred_by` on the new user's row so commissions can later be
+ * attributed to the referrer. Uses the admin client because the new user's
+ * own RLS policy does not allow looking up other users by referral_code.
+ */
+export async function attachReferral(
+  userId: string,
+  referralCode: string,
+): Promise<AttachReferralResult> {
+  const code = referralCode.trim();
+  if (!code) return { ok: true };
+
+  try {
+    const admin = createAdminClient();
+
+    const { data: referrer } = await admin
+      .from("users")
+      .select("id")
+      .eq("referral_code", code)
+      .maybeSingle();
+
+    if (!referrer || referrer.id === userId) {
+      return { ok: true };
+    }
+
+    const { error } = await admin
+      .from("users")
+      .update({ referred_by: referrer.id })
+      .eq("id", userId);
+
+    if (error) {
+      console.error("[attachReferral] update error:", error);
+      return { ok: false };
+    }
+
+    return { ok: true };
+  } catch (err) {
+    console.error("[attachReferral] unexpected error:", err);
+    return { ok: false };
+  }
+}
+
 export async function signInWithPassword(
   phone: string,
   password: string,
