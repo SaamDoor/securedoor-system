@@ -5,6 +5,8 @@ import { Navbar } from "@/components/layout/navbar";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_HOME, USER_PANEL_ROLES, type UserRole } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function UserLayout({
   children,
 }: {

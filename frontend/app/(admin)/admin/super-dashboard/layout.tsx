@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { SuperSidebar } from "@/components/admin/super-sidebar";
 import { ROLE_HOME, type UserRole } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function SuperDashboardLayout({
   children,
 }: {

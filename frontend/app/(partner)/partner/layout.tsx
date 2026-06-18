@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_HOME, PARTNER_PANEL_ROLES, type UserRole } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function PartnerLayout({
   children,
 }: {

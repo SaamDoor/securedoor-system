@@ -5,6 +5,8 @@ import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { createClient } from "@/lib/supabase/server";
 import { ADMIN_ROLES, ROLE_HOME, type UserRole } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {
