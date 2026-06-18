@@ -10,15 +10,19 @@ export const metadata: Metadata = {
 }
 
 async function getData() {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('construction_projects')
-    .select('id, title, slug, short_description, status, area, location, floors, units, price_from, price_to, completion_year, is_featured, thumbnail_url, amenities')
-    .eq('is_active', true)
-    .order('is_featured', { ascending: false })
-    .order('created_at', { ascending: false })
-
-  return (data ?? []) as Partial<ConstructionProject>[]
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('construction_projects')
+      .select('id, title, slug, short_description, status, area, location, floors, units, price_from, price_to, completion_year, is_featured, thumbnail_url, amenities')
+      .eq('is_active', true)
+      .order('is_featured', { ascending: false })
+      .order('created_at', { ascending: false })
+    return (data ?? []) as Partial<ConstructionProject>[]
+  } catch (err) {
+    console.error('[ProjectsPage] getData failed:', err)
+    return []
+  }
 }
 
 export default async function ProjectsPage() {
