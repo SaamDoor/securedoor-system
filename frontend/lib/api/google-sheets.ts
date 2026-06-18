@@ -130,7 +130,7 @@ interface Snapshot { price_hash: string; changed_at: string }
 
 async function readSnapshot(): Promise<Snapshot | null> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!url || !key) return null
 
@@ -159,7 +159,7 @@ async function upsertSnapshot(newHash: string): Promise<string> {
   // Writes require the service role key; fall back to anon key if not set
   const key =
     process.env.SUPABASE_SECRET_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   const changedAt = new Date().toISOString()
 

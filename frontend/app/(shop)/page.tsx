@@ -27,7 +27,18 @@ export const metadata: Metadata = {
 export const revalidate = 600
 
 export default async function HomePage() {
-  const { frenchPrices, mexicanPrices, lastUpdated } = await fetchFramePrices()
+  let frenchPrices: import('@/lib/api/google-sheets').PriceRow[] = []
+  let mexicanPrices: import('@/lib/api/google-sheets').PriceRow[] = []
+  let lastUpdated = ''
+
+  try {
+    const prices = await fetchFramePrices()
+    frenchPrices = prices.frenchPrices
+    mexicanPrices = prices.mexicanPrices
+    lastUpdated = prices.lastUpdated
+  } catch (error) {
+    console.error('[Google Sheets API Error]:', error)
+  }
 
   return (
     <>

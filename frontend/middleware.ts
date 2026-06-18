@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
   try {
     return await handleMiddleware(request);
   } catch (err) {
-    console.error("[middleware] unhandled error, failing open:", err);
+    console.error("[Middleware Fatal Error]:", err);
     return NextResponse.next({ request });
   }
 }
@@ -60,7 +60,7 @@ async function handleMiddleware(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
