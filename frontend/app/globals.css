@@ -134,6 +134,9 @@
     font-family: var(--font-primary);
     min-height: 100dvh;
     overflow-x: hidden;
+    /* Momentum-based smooth scrolling on iOS Safari */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 
   input[type="number"] {
