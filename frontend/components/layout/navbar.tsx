@@ -223,8 +223,8 @@ export function Navbar() {
 
   return (
     <>
-      {/* ── Floating navbar wrapper — sticky but visually floating ── */}
-      <div className="sticky top-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4 pb-0 pointer-events-none">
+      {/* ── Fixed navbar wrapper — overlays hero, floats above all content ── */}
+      <div className="fixed top-0 left-0 right-0 z-[100] px-3 pt-3 sm:px-4 sm:pt-4 pb-0 pointer-events-none">
         <motion.header
           className={cn(
             "pointer-events-auto w-full max-w-7xl mx-auto rounded-2xl",
@@ -236,9 +236,9 @@ export function Navbar() {
                   "shadow-[0_8px_40px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.04),inset_0_1px_0_rgba(255,255,255,0.06)]",
                 ].join(" ")
               : [
-                  "bg-white/[0.04] border-white/[0.07]",
+                  "bg-white/10 border-white/[0.10]",
                   "backdrop-blur-md",
-                  "shadow-[0_4px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.04)]",
+                  "shadow-[0_4px_24px_rgba(0,0,0,0.30),inset_0_1px_0_rgba(255,255,255,0.06)]",
                 ].join(" "),
           )}
           initial={{ y: -80, opacity: 0 }}

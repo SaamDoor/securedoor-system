@@ -6,7 +6,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Navbar />
-      <main>{children}</main>
+      <main className="pt-20 overflow-x-hidden">{children}</main>
       <Footer />
       <FloatingContactButton />
     </>

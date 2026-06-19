@@ -36,7 +36,7 @@ export function HeroSection() {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-screen flex items-center overflow-hidden bg-black"
+      className="relative -mt-20 min-h-[100svh] flex items-center overflow-hidden bg-black"
     >
 
       {/* ══ Background images with parallax ══ */}
@@ -112,7 +112,7 @@ export function HeroSection() {
       <div className="container relative z-10">
         <motion.div
           style={{ y: textY, opacity }}
-          className="w-full max-w-xl py-32 lg:py-0"
+          className="w-full max-w-xl py-32 lg:py-0 lg:pt-28"
         >
 
           {/* Eyebrow badge */}
@@ -123,8 +123,9 @@ export function HeroSection() {
             className="mb-7"
           >
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full
-              backdrop-blur-md bg-white/[0.06] border border-primary/25
-              shadow-[0_0_24px_rgba(196,30,58,0.12),inset_0_1px_0_rgba(255,255,255,0.07)]">
+              backdrop-blur-md bg-white/[0.08] border border-primary/25
+              shadow-[0_0_24px_rgba(196,30,58,0.12),inset_0_1px_0_rgba(255,255,255,0.07),0_4px_16px_rgba(0,0,0,0.4)]
+              drop-shadow-lg">
               <Star className="h-3 w-3 text-primary fill-primary" />
               <span className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
                 صنایع ساختمانی مشعوف
@@ -140,9 +141,9 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="font-black text-white mb-7 leading-[1.08] tracking-tight"
-            style={{ fontSize: 'clamp(2.75rem, 8vw, 5.5rem)' }}
+            style={{ fontSize: 'clamp(2.75rem, 8vw, 5.5rem)', textShadow: '0 2px 24px rgba(0,0,0,0.6)' }}
           >
-            گروه تولیدی{' '}
+            گروه صنعتی{' '}
             <span className="relative inline-block">
               {/* Gradient text — crimson to rose */}
               <span
@@ -175,9 +176,9 @@ export function HeroSection() {
             className="relative mb-8"
           >
             <div className="rounded-2xl p-5
-              backdrop-blur-xl bg-white/[0.05]
-              border border-white/[0.09]
-              shadow-[0_8px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-1px_0_rgba(0,0,0,0.05)]">
+              backdrop-blur-xl bg-white/[0.07]
+              border border-white/[0.10]
+              shadow-[0_8px_40px_rgba(0,0,0,0.50),inset_0_1px_0_rgba(255,255,255,0.10),inset_0_-1px_0_rgba(0,0,0,0.08)]">
               <div className="absolute top-0 right-4 left-1/2 h-px bg-gradient-to-l from-transparent to-white/15 rounded-full" />
               <p className="text-white/85 leading-[1.9] text-sm sm:text-base">
                 گروه تولیدی صنایع ساختمانی مشعوف با بیش از ۱۰ سال سابقه در زمینه تولید
@@ -271,7 +272,7 @@ export function HeroSection() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.6, duration: 0.8 }}
-        className="absolute bottom-[5.5rem] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
+        className="absolute bottom-[12rem] sm:bottom-[5.5rem] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
       >
         <span className="text-[10px] text-white/25 tracking-widest">اسکرول</span>
         <motion.div
