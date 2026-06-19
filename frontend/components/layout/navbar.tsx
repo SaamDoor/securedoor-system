@@ -108,7 +108,6 @@ function UserMenu({
         setOpen(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -116,23 +115,23 @@ function UserMenu({
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen((v) => !v)}
         className={cn(
           "flex items-center gap-2 rounded-xl px-3 py-1.5",
-          "border border-gold/30 bg-gold/5 transition-all duration-200",
-          "hover:border-gold/60 hover:bg-gold/10",
+          "border border-primary/30 bg-primary/5 transition-all duration-200",
+          "hover:border-primary/60 hover:bg-primary/10",
         )}
         aria-label="منوی کاربر"
       >
-        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gold-gradient">
-          <span className="text-xs font-black text-black">{user.initials}</span>
+        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-primary-gradient">
+          <span className="text-xs font-black text-white">{user.initials}</span>
         </div>
         <span className="hidden max-w-[100px] truncate text-sm font-semibold text-white sm:block">
           {user.name || "حساب من"}
         </span>
         <ChevronDown
           className={cn(
-            "h-3.5 w-3.5 text-gold transition-transform duration-200",
+            "h-3.5 w-3.5 text-primary transition-transform duration-200",
             open && "rotate-180",
           )}
         />
@@ -165,7 +164,7 @@ function UserMenu({
               className={cn(
                 "flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
                 isAdmin
-                  ? "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+                  ? "text-primary-400 hover:bg-primary/10 hover:text-primary-300"
                   : "text-muted hover:bg-white/5 hover:text-white",
               )}
             >
@@ -191,10 +190,7 @@ function UserMenu({
             <div className="mx-4 my-1.5 border-t border-white/8" />
 
             <button
-              onClick={() => {
-                setOpen(false);
-                onLogout();
-              }}
+              onClick={() => { setOpen(false); onLogout(); }}
               className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
             >
               <LogOut className="h-4 w-4 flex-shrink-0" />
@@ -243,10 +239,7 @@ export function Navbar() {
 
   useEffect(() => {
     document.body.style.overflow = isMobileOpen ? "hidden" : "";
-
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => { document.body.style.overflow = ""; };
   }, [isMobileOpen]);
 
   const handleDropdownEnter = (label: string) => {
@@ -260,21 +253,19 @@ export function Navbar() {
 
   return (
     <>
+      {/* ── Top info bar ── */}
       <div className="hidden border-b border-white/5 bg-charcoal lg:block">
         <div className="container flex items-center justify-between py-2 text-xs text-muted">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <Phone className="h-3 w-3 text-gold" />
+              <Phone className="h-3 w-3 text-primary" />
               {CONTACT.phone}
             </span>
             <span className="text-white/20">|</span>
             <span>{CONTACT.workingHours}</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link
-              href="/user/orders"
-              className="transition-colors hover:text-gold"
-            >
+            <Link href="/user/orders" className="transition-colors hover:text-primary">
               پیگیری سفارش
             </Link>
             <span className="text-white/20">|</span>
@@ -282,20 +273,15 @@ export function Navbar() {
               <>
                 <Link
                   href={resolvedDashboardHref}
-                  className="font-medium text-gold transition-colors hover:text-gold-light"
+                  className="font-medium text-primary transition-colors hover:text-primary-400"
                 >
                   {resolvedDashboardLabel}
                 </Link>
                 <span className="text-white/20">|</span>
-                <span className="text-white/75">
-                  {authUser.name || "حساب من"}
-                </span>
+                <span className="text-white/75">{authUser.name || "حساب من"}</span>
               </>
             ) : (
-              <Link
-                href="/auth/login"
-                className="transition-colors hover:text-gold"
-              >
+              <Link href="/auth/login" className="transition-colors hover:text-primary">
                 ورود / ثبت‌نام
               </Link>
             )}
@@ -303,36 +289,36 @@ export function Navbar() {
         </div>
       </div>
 
+      {/* ── Main header — sticky glass ── */}
       <motion.header
         className={cn(
-          "sticky top-0 z-50 w-full transition-all duration-400 ease-luxury",
+          "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
           isScrolled
-            ? "border-b border-white/8 bg-black/95 shadow-luxury-sm backdrop-blur-xl"
+            ? "border-b border-white/8 bg-black/95 shadow-luxury-sm backdrop-blur-md"
             : "border-b border-transparent bg-transparent",
         )}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <div className="container">
-          <div className="flex h-18 items-center justify-between">
+        <div className="container px-4 sm:px-6">
+          <div className="flex h-[72px] items-center justify-between">
             <Logo variant="default" size="md" />
 
+            {/* Desktop nav */}
             <nav className="hidden items-center gap-1 lg:flex">
               {navItems.map((item) => (
                 <div
                   key={item.label}
                   className="relative"
-                  onMouseEnter={() =>
-                    item.children && handleDropdownEnter(item.label)
-                  }
+                  onMouseEnter={() => item.children && handleDropdownEnter(item.label)}
                   onMouseLeave={handleDropdownLeave}
                 >
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-medium",
-                      "text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white",
+                      "flex items-center gap-1 rounded-xl px-4 py-2 text-sm font-medium",
+                      "text-muted transition-all duration-200 hover:bg-white/5 hover:text-white",
                     )}
                   >
                     {item.label}
@@ -352,10 +338,7 @@ export function Navbar() {
                         initial={{ opacity: 0, y: 8, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                        transition={{
-                          duration: 0.2,
-                          ease: [0.25, 0.46, 0.45, 0.94],
-                        }}
+                        transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className={cn(
                           "absolute right-0 top-full mt-2 w-56 rounded-2xl border border-white/10 py-2",
                           "bg-surface/95 shadow-luxury backdrop-blur-xl",
@@ -375,10 +358,10 @@ export function Navbar() {
                             {child.label}
                           </Link>
                         ))}
-                        <div className="divider-gold mx-4 my-2" />
+                        <div className="divider-primary mx-4 my-2" />
                         <Link
                           href="/products"
-                          className="flex items-center px-4 py-2.5 text-sm text-gold transition-colors hover:text-gold-light"
+                          className="flex items-center px-4 py-2.5 text-sm text-primary transition-colors hover:text-primary-400"
                         >
                           مشاهده همه محصولات ←
                         </Link>
@@ -389,11 +372,12 @@ export function Navbar() {
               ))}
             </nav>
 
-            <div className="flex items-center gap-2">
+            {/* Action icons */}
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl",
+                  "flex h-11 w-11 items-center justify-center rounded-xl",
                   "text-muted transition-all duration-200 hover:bg-white/5 hover:text-white",
                 )}
                 aria-label="جستجو"
@@ -404,7 +388,7 @@ export function Navbar() {
               <Link
                 href="/user/wishlist"
                 className={cn(
-                  "relative flex h-10 w-10 items-center justify-center rounded-xl",
+                  "relative flex h-11 w-11 items-center justify-center rounded-xl",
                   "text-muted transition-all duration-200 hover:bg-white/5 hover:text-white",
                 )}
                 aria-label="علاقه‌مندی‌ها"
@@ -415,13 +399,13 @@ export function Navbar() {
               <Link
                 href="/cart"
                 className={cn(
-                  "relative flex h-10 w-10 items-center justify-center rounded-xl",
+                  "relative flex h-11 w-11 items-center justify-center rounded-xl",
                   "text-muted transition-all duration-200 hover:bg-white/5 hover:text-white",
                 )}
                 aria-label="سبد خرید"
               >
                 <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -left-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-2xs font-bold text-black">
+                <span className="absolute -left-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-2xs font-bold text-white">
                   ۳
                 </span>
               </Link>
@@ -448,10 +432,11 @@ export function Navbar() {
                 )}
               </div>
 
+              {/* Hamburger */}
               <button
-                onClick={() => setIsMobileOpen((value) => !value)}
+                onClick={() => setIsMobileOpen((v) => !v)}
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl lg:hidden",
+                  "flex h-11 w-11 items-center justify-center rounded-xl lg:hidden",
                   "text-muted transition-all hover:bg-white/5 hover:text-white",
                 )}
                 aria-label="منو"
@@ -467,6 +452,7 @@ export function Navbar() {
         </div>
       </motion.header>
 
+      {/* ── Search overlay ── */}
       <AnimatePresence>
         {isSearchOpen && (
           <motion.div
@@ -475,16 +461,14 @@ export function Navbar() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-60 flex items-start justify-center bg-black/90 pt-24 backdrop-blur-xl"
-            onClick={(event) =>
-              event.target === event.currentTarget && setIsSearchOpen(false)
-            }
+            onClick={(e) => e.target === e.currentTarget && setIsSearchOpen(false)}
           >
             <motion.div
               initial={{ opacity: 0, y: -20, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.97 }}
               transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="w-full max-w-2xl px-4"
+              className="w-full max-w-2xl px-4 sm:px-6"
             >
               <div className="relative">
                 <Search className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
@@ -496,11 +480,9 @@ export function Navbar() {
                     "h-16 w-full rounded-2xl pr-12 pl-12 text-lg",
                     "border border-white/15 bg-surface",
                     "text-white placeholder:text-muted",
-                    "transition-all duration-250 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20",
+                    "transition-all duration-250 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20",
                   )}
-                  onKeyDown={(event) =>
-                    event.key === "Escape" && setIsSearchOpen(false)
-                  }
+                  onKeyDown={(e) => e.key === "Escape" && setIsSearchOpen(false)}
                 />
                 <button
                   onClick={() => setIsSearchOpen(false)}
@@ -517,39 +499,50 @@ export function Navbar() {
         )}
       </AnimatePresence>
 
+      {/* ── Mobile drawer ── */}
       <AnimatePresence>
         {isMobileOpen && (
           <motion.div
-            initial={{ opacity: 0, x: "100%" }}
-            animate={{ opacity: 1, x: "0%" }}
-            exit={{ opacity: 0, x: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 200 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
             className="fixed inset-0 z-50 lg:hidden"
           >
+            {/* Backdrop */}
             <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
               onClick={() => setIsMobileOpen(false)}
             />
-            <div className="absolute bottom-0 left-0 top-0 flex w-80 max-w-[85vw] flex-col overflow-y-auto border-l border-white/8 bg-surface">
-              <div className="flex items-center justify-between border-b border-white/8 p-5">
+
+            {/* Drawer panel — slides from right (RTL) */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: "0%" }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 280 }}
+              className="absolute bottom-0 right-0 top-0 flex w-80 max-w-[85vw] flex-col overflow-y-auto bg-zinc-950 shadow-2xl"
+            >
+              {/* Drawer header */}
+              <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
                 <div onClick={() => setIsMobileOpen(false)}>
                   <Logo variant="default" size="sm" />
                 </div>
                 <button
                   onClick={() => setIsMobileOpen(false)}
-                  className="text-muted transition-colors hover:text-white"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl text-muted transition-all hover:bg-white/5 hover:text-white"
+                  aria-label="بستن منو"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
+              {/* User info */}
               {authUser && (
-                <div className="border-b border-white/8 bg-gold/5 px-5 py-4">
+                <div className="border-b border-white/8 bg-primary/5 px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gold-gradient">
-                      <span className="font-black text-black">
-                        {authUser.initials}
-                      </span>
+                    <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary-gradient shadow-primary-sm">
+                      <span className="font-black text-white">{authUser.initials}</span>
                     </div>
                     <div>
                       <div className="text-sm font-bold text-white">
@@ -563,20 +556,21 @@ export function Navbar() {
                 </div>
               )}
 
-              <nav className="flex-1 p-4">
+              {/* Nav links */}
+              <nav className="flex-1 overflow-y-auto px-4 py-3">
                 {navItems.map((item, index) => (
                   <motion.div
                     key={item.label}
-                    initial={{ opacity: 0, x: 20 }}
+                    initial={{ opacity: 0, x: 16 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.3 }}
+                    transition={{ delay: index * 0.04, duration: 0.25 }}
                   >
                     <Link
                       href={item.href}
                       onClick={() => setIsMobileOpen(false)}
                       className={cn(
-                        "flex items-center justify-between rounded-xl px-3 py-3 font-medium text-white transition-colors",
-                        "hover:bg-white/5",
+                        "flex min-h-[44px] items-center justify-between rounded-xl px-3 py-3",
+                        "font-medium text-white transition-colors hover:bg-white/5",
                       )}
                     >
                       {item.label}
@@ -591,7 +585,7 @@ export function Navbar() {
                             key={child.href}
                             href={child.href}
                             onClick={() => setIsMobileOpen(false)}
-                            className="block px-3 py-2 text-sm text-muted transition-colors hover:text-gold"
+                            className="block min-h-[40px] px-3 py-2 text-sm text-muted transition-colors hover:text-primary"
                           >
                             {child.label}
                           </Link>
@@ -602,19 +596,12 @@ export function Navbar() {
                 ))}
               </nav>
 
-              <div className="space-y-3 border-t border-white/8 p-4">
+              {/* Drawer footer CTAs */}
+              <div className="space-y-3 border-t border-white/8 px-4 py-5">
                 {authUser && hasDashboardLink ? (
                   <>
-                    <Button
-                      asChild
-                      variant="gold-outline"
-                      size="md"
-                      className="w-full"
-                    >
-                      <Link
-                        href={resolvedDashboardHref}
-                        onClick={() => setIsMobileOpen(false)}
-                      >
+                    <Button asChild variant="gold-outline" size="md" className="w-full min-h-[44px]">
+                      <Link href={resolvedDashboardHref} onClick={() => setIsMobileOpen(false)}>
                         {isAdmin ? (
                           <ShieldCheck className="ml-2 h-4 w-4" />
                         ) : (
@@ -625,16 +612,8 @@ export function Navbar() {
                     </Button>
 
                     {showProfile && (
-                      <Button
-                        asChild
-                        variant="gold-outline"
-                        size="md"
-                        className="w-full"
-                      >
-                        <Link
-                          href="/user/profile"
-                          onClick={() => setIsMobileOpen(false)}
-                        >
+                      <Button asChild variant="gold-outline" size="md" className="w-full min-h-[44px]">
+                        <Link href="/user/profile" onClick={() => setIsMobileOpen(false)}>
                           <Settings className="ml-2 h-4 w-4" />
                           ویرایش پروفایل
                         </Link>
@@ -642,33 +621,27 @@ export function Navbar() {
                     )}
 
                     <button
-                      onClick={() => {
-                        setIsMobileOpen(false);
-                        handleLogout();
-                      }}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/30 py-2.5 text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/10"
+                      onClick={() => { setIsMobileOpen(false); handleLogout(); }}
+                      className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-red-500/30 py-3 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/10 hover:border-red-500/50"
                     >
                       <LogOut className="h-4 w-4" />
                       خروج از حساب
                     </button>
                   </>
                 ) : (
-                  <Button asChild variant="gold" size="md" className="w-full">
-                    <Link
-                      href="/auth/login"
-                      onClick={() => setIsMobileOpen(false)}
-                    >
+                  <Button asChild variant="gold" size="md" className="w-full min-h-[44px]">
+                    <Link href="/auth/login" onClick={() => setIsMobileOpen(false)}>
                       ورود / ثبت‌نام
                     </Link>
                   </Button>
                 )}
 
-                <div className="flex items-center gap-2 text-sm text-muted">
-                  <Phone className="h-4 w-4 text-gold" />
+                <div className="flex items-center gap-2 pt-1 text-sm text-muted">
+                  <Phone className="h-4 w-4 text-primary" />
                   <span>{CONTACT.phone}</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
