@@ -8,60 +8,73 @@ import { cn } from '@/lib/utils'
 const buttonVariants = cva(
   [
     'inline-flex items-center justify-center gap-2',
-    'font-semibold rounded-2xl',
-    'transition-all duration-300',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C41E3A]',
+    'font-semibold select-none',
+    'transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C41E3A]/60',
     'focus-visible:ring-offset-2 focus-visible:ring-offset-black',
-    'disabled:pointer-events-none disabled:opacity-40',
-    'select-none',
+    'disabled:pointer-events-none disabled:opacity-40 disabled:scale-100',
   ].join(' '),
   {
     variants: {
       variant: {
+        /* ── Primary — Luxury Crimson ── */
         gold: [
-          'bg-gradient-to-r from-[#C41E3A] via-[#E8506A] to-[#C41E3A]',
+          'bg-gradient-to-b from-[#D42B47] via-[#C41E3A] to-[#A51830]',
           'text-white font-bold',
-          'shadow-lg shadow-[rgba(196,30,58,0.3)]',
-          'hover:shadow-xl hover:shadow-[rgba(196,30,58,0.4)] hover:scale-[1.02]',
-          'active:scale-95',
+          'shadow-[0_4px_24px_rgba(196,30,58,0.40),inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-2px_0_rgba(0,0,0,0.18)]',
+          'hover:shadow-[0_8px_36px_rgba(196,30,58,0.55),inset_0_1px_0_rgba(255,255,255,0.28)] hover:scale-[1.03] hover:from-[#E03050] hover:via-[#D42B47]',
+          'active:scale-[0.97] active:shadow-[0_2px_10px_rgba(196,30,58,0.30),inset_0_2px_0_rgba(0,0,0,0.12)]',
         ],
+        /* ── Outline ── */
         'gold-outline': [
-          'border border-[#C41E3A] text-[#C41E3A] bg-transparent',
-          'hover:bg-[#C41E3A]/10 hover:shadow-lg hover:shadow-[rgba(196,30,58,0.2)]',
-          'active:scale-95',
+          'border-2 border-[#C41E3A] text-[#C41E3A] bg-transparent',
+          'shadow-[0_0_0_0_rgba(196,30,58,0),inset_0_1px_0_rgba(196,30,58,0.08)]',
+          'hover:bg-[#C41E3A]/10 hover:shadow-[0_4px_24px_rgba(196,30,58,0.30)] hover:scale-[1.02]',
+          'active:scale-[0.97]',
         ],
+        /* ── Dark / Surface ── */
         dark: [
-          'bg-[#27272A] border border-white/8 text-white',
-          'hover:border-[#C41E3A]/30 hover:shadow-lg',
-          'active:scale-95',
+          'bg-gradient-to-b from-zinc-700/90 to-zinc-800',
+          'border border-white/[0.08] text-white',
+          'shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_8px_rgba(0,0,0,0.3)]',
+          'hover:border-[#C41E3A]/40 hover:from-zinc-600/90 hover:shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:scale-[1.01]',
+          'active:scale-[0.98]',
         ],
+        /* ── Ghost ── */
         ghost: [
-          'text-[#A1A1AA] hover:text-white hover:bg-white/5',
-          'active:scale-95',
+          'text-[#A1A1AA] hover:text-white hover:bg-white/[0.06]',
+          'hover:scale-[1.01]',
+          'active:scale-[0.98]',
         ],
+        /* ── Danger ── */
         danger: [
-          'bg-[#DC2626] text-white shadow-lg shadow-red-900/30',
-          'hover:bg-[#EF4444] hover:shadow-xl',
-          'active:scale-95',
+          'bg-gradient-to-b from-red-500 to-red-600 text-white',
+          'shadow-[0_4px_18px_rgba(239,68,68,0.40),inset_0_1px_0_rgba(255,255,255,0.2)]',
+          'hover:from-red-400 hover:shadow-[0_8px_28px_rgba(239,68,68,0.55)] hover:scale-[1.02]',
+          'active:scale-[0.97]',
         ],
+        /* ── Success ── */
         success: [
-          'bg-[#15803D] text-white shadow-lg shadow-green-900/30',
-          'hover:bg-[#22C55E] hover:shadow-xl',
-          'active:scale-95',
+          'bg-gradient-to-b from-emerald-500 to-emerald-600 text-white',
+          'shadow-[0_4px_18px_rgba(16,185,129,0.40),inset_0_1px_0_rgba(255,255,255,0.2)]',
+          'hover:from-emerald-400 hover:shadow-[0_8px_28px_rgba(16,185,129,0.55)] hover:scale-[1.02]',
+          'active:scale-[0.97]',
         ],
+        /* ── Link ── */
         link: [
           'text-[#C41E3A] underline-offset-4 hover:underline p-0 h-auto',
-          'font-medium rounded-none',
+          'font-medium rounded-none shadow-none',
+          'hover:scale-100',
         ],
       },
       size: {
-        xs:       'h-7 px-3 text-xs rounded-xl',
-        sm:       'h-9 px-4 text-sm',
-        md:       'h-11 px-6 text-base',
-        lg:       'h-13 px-8 text-lg',
-        xl:       'h-14 px-10 text-xl',
-        icon:     'h-11 w-11 rounded-2xl',
-        'icon-sm': 'h-8 w-8 rounded-xl',
+        xs:        'h-7 px-3 text-xs rounded-xl',
+        sm:        'h-9 px-5 text-sm rounded-full',
+        md:        'h-11 px-7 text-base rounded-full',
+        lg:        'h-[52px] px-9 text-lg rounded-full',
+        xl:        'h-14 px-12 text-xl rounded-full',
+        icon:      'h-11 w-11 rounded-2xl',
+        'icon-sm': 'h-8  w-8  rounded-xl',
         'icon-lg': 'h-12 w-12 rounded-2xl',
       },
     },
@@ -82,23 +95,8 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      className,
-      variant,
-      size,
-      asChild = false,
-      loading = false,
-      leftIcon,
-      rightIcon,
-      children,
-      disabled,
-      ...props
-    },
-    ref,
-  ) => {
+  ({ className, variant, size, asChild = false, loading = false, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
-
     return (
       <Comp
         ref={ref}
@@ -113,7 +111,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+            {leftIcon  && <span className="flex-shrink-0">{leftIcon}</span>}
             {children}
             {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
           </>
@@ -122,31 +120,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     )
   },
 )
-
 Button.displayName = 'Button'
 
 function LoadingSpinner() {
   return (
-    <svg
-      className="h-4 w-4 animate-spin"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-      />
+    <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
   )
 }
