@@ -12,15 +12,10 @@ import {
   Ruler,
   Building2,
   Flame,
-  ChevronLeft,
   MapPin,
   Map,
-  MessageCircle,
-  ClipboardList,
 } from 'lucide-react'
-import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import type { PriceRow } from '@/lib/api/google-sheets'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -348,27 +343,6 @@ export function FramePriceListSection({
               </ul>
             </div>
 
-            {/* CTA — desktop row, mobile column */}
-            <div className="flex flex-col sm:flex-row gap-2.5">
-              <Button asChild variant="gold" size="md" className="flex-1 justify-center">
-                <Link href="/contact">
-                  <MessageCircle className="h-4 w-4 ml-2" />
-                  مشاوره رایگان
-                </Link>
-              </Button>
-              <Button asChild variant="gold-outline" size="md" className="flex-1 justify-center">
-                <Link href="/contact?type=inquiry">
-                  <ClipboardList className="h-4 w-4 ml-2" />
-                  استعلام قیمت
-                </Link>
-              </Button>
-              <Button asChild variant="dark" size="md" className="flex-1 justify-center">
-                <Link href="/products">
-                  مشاهده محصولات
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                </Link>
-              </Button>
-            </div>
           </motion.div>
 
           {/* ── Right sidebar ── */}
@@ -462,29 +436,6 @@ export function FramePriceListSection({
               </a>
             </div>
 
-            {/* Action buttons */}
-            <div className="grid grid-cols-1 gap-2">
-              <div className="grid grid-cols-2 gap-2">
-                <Button asChild variant="gold" size="sm" className="w-full justify-center">
-                  <Link href="/contact">
-                    <MessageCircle className="h-3.5 w-3.5 ml-1.5" />
-                    مشاوره
-                  </Link>
-                </Button>
-                <Button asChild variant="gold-outline" size="sm" className="w-full justify-center">
-                  <Link href="/contact?type=inquiry">
-                    <ClipboardList className="h-3.5 w-3.5 ml-1.5" />
-                    استعلام قیمت
-                  </Link>
-                </Button>
-              </div>
-              <Button asChild variant="dark" size="sm" className="w-full justify-center">
-                <Link href="/products">
-                  مشاهده محصولات
-                  <ChevronLeft className="h-3.5 w-3.5 mr-1.5" />
-                </Link>
-              </Button>
-            </div>
           </motion.div>
         </div>
       </div>
