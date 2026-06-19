@@ -92,7 +92,11 @@ export function HeroSection() {
     >
 
       {/* ══ Slider — background images with parallax ══ */}
-      <motion.div style={{ y: imageY }} className="absolute inset-0 z-0">
+      {/* translateZ(0) forces GPU compositing → sharp rendering, no sub-pixel blur */}
+      <motion.div
+        style={{ y: imageY, translateZ: 0 }}
+        className="absolute inset-0 z-0 will-change-transform"
+      >
         <AnimatePresence initial={false}>
           <motion.div
             key={activeSlide}
@@ -106,6 +110,7 @@ export function HeroSection() {
               src={heroSlides[activeSlide].desktop}
               alt={heroSlides[activeSlide].alt}
               fill priority
+              quality={95}
               className="hidden md:block object-cover object-center"
               sizes="100vw"
             />
@@ -113,6 +118,7 @@ export function HeroSection() {
               src={heroSlides[activeSlide].mobile}
               alt={heroSlides[activeSlide].alt}
               fill priority
+              quality={95}
               className="block md:hidden object-cover object-[60%_top]"
               sizes="100vw"
             />

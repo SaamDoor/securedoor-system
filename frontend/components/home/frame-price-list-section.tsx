@@ -13,6 +13,10 @@ import {
   Building2,
   Flame,
   ChevronLeft,
+  MapPin,
+  Map,
+  MessageCircle,
+  ClipboardList,
 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -344,18 +348,24 @@ export function FramePriceListSection({
               </ul>
             </div>
 
-            {/* CTA */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button asChild variant="gold" size="md" className="w-full sm:w-auto justify-center">
+            {/* CTA — desktop row, mobile column */}
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <Button asChild variant="gold" size="md" className="flex-1 justify-center">
                 <Link href="/contact">
-                  <Phone className="h-4 w-4 ml-2" />
-                  مشاوره و استعلام قیمت
+                  <MessageCircle className="h-4 w-4 ml-2" />
+                  مشاوره رایگان
                 </Link>
               </Button>
-              <Button asChild variant="gold-outline" size="md" className="w-full sm:w-auto justify-center">
+              <Button asChild variant="gold-outline" size="md" className="flex-1 justify-center">
+                <Link href="/contact?type=inquiry">
+                  <ClipboardList className="h-4 w-4 ml-2" />
+                  استعلام قیمت
+                </Link>
+              </Button>
+              <Button asChild variant="dark" size="md" className="flex-1 justify-center">
                 <Link href="/products">
                   مشاهده محصولات
-                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  <ChevronLeft className="h-4 w-4 mr-1" />
                 </Link>
               </Button>
             </div>
@@ -410,21 +420,71 @@ export function FramePriceListSection({
               </ul>
             </div>
 
-            {/* Contact strip */}
+            {/* Phone */}
             <a
               href="tel:09003286539"
-              className="group flex items-center gap-4 rounded-2xl bg-gold/10 border border-gold/30 hover:bg-gold/15 hover:border-gold/50 transition-all duration-300 p-4"
+              className="group flex items-center gap-4 rounded-2xl bg-primary/8 border border-primary/25 hover:bg-primary/15 hover:border-primary/45 transition-all duration-300 p-4"
             >
-              <div className="w-10 h-10 rounded-xl bg-gold/20 border border-gold/30 flex items-center justify-center flex-shrink-0 group-hover:bg-gold group-hover:border-gold transition-all duration-300">
-                <Phone className="h-4 w-4 text-gold group-hover:text-black transition-colors duration-300" />
+              <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                <Phone className="h-4 w-4 text-primary group-hover:text-white transition-colors duration-300" />
               </div>
               <div>
-                <div className="text-xs text-muted mb-0.5">تماس مستقیم</div>
-                <div className="text-white font-black text-base tracking-wide ltr" dir="ltr">
+                <div className="text-xs text-zinc-500 mb-0.5">مشاوره تلفنی رایگان</div>
+                <div className="text-white font-black text-base tracking-wide" dir="ltr">
                   0900 328 6539
                 </div>
               </div>
             </a>
+
+            {/* Navigation buttons */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <a
+                href="https://nshn.ir/537b1NmyGFj-5d"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col items-center gap-2 rounded-2xl bg-zinc-900 border border-white/[0.08] hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 p-4 text-center"
+              >
+                <div className="w-9 h-9 rounded-xl bg-[#0A84FF]/10 border border-[#0A84FF]/20 flex items-center justify-center group-hover:bg-[#0A84FF]/20 transition-colors">
+                  <MapPin className="h-4 w-4 text-[#0A84FF]" />
+                </div>
+                <span className="text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors">مسیریابی نشان</span>
+              </a>
+              <a
+                href="https://maps.google.com/?q=مازندران+قائم+شهر+بلوار+سید+نظام+الدین+جاده+قادیکلای+بزرگ"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col items-center gap-2 rounded-2xl bg-zinc-900 border border-white/[0.08] hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 p-4 text-center"
+              >
+                <div className="w-9 h-9 rounded-xl bg-[#34A853]/10 border border-[#34A853]/20 flex items-center justify-center group-hover:bg-[#34A853]/20 transition-colors">
+                  <Map className="h-4 w-4 text-[#34A853]" />
+                </div>
+                <span className="text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors">مسیریابی گوگل</span>
+              </a>
+            </div>
+
+            {/* Action buttons */}
+            <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <Button asChild variant="gold" size="sm" className="w-full justify-center">
+                  <Link href="/contact">
+                    <MessageCircle className="h-3.5 w-3.5 ml-1.5" />
+                    مشاوره
+                  </Link>
+                </Button>
+                <Button asChild variant="gold-outline" size="sm" className="w-full justify-center">
+                  <Link href="/contact?type=inquiry">
+                    <ClipboardList className="h-3.5 w-3.5 ml-1.5" />
+                    استعلام قیمت
+                  </Link>
+                </Button>
+              </div>
+              <Button asChild variant="dark" size="sm" className="w-full justify-center">
+                <Link href="/products">
+                  مشاهده محصولات
+                  <ChevronLeft className="h-3.5 w-3.5 mr-1.5" />
+                </Link>
+              </Button>
+            </div>
           </motion.div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Heart, ShoppingCart, Eye, Star, Package } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +18,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, viewMode = 'grid', className }: ProductCardProps) {
+  const router = useRouter()
   const discount =
     product.comparePrice && product.comparePrice > product.price
       ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
@@ -112,6 +114,8 @@ export function ProductCard({ product, viewMode = 'grid', className }: ProductCa
     <motion.div
       whileHover={{ y: -6 }}
       transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      onDoubleClick={() => router.push(`/products/${product.slug}`)}
+      title="دوبار کلیک برای مشاهده"
       className={cn(
         'group relative overflow-hidden rounded-2xl',
         'bg-zinc-900 border border-white/[0.07]',
