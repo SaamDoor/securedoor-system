@@ -8,6 +8,7 @@ import {
   ChevronRight, Phone, Check, Minus, Plus,
   ClipboardList, ShoppingCart, X, Ruler,
   Package, ChevronDown, CheckCircle2, MessageCircle,
+  Star, Shield, Zap, Layers, Award, ChevronLeft,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -568,6 +569,272 @@ export function FrenchFrameClient({ frenchPrices = [], lastUpdated }: Props) {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* ══════════════════════ DESCRIPTION ══════════════════════ */}
+        <div className="mt-12 lg:mt-20">
+          {/* Section label */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+            <span className="text-gold text-xs font-bold tracking-[0.2em] uppercase">درباره محصول</span>
+            <div className="h-px flex-1 bg-gradient-to-l from-transparent via-gold/30 to-transparent" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start mb-12">
+            {/* Text */}
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-5">
+                چهارچوب فلزی فرانسوی<br />
+                <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(135deg,#C8A85D 0%,#E7D3A5 50%,#C8A85D 100%)' }}>
+                  ترکیب استحکام و زیبایی
+                </span>
+              </h2>
+              <div className="space-y-4 text-zinc-400 text-sm sm:text-base leading-[2]">
+                <p>
+                  چهارچوب فلزی فرانسوی گروه صنعتی مشعوف، با بهره‌گیری از ورق فولادی ۲ میلی‌متری و فرآیند جوشکاری صنعتی دقیق، استحکامی استثنایی را در کنار ظاهری زیبا ارائه می‌دهد. این محصول در ۴ رنگ مختلف و با دو گزینه ۳ یا ۴ کلاف عرضه می‌شود تا با هر نوع معماری هماهنگ باشد.
+                </p>
+                <p>
+                  فرآیند رنگ‌آمیزی الکترواستاتیک کوره‌ای که در دمای بالا انجام می‌شود، پوششی یکنواخت و مقاوم در برابر خراش، رطوبت و تغییرات دما ایجاد می‌کند. این رنگ برخلاف رنگ‌های معمولی، سال‌ها ماندگاری خود را حفظ می‌کند و هیچ‌گاه پوسته نمی‌زند.
+                </p>
+                <p>
+                  لولاهای پارس کلون استفاده‌شده در این محصول، از بهترین نمونه‌های موجود در بازار ایران هستند و حرکتی روان و بدون صدا را برای سال‌های طولانی تضمین می‌کنند.
+                </p>
+              </div>
+            </div>
+
+            {/* Feature cards */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                {
+                  icon: Layers,
+                  title: 'ورق ۲ میلی‌متر',
+                  desc: 'فولاد باکیفیت با استحکام بالا در برابر ضربه و فشار',
+                  color: 'text-blue-400',
+                  bg: 'bg-blue-500/10 border-blue-500/20',
+                },
+                {
+                  icon: Zap,
+                  title: 'رنگ کوره‌ای',
+                  desc: 'الکترواستاتیک — مقاوم در برابر خراش و رطوبت',
+                  color: 'text-amber-400',
+                  bg: 'bg-amber-500/10 border-amber-500/20',
+                },
+                {
+                  icon: Shield,
+                  title: 'لولا پارس کلون',
+                  desc: 'حرکت روان و بدون صدا — دوام بلندمدت',
+                  color: 'text-emerald-400',
+                  bg: 'bg-emerald-500/10 border-emerald-500/20',
+                },
+                {
+                  icon: Award,
+                  title: '۴ رنگ انتخابی',
+                  desc: 'قهوه‌ای، طوسی، مشکی و سفید با پوشش یکنواخت',
+                  color: 'text-gold',
+                  bg: 'bg-gold/10 border-gold/20',
+                },
+              ].map(({ icon: Icon, title, desc, color, bg }, i) => (
+                <motion.div
+                  key={title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.5 }}
+                  className={`flex flex-col gap-3 p-4 rounded-2xl border ${bg}`}
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-current/10 border border-current/20 ${color}`}>
+                    <Icon className="h-4.5 w-4.5" style={{ width: 18, height: 18 }} />
+                  </div>
+                  <div>
+                    <div className={`font-bold text-sm mb-1 ${color}`}>{title}</div>
+                    <p className="text-zinc-500 text-xs leading-relaxed">{desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quality banner */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 border border-white/[0.08] p-6 sm:p-8">
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(200,168,93,0.8) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div>
+                <div className="text-xs text-gold font-bold tracking-widest mb-2 uppercase">تضمین کیفیت</div>
+                <h3 className="text-xl font-black text-white mb-1.5">ساخته‌شده برای ماندگاری</h3>
+                <p className="text-zinc-400 text-sm max-w-sm leading-relaxed">
+                  تمامی چهارچوب‌های مشعوف پیش از تحویل تحت آزمون‌های کنترل کیفیت سخت‌گیرانه قرار می‌گیرند.
+                </p>
+              </div>
+              <div className="flex gap-6 flex-shrink-0">
+                {[
+                  { num: '۱۴+', label: 'سال تجربه' },
+                  { num: '۲۰۰۰+', label: 'پروژه موفق' },
+                  { num: '۱۰۰٪', label: 'رضایت مشتری' },
+                ].map(({ num, label }) => (
+                  <div key={label} className="text-center">
+                    <div className="text-2xl font-black text-gold">{num}</div>
+                    <div className="text-xs text-zinc-500 mt-0.5">{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ══════════════════════ REVIEWS ══════════════════════════ */}
+        <div className="mt-16">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+            <span className="text-gold text-xs font-bold tracking-[0.2em] uppercase">نظرات مشتریان</span>
+            <div className="h-px flex-1 bg-gradient-to-l from-transparent via-gold/30 to-transparent" />
+          </div>
+
+          {/* Overall rating */}
+          <div className="flex flex-col sm:flex-row items-center gap-8 p-6 rounded-2xl bg-zinc-950 border border-white/[0.07] mb-8">
+            <div className="flex flex-col items-center">
+              <div className="text-6xl font-black text-white">۴.۸</div>
+              <div className="flex items-center gap-0.5 mt-2">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} className={`h-5 w-5 ${s <= 5 ? 'fill-gold text-gold' : 'text-zinc-700'}`} />
+                ))}
+              </div>
+              <div className="text-xs text-zinc-500 mt-1">از ۵ نظر</div>
+            </div>
+            <div className="flex-1 w-full space-y-2">
+              {[
+                { stars: 5, count: 4, pct: 80 },
+                { stars: 4, count: 1, pct: 20 },
+                { stars: 3, count: 0, pct: 0 },
+                { stars: 2, count: 0, pct: 0 },
+                { stars: 1, count: 0, pct: 0 },
+              ].map(({ stars, count, pct }) => (
+                <div key={stars} className="flex items-center gap-3">
+                  <div className="flex items-center gap-0.5 w-16 flex-shrink-0">
+                    {[...Array(stars)].map((_, i) => (
+                      <Star key={i} className="h-3 w-3 fill-gold text-gold" />
+                    ))}
+                  </div>
+                  <div className="flex-1 h-2 rounded-full bg-zinc-800 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${pct}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.8, delay: 0.2 }}
+                      className="h-full rounded-full bg-gold"
+                    />
+                  </div>
+                  <span className="text-xs text-zinc-500 w-4 text-left">{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Review cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {[
+              {
+                name: 'احمد رضایی',
+                city: 'تهران',
+                stars: 5,
+                date: '۱۴۰۴/۰۳/۱۲',
+                text: 'چهارچوب‌های مشعوف واقعاً کیفیت متفاوتی دارند. برای پروژه مسکونی ۲۰ واحدی استفاده کردم و نتیجه بی‌نظیر بود. رنگ ثابت، استحکام عالی و ظاهر زیبا. کاملاً پیشنهاد می‌کنم.',
+                initials: 'ا.ر',
+                verified: true,
+              },
+              {
+                name: 'مریم حسینی',
+                city: 'قائم‌شهر',
+                stars: 5,
+                date: '۱۴۰۴/۰۲/۲۸',
+                text: 'تحویل به موقع و رنگ‌بندی دقیقاً مطابق نمونه. لولاها هم کیفیت بسیار خوبی داشتند. برای پروژه‌های کوچک هم مناسبه. سفارش بعدی رو هم از مشعوف می‌گیرم.',
+                initials: 'م.ح',
+                verified: true,
+              },
+              {
+                name: 'محمد کریمی',
+                city: 'ساری',
+                stars: 4,
+                date: '۱۴۰۴/۰۲/۱۵',
+                text: 'قیمت مناسب نسبت به کیفیت. رنگ کوره‌ای واقعاً دوام داشت و هیچ خراشی روش نموند. فقط زمان تحویل یکم بیشتر از حد انتظار بود ولی محصول نهایی عالی بود.',
+                initials: 'م.ک',
+                verified: false,
+              },
+              {
+                name: 'فاطمه اکبری',
+                city: 'آمل',
+                stars: 5,
+                date: '۱۴۰۴/۰۱/۲۰',
+                text: 'برای ساختمان ویلایی استفاده کردم. رنگ قهوه‌ای با درب ضدسرقت مشعوف هماهنگی بی‌نظیری داشت. ظاهر ورودی کاملاً تغییر کرد. ممنون از تیم مشعوف.',
+                initials: 'ف.ا',
+                verified: true,
+              },
+              {
+                name: 'علی صادقی',
+                city: 'بابل',
+                stars: 5,
+                date: '۱۴۰۳/۱۲/۰۸',
+                text: 'سفارش عمده برای ۴۰ واحد آپارتمان دادم. هماهنگی عالی تیم فروش، قیمت رقابتی و کیفیت بالا. همه چهارچوب‌ها یکدست بودند. قطعاً سفارش‌های بعدی هم اینجاست.',
+                initials: 'ع.ص',
+                verified: true,
+              },
+            ].map((review, i) => (
+              <motion.div
+                key={review.name}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ delay: i * 0.08, duration: 0.5 }}
+                className={`relative flex flex-col gap-4 p-5 rounded-2xl bg-zinc-950 border border-white/[0.07] hover:border-gold/20 transition-colors duration-300 ${i === 4 ? 'md:col-span-2' : ''}`}
+              >
+                {/* Quote icon */}
+                <div className="absolute top-5 left-5 text-gold/10">
+                  <svg width="32" height="24" viewBox="0 0 32 24" fill="currentColor">
+                    <path d="M0 24V14.4C0 6.4 5.333 1.6 16 0l1.6 2.4C12.267 3.6 9.333 6.267 8.8 10.4H14V24H0zm18 0V14.4C18 6.4 23.333 1.6 34 0l1.6 2.4C30.267 3.6 27.333 6.267 26.8 10.4H32V24H18z" />
+                  </svg>
+                </div>
+
+                {/* Header */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border border-gold/25 flex items-center justify-center flex-shrink-0">
+                    <span className="text-gold text-xs font-black">{review.initials}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-bold text-white">{review.name}</span>
+                      {review.verified && (
+                        <span className="flex items-center gap-0.5 text-[10px] text-emerald-400 font-semibold">
+                          <Check className="h-3 w-3" />خرید تأیید‌شده
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} className={`h-3 w-3 ${s <= review.stars ? 'fill-gold text-gold' : 'fill-zinc-700 text-zinc-700'}`} />
+                        ))}
+                      </div>
+                      <span className="text-[11px] text-zinc-600">{review.city} — {review.date}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Text */}
+                <p className="text-zinc-400 text-sm leading-[1.9] relative z-10">{review.text}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Write review CTA */}
+          <div className="mt-6 flex items-center justify-center">
+            <Link
+              href="/contact?type=review"
+              className="flex items-center gap-2.5 px-6 py-3 rounded-full border border-white/10 text-zinc-400 text-sm hover:border-gold/30 hover:text-gold transition-all duration-300"
+            >
+              <Star className="h-4 w-4" />
+              ثبت نظر شما
+              <ChevronLeft className="h-4 w-4" />
+            </Link>
           </div>
         </div>
 

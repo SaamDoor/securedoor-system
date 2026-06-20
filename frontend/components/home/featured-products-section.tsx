@@ -12,19 +12,20 @@ import { cn } from '@/lib/utils'
 
 const products = [
   {
-    id: 'p1001000-0000-0000-0000-000000000001',
-    name: 'درب ضد سرقت سپیدار',
-    slug: 'darb-zed-sereqat-sepidaar',
-    sku: 'MSH-1001',
-    price: 18500000,
-    comparePrice: 20000000,
-    category: 'درب ضد سرقت',
-    rating: 0,
-    reviewCount: 0,
+    id: 'fr-frame-001',
+    name: 'چهارچوب فلزی فرانسوی',
+    slug: 'chaharcharb-felezi-faransavi',
+    sku: 'MSH-FR',
+    price: 3_600_000,
+    comparePrice: null,
+    category: 'چهارچوب فلزی',
+    rating: 4.8,
+    reviewCount: 5,
     isNew: false,
     isFeatured: true,
     badge: 'ویژه',
-    image: '/products/MSH-1001/main.webp',
+    pricePrefix: 'از',
+    image: '/products/chaharcharb-felezi-faransavi/cover.webp',
   },
   {
     id: 'p1002000-0000-0000-0000-000000000002',
@@ -202,7 +203,10 @@ function ProductCard({ product }: { product: (typeof products)[0] }) {
         {/* Price */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-black text-white text-base">
+            <div className="font-black text-white text-base flex items-baseline gap-1">
+              {'pricePrefix' in product && product.pricePrefix && (
+                <span className="text-xs text-muted font-semibold">{product.pricePrefix}</span>
+              )}
               {formatPrice(product.price)}
             </div>
             {product.comparePrice && (

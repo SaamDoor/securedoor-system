@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CheckCircle2,
@@ -14,6 +15,7 @@ import {
   Flame,
   MapPin,
   Map,
+  ClipboardList,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { PriceRow } from '@/lib/api/google-sheets'
@@ -342,6 +344,29 @@ export function FramePriceListSection({
                 </li>
               </ul>
             </div>
+
+            {/* CTA — only for french tab */}
+            <AnimatePresence mode="wait">
+              {activeTab === 'french' && (
+                <motion.div
+                  key="french-cta"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Link
+                    href="/products/chaharcharb-felezi-faransavi"
+                    className="group flex items-center justify-center gap-3 w-full rounded-2xl px-6 py-4 font-black text-sm text-black transition-all duration-300"
+                    style={{ background: 'linear-gradient(135deg,#C8A85D 0%,#E7D3A5 50%,#C8A85D 100%)' }}
+                  >
+                    <ClipboardList className="h-5 w-5 flex-shrink-0" />
+                    <span>ثبت سفارش چهارچوب فرانسوی</span>
+                    <span className="mr-auto opacity-60 group-hover:translate-x-[-4px] transition-transform duration-300 text-xs font-bold">←</span>
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
           </motion.div>
 
