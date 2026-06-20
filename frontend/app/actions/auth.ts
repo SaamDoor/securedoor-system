@@ -69,11 +69,18 @@ export async function attachReferral(
 }
 
 export async function signInWithPassword(
-  phone: string,
+  identifier: string,
   password: string,
+  mode: 'phone' | 'email' = 'phone',
 ): Promise<SignInWithPasswordResult> {
   const supabase = await createServerSupabaseClient();
-  const authEmail = phoneToAuthEmail(phone);
+
+  // Email mode: use the identifier directly as email
+  // Phone mode: convert phone number to internal auth email format
+  const authEmail =
+    mode === 'email'
+      ? identifier.trim().toLowerCase()
+      : phoneToAuthEmail(identifier.trim());
 
   const { data: authData, error } = await supabase.auth.signInWithPassword({
     email: authEmail,
