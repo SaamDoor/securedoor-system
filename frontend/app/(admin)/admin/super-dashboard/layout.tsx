@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SuperSidebar } from "@/components/admin/super-sidebar";
+import { SuperTopbar } from "@/components/admin/super-topbar";
 import { ROLE_HOME, type UserRole } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +32,10 @@ export default async function SuperDashboardLayout({
       dir="rtl"
     >
       <SuperSidebar />
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <SuperTopbar />
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
     </div>
   );
 }
