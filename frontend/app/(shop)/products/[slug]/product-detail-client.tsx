@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice, toPersianNumber } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { BY_SLUG } from '@/lib/data/products-catalog'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,7 +41,7 @@ interface ProductData {
 
 // ─── Shared base specs builder ─────────────────────────────────────────────────
 
-function baseSpecs(handle: string, extra: Spec[] = []): Spec[] {
+function baseSpecs(handle: string, veneer = 'سوپر راش ترک', extra: Spec[] = []): Spec[] {
   return [
     { label: 'کف', value: '۱۸', unit: 'میلی‌متر', group: 'مشخصات فنی' },
     { label: 'ضخامت ورق', value: '۱.۲۵ ضد دیلم', group: 'مشخصات فنی' },
@@ -48,187 +49,55 @@ function baseSpecs(handle: string, extra: Spec[] = []): Spec[] {
     { label: 'یراق', value: 'تیپ ترک — ۲ سال ضمانت', group: 'یراق و امنیت' },
     { label: 'دستگیره', value: handle, group: 'یراق و امنیت' },
     { label: 'رنگ رویه', value: 'پلی‌اورتان', group: 'پوشش' },
-    { label: 'روکش', value: 'سوپر راش ترک', group: 'پوشش' },
+    { label: 'روکش', value: veneer, group: 'پوشش' },
     ...extra.filter((s) => s.group === 'پوشش'),
     { label: 'ام‌دی‌اف', value: 'وارداتی ۸ میلی‌متر', group: 'متریال' },
     { label: 'ورق داخل', value: 'سرتاسری فولادی', group: 'متریال' },
   ]
 }
 
+function metalSpecs(handle: string, color: string, extra: Spec[] = []): Spec[] {
+  return [
+    { label: 'کف', value: '۱۸', unit: 'میلی‌متر', group: 'مشخصات فنی' },
+    { label: 'ضخامت ورق', value: '۱.۲۵ ضد دیلم', group: 'مشخصات فنی' },
+    ...extra.filter((s) => s.group === 'مشخصات فنی'),
+    { label: 'یراق', value: 'تیپ ترک — ۲ سال ضمانت', group: 'یراق و امنیت' },
+    { label: 'دستگیره', value: handle, group: 'یراق و امنیت' },
+    { label: 'رویه', value: 'فلز', group: 'پوشش' },
+    { label: 'رنگ رویه', value: color, group: 'پوشش' },
+    ...extra.filter((s) => s.group === 'پوشش'),
+    { label: 'ورق داخل', value: 'سرتاسری فولادی', group: 'متریال' },
+  ]
+}
+
 const SPEC_GROUPS = ['مشخصات فنی', 'یراق و امنیت', 'پوشش', 'متریال']
 
-// ─── Product catalogue ─────────────────────────────────────────────────────────
+// ─── Product catalogue (computed from central catalog) ─────────────────────────
 
-const PRODUCTS: Record<string, ProductData> = {
-  'darb-zed-sereqat-sepidaar': {
-    id: 'p1001000-0000-0000-0000-000000000001',
-    sku: 'MSH-1001',
-    name: 'درب ضد سرقت سپیدار',
-    slug: 'darb-zed-sereqat-sepidaar',
-    price: 18_500_000,
-    comparePrice: 20_000_000,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'روکش سوپر راش ترک — دستگیره سفید صدفی — ضخامت ۱.۲۵ ضد دیلم',
-    description:
-      'مدل سپیدار با ورق فولادی سرتاسری و ام‌دی‌اف وارداتی ۸ میلی‌متری، سطحی بی‌نقص و محکم ارائه می‌دهد. رنگ رویه پلی‌اورتان مقاوم در برابر خش، ظاهری همیشه‌جوان و پرطراوت خواهد داشت. دستگیره سفید صدفی اکستروژن‌شده در کنار یراق تیپ ترک با ۲ سال ضمانت رسمی، این درب را به گزینه‌ای مطمئن برای ورودی آپارتمان‌های مدرن تبدیل کرده است.',
-    specs: baseSpecs('سفید صدفی'),
-    image: '/products/MSH-1001/main.webp',
-    isNew: false,
-    badge: 'ویژه',
-  },
-  'darb-zed-sereqat-venus-rush': {
-    id: 'p1002000-0000-0000-0000-000000000002',
-    sku: 'MSH-1002',
-    name: 'درب ضد سرقت ونوس راش',
-    slug: 'darb-zed-sereqat-venus-rush',
-    price: 19_200_000,
-    comparePrice: null,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'روکش سوپر راش ترک — دستگیره آنتیک زیتونی — طراحی کلاسیک',
-    description:
-      'مدل ونوس راش با الهام از معماری کلاسیک اروپایی، ترکیبی اصیل از چوب راش و آهن فولادی را ارائه می‌دهد. دستگیره آنتیک زیتونی این درب، شخصیتی متمایز به فضای ورودی می‌بخشد و ظاهری کلاسیک اما ماندگار ایجاد می‌کند.',
-    specs: baseSpecs('آنتیک زیتونی'),
-    image: '/products/MSH-1002/main.webp',
-    isNew: false,
-    badge: null,
-  },
-  'darb-zed-sereqat-arsam': {
-    id: 'p1003000-0000-0000-0000-000000000003',
-    sku: 'MSH-1003',
-    name: 'درب ضد سرقت آرسام',
-    slug: 'darb-zed-sereqat-arsam',
-    price: 19_500_000,
-    comparePrice: null,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'طراحی معاصر — دستگیره آنتیک زیتونی — روکش راش ترک',
-    description:
-      'مدل آرسام با خطوط ساده و زیبا، گزینه‌ای ایده‌آل برای ورودی آپارتمان‌های مدرن است. این درب با ترکیب فولاد قوی و روکش راش ترک، ایمنی بالا را با ظاهری دلنشین پیوند می‌زند.',
-    specs: baseSpecs('آنتیک زیتونی'),
-    image: '/products/MSH-1003/main.webp',
-    isNew: true,
-    badge: 'جدید',
-  },
-  'darb-zed-sereqat-abnus-rush': {
-    id: 'p1004000-0000-0000-0000-000000000004',
-    sku: 'MSH-1004',
-    name: 'درب ضد سرقت آبنوس راش',
-    slug: 'darb-zed-sereqat-abnus-rush',
-    price: 20_000_000,
-    comparePrice: 21_500_000,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'تُن تیره آبنوس — دستگیره آنتیک زیتونی — مناسب فضاهای لوکس',
-    description:
-      'مدل آبنوس راش با الهام از تیرگی گرم چوب آبنوس، فضایی پر از شکوه و اصالت به ورودی منزل می‌بخشد. این درب برای کسانی ساخته شده که به دنبال هویتی متفاوت در معماری خانه‌شان هستند.',
-    specs: baseSpecs('آنتیک زیتونی'),
-    image: '/products/MSH-1004/main.webp',
-    isNew: false,
-    badge: 'ویژه',
-  },
-  'darb-zed-sereqat-cnc-classic': {
-    id: 'p1005000-0000-0000-0000-000000000005',
-    sku: 'MSH-1005',
-    name: 'درب ضد سرقت CNC کلاسیک',
-    slug: 'darb-zed-sereqat-cnc-classic',
-    price: 22_000_000,
-    comparePrice: 24_500_000,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'برش دقیق CNC — دستگیره ۶۰ سانتی — طرح هندسی منحصربه‌فرد',
-    description:
-      'مدل CNC کلاسیک محصول فناوری برش دقیق CNC است. طرح‌های هندسی منظم که توسط ماشین‌های پیشرفته اروپایی ایجاد شده‌اند، این درب را به یک اثر هنری تبدیل کرده‌اند. دستگیره ۴×۲ با اندازه ۶۰ سانتی‌متر، جلوه‌ای مدرن و جذاب ایجاد می‌کند.',
-    specs: baseSpecs('۴×۲ | ۶۰ سانتی', [
-      { label: 'نوع برش', value: 'CNC دقیق', group: 'مشخصات فنی' },
-    ]),
-    image: '/products/MSH-1005/main.webp',
-    isNew: true,
-    badge: 'جدید',
-  },
-  'darb-zed-sereqat-sayon': {
-    id: 'p1006000-0000-0000-0000-000000000006',
-    sku: 'MSH-1006',
-    name: 'درب ضد سرقت سایون',
-    slug: 'darb-zed-sereqat-sayon',
-    price: 21_500_000,
-    comparePrice: null,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'منبت چوب دست‌ساز — دستگیره سفید صدفی — هنر اصیل ایرانی',
-    description:
-      'مدل سایون با بهره‌گیری از هنر منبت‌کاری چوب، یک اثر هنری بی‌نظیر را در کنار امنیت فولادین به شما ارائه می‌دهد. هر درب سایون یک تکه منحصربه‌فرد است که توسط هنرمندان ماهر ساخته شده است.',
-    specs: baseSpecs('سفید صدفی', [
-      { label: 'منبت', value: 'چوب اصیل دست‌ساز', group: 'پوشش' },
-    ]),
-    image: '/products/MSH-1006/main.webp',
-    isNew: false,
-    badge: 'ویژه',
-  },
-  'darb-zed-sereqat-negin': {
-    id: 'p1007000-0000-0000-0000-000000000007',
-    sku: 'MSH-1007',
-    name: 'درب ضد سرقت نگین',
-    slug: 'darb-zed-sereqat-negin',
-    price: 23_000_000,
-    comparePrice: 25_000_000,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'منبت چوب پیچیده — دستگیره سفید صدفی — جلوه‌ای درخشان',
-    description:
-      'مدل نگین با الهام از جواهرات ارزشمند، طراحی‌ای پیچیده و درخشان دارد. منبت‌کاری چوب با دقت بالا، بافت‌های ظریف و چشم‌نوازی را بر روی این درب ایجاد کرده است که در هر نوری جلوه‌ای متفاوت دارد.',
-    specs: baseSpecs('سفید صدفی', [
-      { label: 'منبت', value: 'چوب با طرح‌های پیچیده', group: 'پوشش' },
-    ]),
-    image: '/products/MSH-1007/main.webp',
-    isNew: true,
-    badge: 'لوکس',
-  },
-  'darb-zed-sereqat-aramis': {
-    id: 'p1008000-0000-0000-0000-000000000008',
-    sku: 'MSH-1008',
-    name: 'درب ضد سرقت آرامیس',
-    slug: 'darb-zed-sereqat-aramis',
-    price: 20_500_000,
-    comparePrice: null,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'طراحی آرام و متعادل — دستگیره آنتیک زیتونی — سادگی اصیل',
-    description:
-      'مدل آرامیس با طراحی آرام و متعادل، ظاهری حرفه‌ای و مدرن دارد. این درب برای کسانی طراحی شده که به سادگی اصیل و کیفیت اجرایی بالا اهمیت می‌دهند.',
-    specs: baseSpecs('آنتیک زیتونی'),
-    image: '/products/MSH-1008/main.webp',
-    isNew: false,
-    badge: null,
-  },
-  'darb-zed-sereqat-tavriz': {
-    id: 'p1009000-0000-0000-0000-000000000009',
-    sku: 'MSH-1009',
-    name: 'درب ضد سرقت تاوریژ',
-    slug: 'darb-zed-sereqat-tavriz',
-    price: 19_800_000,
-    comparePrice: null,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'الهام از معماری ایرانی — دستگیره آنتیک زیتونی — کلاسیک و ماندگار',
-    description:
-      'مدل تاوریژ با الهام از معماری دیرین شهر تبریز، عظمت و اصالت را در هم می‌آمیزد. این درب با روکش راش ترک باکیفیت، ظاهری همیشه‌جوان و پرطراوت خواهد داشت.',
-    specs: baseSpecs('آنتیک زیتونی'),
-    image: '/products/MSH-1009/main.webp',
-    isNew: false,
-    badge: null,
-  },
-  'darb-zed-sereqat-sovin-3d': {
-    id: 'p1010000-0000-0000-0000-000000000010',
-    sku: 'MSH-1010',
-    name: 'درب ضد سرقت سوین ۳ بعدی',
-    slug: 'darb-zed-sereqat-sovin-3d',
-    price: 24_500_000,
-    comparePrice: 27_000_000,
-    category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
-    shortDescription: 'طرح سه‌بعدی منحصربه‌فرد — دستگیره سفید صدفی — عمق و حجم واقعی',
-    description:
-      'مدل سوین ۳ بعدی با بهره‌گیری از فناوری ام‌دی‌اف برجسته‌کاری‌شده، توهم سه‌بعدی شگفت‌انگیزی ایجاد می‌کند. این درب در هر زاویه‌ای که نگاه کنید، ظاهری متفاوت و جذاب دارد.',
-    specs: baseSpecs('سفید صدفی', [
-      { label: 'تکنیک', value: 'برجسته‌کاری ۳D', group: 'مشخصات فنی' },
-    ]),
-    image: '/products/MSH-1010/main.webp',
-    isNew: true,
-    badge: 'جدید',
-  },
-}
+const PRODUCTS: Record<string, ProductData> = Object.fromEntries(
+  Object.entries(BY_SLUG).map(([slug, p]) => [
+    slug,
+    {
+      id: `p${p.code}-0000-0000-0000-${String(p.code).padStart(12, '0')}`,
+      sku: p.sku,
+      name: p.name,
+      slug: p.slug,
+      price: p.price,
+      comparePrice: null,
+      category: { name: 'درب ضد سرقت', slug: 'darb-zed-sereqat' },
+      shortDescription: p.shortDescription,
+      description: p.description,
+      specs: p.metalFace
+        ? metalSpecs(p.handle, p.metalColor ?? 'دکورال')
+        : baseSpecs(p.handle, p.veneer ?? 'سوپر راش ترک', p.hasWoodCarving
+            ? [{ label: 'منبت', value: 'چوب دست‌ساز', group: 'پوشش' }]
+            : []),
+      image: `/products/${p.sku}/main.webp`,
+      isNew: p.isNew ?? false,
+      badge: p.badge ?? null,
+    } satisfies ProductData,
+  ])
+)
 
 // ─── Component ────────────────────────────────────────────────────────────────
 

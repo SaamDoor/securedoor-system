@@ -9,70 +9,46 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatPrice, toPersianNumber } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { CATALOG, CATEGORY_LABELS } from '@/lib/data/products-catalog'
+import type { DoorCategory } from '@/lib/data/products-catalog'
 
-const products = [
-  {
-    id: 'fr-frame-001',
-    name: 'چهارچوب فلزی فرانسوی',
-    slug: 'chaharcharb-felezi-faransavi',
-    sku: 'MSH-FR',
-    price: 3_600_000,
-    comparePrice: null,
-    category: 'چهارچوب فلزی',
-    rating: 4.8,
-    reviewCount: 5,
-    isNew: false,
-    isFeatured: true,
-    badge: 'ویژه',
-    pricePrefix: 'از',
-    image: '/products/chaharcharb-felezi-faransavi/cover.webp',
-  },
-  {
-    id: 'p1002000-0000-0000-0000-000000000002',
-    name: 'درب ضد سرقت ونوس راش',
-    slug: 'darb-zed-sereqat-venus-rush',
-    sku: 'MSH-1002',
-    price: 19200000,
-    comparePrice: null,
-    category: 'درب ضد سرقت',
-    rating: 0,
-    reviewCount: 0,
-    isNew: false,
-    isFeatured: true,
-    badge: null,
-    image: '/products/MSH-1002/main.webp',
-  },
-  {
-    id: 'p1005000-0000-0000-0000-000000000005',
-    name: 'درب ضد سرقت CNC کلاسیک',
-    slug: 'darb-zed-sereqat-cnc-classic',
-    sku: 'MSH-1005',
-    price: 22000000,
-    comparePrice: 24500000,
-    category: 'درب ضد سرقت',
-    rating: 0,
-    reviewCount: 0,
-    isNew: true,
-    isFeatured: true,
-    badge: 'جدید',
-    image: '/products/MSH-1005/main.webp',
-  },
-  {
-    id: 'p1007000-0000-0000-0000-000000000007',
-    name: 'درب ضد سرقت نگین',
-    slug: 'darb-zed-sereqat-negin',
-    sku: 'MSH-1007',
-    price: 23000000,
-    comparePrice: 25000000,
-    category: 'درب ضد سرقت',
-    rating: 0,
-    reviewCount: 0,
-    isNew: true,
-    isFeatured: true,
-    badge: 'لوکس',
-    image: '/products/MSH-1007/main.webp',
-  },
-]
+// French frame is a non-catalog item — keep as the first featured card
+const frenchFrameCard = {
+  id: 'fr-frame-001',
+  name: 'چهارچوب فلزی فرانسوی',
+  slug: 'chaharcharb-felezi-faransavi',
+  sku: 'MSH-FR',
+  price: 3_600_000,
+  comparePrice: null as number | null,
+  category: 'چهارچوب فلزی',
+  rating: 4.8,
+  reviewCount: 5,
+  isNew: false,
+  isFeatured: true,
+  badge: 'ویژه' as string | null,
+  pricePrefix: 'از' as string | undefined,
+  image: '/products/chaharcharb-felezi-faransavi/cover.webp',
+}
+
+// Pull the first 3 isFeatured products from catalog
+const featuredFromCatalog = CATALOG.filter((p) => p.isFeatured).slice(0, 3).map((p) => ({
+  id: String(p.code),
+  name: p.name,
+  slug: p.slug,
+  sku: p.sku,
+  price: p.price,
+  comparePrice: null as number | null,
+  category: CATEGORY_LABELS[p.category as DoorCategory],
+  rating: 0,
+  reviewCount: 0,
+  isNew: p.isNew ?? false,
+  isFeatured: p.isFeatured ?? false,
+  badge: p.badge ?? null,
+  pricePrefix: undefined as string | undefined,
+  image: `/products/${p.sku}/main.webp`,
+}))
+
+const products = [frenchFrameCard, ...featuredFromCatalog]
 
 export function FeaturedProductsSection() {
   return (

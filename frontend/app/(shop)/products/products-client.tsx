@@ -11,6 +11,8 @@ import { toPersianNumber } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import type { Product, ViewMode } from '@/types'
 import type { StockStatus } from '@/types/product'
+import { CATALOG, CATEGORY_LABELS } from '@/lib/data/products-catalog'
+import type { DoorCategory } from '@/lib/data/products-catalog'
 
 interface ProductsPageClientProps {
   searchParams: {
@@ -24,55 +26,49 @@ interface ProductsPageClientProps {
   }
 }
 
-const NAMES = ['آرتوس', 'رگال', 'فایر', 'گراند', 'پرمیوم', 'الیت'] as const
-const VARIANTS = ['پلاتینیوم', 'گلد', 'بلک', 'رویال', 'پرو', 'کلاسیک'] as const
-
-const DEMO_PRODUCTS: Product[] = Array.from({ length: 12 }, (_, i) => {
-  const stockStatus: StockStatus = i % 4 === 0 ? 'out_of_stock' : 'in_stock'
-  return {
-    id: String(i + 1),
-    sku: `SD-${1000 + i}`,
-    name: `درب ضد سرقت مدل ${NAMES[i % 6]} ${VARIANTS[i % 6]}`,
-    slug: `door-model-${i + 1}`,
-    shortDescription: 'درب ضد سرقت با استاندارد بین‌المللی و ضمانت ۱۰ ساله',
-    description: 'توضیحات کامل محصول',
-    price: (15 + i * 3.5) * 1_000_000,
-    comparePrice: i % 3 === 0 ? (18 + i * 3.5) * 1_000_000 : undefined,
-    costPrice: undefined,
-    categoryId: '1',
-    category: {
-      id: '1',
-      name: 'درب ضد سرقت',
-      slug: 'darb-zed-sereqat',
-      order: 1,
-      isActive: true,
-    },
-    images: [{ id: '1', productId: String(i + 1), url: '/placeholder-product.svg', alt: 'گروه صنعتی مشعوف', isPrimary: true, order: 0 }],
-    attributes: [],
-    specifications: [],
-    downloads: [],
-    tags: [],
-    stock: i % 4 === 0 ? 0 : 10,
-    stockStatus,
-    weight: undefined,
-    dimensions: undefined,
+const REAL_PRODUCTS: Product[] = CATALOG.map((p) => ({
+  id: String(p.code),
+  sku: p.sku,
+  name: p.name,
+  slug: p.slug,
+  shortDescription: p.shortDescription,
+  description: p.description,
+  price: p.price,
+  comparePrice: undefined,
+  costPrice: undefined,
+  categoryId: p.category,
+  category: {
+    id: p.category,
+    name: CATEGORY_LABELS[p.category as DoorCategory],
+    slug: p.category,
+    order: 1,
     isActive: true,
-    isFeatured: i < 4,
-    isNew: i < 3,
-    viewCount: 1000 + i * 123,
-    reviewCount: 10 + i * 7,
-    averageRating: Math.min(5, 4.5 + (i % 3) * 0.15),
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-  }
-})
+  },
+  images: [{ id: String(p.code), productId: String(p.code), url: `/products/${p.sku}/main.webp`, alt: p.name, isPrimary: true, order: 0 }],
+  attributes: [],
+  specifications: [],
+  downloads: [],
+  tags: [],
+  stock: 10,
+  stockStatus: 'in_stock' as StockStatus,
+  weight: undefined,
+  dimensions: undefined,
+  isActive: true,
+  isFeatured: p.isFeatured ?? false,
+  isNew: p.isNew ?? false,
+  viewCount: 0,
+  reviewCount: 0,
+  averageRating: 4.8,
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-01-01T00:00:00Z',
+}))
 
 export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [sortBy, setSortBy] = useState(searchParams.sortBy ?? 'newest')
 
-  const totalProducts = DEMO_PRODUCTS.length
+  const totalProducts = REAL_PRODUCTS.length
 
   return (
     <div className="min-h-screen bg-black">
@@ -193,7 +189,7 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
               layout
             >
               <AnimatePresence mode="popLayout">
-                {DEMO_PRODUCTS.map((product, i) => (
+                {REAL_PRODUCTS.map((product, i) => (
                   <motion.div
                     key={product.id}
                     layout

@@ -33,7 +33,17 @@
       ]
     }
   ],
+  "crons": [
+    {
+      "path": "/api/internal/sync-door-prices",
+      "schedule": "0 */6 * * *"
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/api/internal/:path*",
+      "destination": "/api/internal/:path*"
+    },
     {
       "source": "/api/:path*",
       "destination": "https://api.mashuf.com/:path*"

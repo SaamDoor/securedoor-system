@@ -5,14 +5,16 @@ import { ChevronDown, RotateCcw } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { formatPrice, toPersianNumber } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { CATALOG, CATEGORY_LABELS } from '@/lib/data/products-catalog'
+import type { DoorCategory } from '@/lib/data/products-catalog'
 
-const categories = [
-  { id: '1', name: 'درب ضد سرقت', slug: 'darb-zed-sereqat', count: 48 },
-  { id: '2', name: 'درب ضد حریق', slug: 'darb-zed-hariq', count: 24 },
-  { id: '3', name: 'درب آپارتمانی', slug: 'darb-apartmani', count: 36 },
-  { id: '4', name: 'درب ویلایی', slug: 'darb-villaei', count: 18 },
-  { id: '5', name: 'درب اداری', slug: 'darb-edari', count: 12 },
-  { id: '6', name: 'متعلقات', slug: 'moteallaqat', count: 64 },
+const CATEGORIES = [
+  { id: 'all', name: 'همه محصولات', count: CATALOG.length },
+  ...Object.entries(CATEGORY_LABELS).map(([id, name]) => ({
+    id,
+    name,
+    count: CATALOG.filter((p) => p.category === id).length,
+  })),
 ]
 
 const PRICE_MIN = 0
@@ -80,13 +82,13 @@ export function ProductFilters({ searchParams }: ProductFiltersProps) {
           >
             <span>همه دسته‌بندی‌ها</span>
           </button>
-          {categories.map((cat) => (
+          {CATEGORIES.filter((cat) => cat.id !== 'all').map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setSelectedCategory(cat.slug)}
+              onClick={() => setSelectedCategory(cat.id)}
               className={cn(
                 'w-full flex items-center justify-between py-2 px-3 rounded-lg text-sm transition-colors',
-                selectedCategory === cat.slug
+                selectedCategory === cat.id
                   ? 'bg-gold/10 text-gold'
                   : 'text-muted hover:text-white hover:bg-white/5',
               )}
