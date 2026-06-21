@@ -19,7 +19,7 @@ export const ROLE_HOME: Record<UserRole, string> = {
   support: "/user/vip-dashboard",
   manager: "/partner/dashboard",
   admin: "/admin/dashboard",
-  super_admin: "/admin/super-dashboard",
+  super_admin: "/admin/dashboard",
 };
 
 export const ROLE_DASHBOARD_LINK: Record<UserRole, string> = {
