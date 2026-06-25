@@ -65,3 +65,4 @@ export function generateFilePath(
     .toLowerCase()
   return `${folder}/${name}-${timestamp}.${ext}`
 }
+
