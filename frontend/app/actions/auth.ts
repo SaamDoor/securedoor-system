@@ -74,13 +74,15 @@ export async function signInWithPassword(
   mode: 'phone' | 'email' = 'phone',
 ): Promise<SignInWithPasswordResult> {
   const supabase = await createServerSupabaseClient();
+  const normalizedIdentifier = identifier.trim();
+  const isEmailIdentifier = normalizedIdentifier.includes("@");
 
-  // Email mode: use the identifier directly as email
-  // Phone mode: convert phone number to internal auth email format
+  // Email input must stay email even if the UI tab is still on "phone".
+  // Phone mode converts Iranian phone numbers to the internal auth email.
   const authEmail =
-    mode === 'email'
-      ? identifier.trim().toLowerCase()
-      : phoneToAuthEmail(identifier.trim());
+    mode === 'email' || isEmailIdentifier
+      ? normalizedIdentifier.toLowerCase()
+      : phoneToAuthEmail(normalizedIdentifier);
 
   const { data: authData, error } = await supabase.auth.signInWithPassword({
     email: authEmail,
