@@ -1,11 +1,12 @@
 import { Edit, CheckCircle, AlertCircle } from 'lucide-react'
+import { SITE_NAME } from '@/lib/constants'
 
 const mockPages = [
-  { id: 1, page: 'صفحه اصلی', title: 'سکیوردور | درب‌های امنیتی', description: 'تامین‌کننده انواع درب‌های ضدسرقت و امنیتی...', keyword: 'درب ضد سرقت', status: 'کامل' },
-  { id: 2, page: 'محصولات', title: 'محصولات | سکیوردور', description: 'مشاهده کامل محصولات امنیتی و درب‌ها...', keyword: 'خرید درب امنیتی', status: 'کامل' },
-  { id: 3, page: 'درباره ما', title: 'درباره سکیوردور', description: '', keyword: '', status: 'ناقص' },
-  { id: 4, page: 'تماس با ما', title: 'تماس | سکیوردور', description: 'راه‌های ارتباط با ما...', keyword: 'تماس با فروشنده درب', status: 'کامل' },
-  { id: 5, page: 'وبلاگ', title: 'وبلاگ سکیوردور', description: '', keyword: '', status: 'ناقص' },
+  { id: 1, page: 'صفحه اصلی', title: `${SITE_NAME} | درب‌های امنیتی`, description: 'تامین‌کننده انواع درب‌های ضدسرقت و امنیتی...', keyword: 'درب ضد سرقت', status: 'کامل' },
+  { id: 2, page: 'محصولات', title: `محصولات | ${SITE_NAME}`, description: 'مشاهده کامل محصولات امنیتی و درب‌ها...', keyword: 'خرید درب امنیتی', status: 'کامل' },
+  { id: 3, page: 'درباره ما', title: `درباره ${SITE_NAME}`, description: '', keyword: '', status: 'ناقص' },
+  { id: 4, page: 'تماس با ما', title: `تماس | ${SITE_NAME}`, description: 'راه‌های ارتباط با ما...', keyword: 'تماس با فروشنده درب', status: 'کامل' },
+  { id: 5, page: 'وبلاگ', title: `وبلاگ ${SITE_NAME}`, description: '', keyword: '', status: 'ناقص' },
 ]
 
 export default function SeoPagesPage() {

@@ -2,10 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Clock, Eye, ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { SITE_NAME } from '@/lib/constants'
 import { formatJalaliDate, toPersianNumber } from '@/lib/utils'
 
 export const metadata: Metadata = {
-  title: 'وبلاگ | گروه صنعتی مشعوف',
+  title: `وبلاگ | ${SITE_NAME}`,
   description: 'مقالات تخصصی در حوزه امنیت، طراحی و راهنمای انتخاب درب ضد سرقت',
 }
 

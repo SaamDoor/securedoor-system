@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { BRAND } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 export type LogoVariant =
@@ -94,7 +95,7 @@ function LogoContent({ variant = 'default', size = 'md', showTagline = false }: 
           مشعوف
         </span>
         <span className={cn('font-medium tracking-widest leading-none mt-0.5 uppercase', s.sub, colors.tagline)}>
-          MASHOUF GROUP
+          {BRAND.english}
         </span>
         {showTagline && (
           <span className={cn('font-normal mt-1 leading-none', s.sub, colors.tagline)}>

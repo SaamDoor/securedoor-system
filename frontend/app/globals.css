@@ -1,15 +1,3 @@
-/* ═══════════════════════════════════════════════════════════════
-   گروه تولیدی صنایع ساختمانی مشعوف — Global Styles & Design System (Luxury Red Edition)
-   ═══════════════════════════════════════════════════════════════ */
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* ─────────────────────────────────────────────
-   PERSIAN FONTS
-───────────────────────────────────────────── */
-
 @import '@fontsource/vazirmatn/300.css';
 @import '@fontsource/vazirmatn/400.css';
 @import '@fontsource/vazirmatn/500.css';
@@ -17,6 +5,14 @@
 @import '@fontsource/vazirmatn/700.css';
 @import '@fontsource/vazirmatn/800.css';
 @import '@fontsource/vazirmatn/900.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   گروه تولیدی صنایع ساختمانی مشعوف — Global Styles & Design System (Luxury Red Edition)
+   ═══════════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────
    CSS CUSTOM PROPERTIES (Design Tokens)

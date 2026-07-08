@@ -1,12 +1,13 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { BRAND, SITE_NAME } from '@/lib/constants'
 import { ProjectsGrid } from './projects-grid'
 import type { ConstructionProject } from '@/types'
 
 export const metadata: Metadata = {
-  title: 'پروژه‌های ساختمانی | گروه صنعتی مشعوف',
-  description: 'مجموعه پروژه‌های معماری و ساختمانی گروه صنعتی مشعوف — از پیش‌فروش تا تحویل.',
+  title: `پروژه‌های ساختمانی | ${SITE_NAME}`,
+  description: `مجموعه پروژه‌های معماری و ساختمانی ${SITE_NAME} — از پیش‌فروش تا تحویل.`,
 }
 
 async function getData() {
@@ -40,7 +41,7 @@ export default async function ProjectsPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-deep-black via-deep-black/60 to-transparent" />
         <div className="relative container pb-12">
           <p className="text-gold text-sm tracking-[0.3em] uppercase font-medium mb-3">
-            MASHOUF GROUP
+            {BRAND.english}
           </p>
           <h1 className="text-4xl md:text-6xl font-black text-white leading-tight">
             پروژه‌های <br />

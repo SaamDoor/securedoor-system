@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Save, FileText } from 'lucide-react'
+import { SITE_URL } from '@/lib/constants'
 
 const defaultRobots = `User-agent: *
 Allow: /
@@ -8,7 +9,7 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /_next/
 
-Sitemap: https://securedoor.ir/sitemap.xml`
+Sitemap: ${SITE_URL}/sitemap.xml`
 
 export default function SeoRobotsPage() {
   const [content, setContent] = useState(defaultRobots)

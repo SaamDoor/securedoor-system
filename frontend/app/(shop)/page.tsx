@@ -12,6 +12,7 @@ import { CertificatesSection } from '@/components/home/certificates-section'
 import { BlogHighlightsSection } from '@/components/home/blog-highlights-section'
 import { ContactCtaSection } from '@/components/home/contact-cta-section'
 import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/constants'
+import { organizationSchema } from '@/lib/seo'
 import { fetchFramePrices } from '@/lib/api/google-sheets'
 
 export const metadata: Metadata = {
@@ -42,6 +43,10 @@ export default async function HomePage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema()) }}
+      />
       <HeroSection />
       <FramePriceListSection
         frenchPrices={frenchPrices}
