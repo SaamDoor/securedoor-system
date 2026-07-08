@@ -3,6 +3,7 @@ import { Toaster } from 'sonner'
 import { Providers } from '@/components/providers'
 import '@/app/globals.css'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/constants'
+import { getSupabaseUrl } from '@/lib/supabase/env'
 
 // A misconfigured NEXT_PUBLIC_SITE_URL (empty string, missing protocol) makes
 // `new URL()` throw synchronously inside this Server Component on every
@@ -88,10 +89,18 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  const supabaseUrl = getSupabaseUrl()
+
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning className="scroll-smooth">
+    <html
+      lang="fa"
+      dir="rtl"
+      suppressHydrationWarning
+      className="scroll-smooth"
+      data-scroll-behavior="smooth"
+    >
       <head>
-        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
+        {supabaseUrl ? <link rel="dns-prefetch" href={supabaseUrl} /> : null}
       </head>
       <body className="antialiased">
         <Providers>

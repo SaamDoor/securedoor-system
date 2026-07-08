@@ -1,1 +1,24 @@
-{"name":"گروه صنعتی مشعوف","short_name":"مشعوف","icons":[{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#09090B","background_color":"#09090B","display":"standalone"}
+{
+  "name": "گروه صنعتی مشعوف",
+  "short_name": "مشعوف",
+  "description": "گروه صنعتی مشعوف؛ تولیدکننده درب‌های ضد سرقت، چهارچوب‌های فلزی، درب‌های اتاقی و درب‌های حیاطی فرفورژه در مازندران.",
+  "lang": "fa-IR",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#09090B",
+  "background_color": "#09090B",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

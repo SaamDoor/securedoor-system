@@ -1,5 +1,12 @@
 import type { Metadata } from 'next'
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_LINKS } from './constants'
+import {
+  BRAND,
+  CONTACT,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  SOCIAL_LINKS,
+} from './constants'
 
 interface SeoOptions {
   title?: string
@@ -97,11 +104,22 @@ export function organizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: SITE_NAME,
+    alternateName: [BRAND.nameShort, BRAND.english, BRAND.group],
+    description: SITE_DESCRIPTION,
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
+    email: CONTACT.email,
+    telephone: `+98-${CONTACT.phone.slice(1)}`,
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'IR',
+      addressRegion: 'مازندران',
+      addressLocality: 'قائم شهر',
+      streetAddress: CONTACT.address,
+    },
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+98-900-328-6539',
+      telephone: `+98-${CONTACT.phone.slice(1)}`,
       contactType: 'customer service',
       availableLanguage: 'Persian',
       areaServed: 'IR',

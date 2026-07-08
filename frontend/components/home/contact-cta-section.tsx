@@ -114,13 +114,11 @@ export function ContactCtaSection() {
 
           {/* Main CTA */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
-            <Button
-              asChild
-              variant="gold"
-              size="xl"
-              rightIcon={<ArrowLeft className="h-5 w-5" />}
-            >
-              <Link href="/contact">درخواست مشاوره رایگان</Link>
+            <Button asChild variant="gold" size="xl">
+              <Link href="/contact">
+                درخواست مشاوره رایگان
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
             </Button>
             <Button asChild variant="dark" size="xl">
               <Link href="/products">مشاهده محصولات</Link>

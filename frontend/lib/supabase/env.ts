@@ -20,3 +20,7 @@ export function getSupabaseAnonKey(): string {
     ''
   )
 }
+
+export function isSupabaseConfigured(): boolean {
+  return Boolean(getSupabaseUrl() && getSupabaseAnonKey())
+}

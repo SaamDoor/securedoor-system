@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { signInWithPassword } from '@/app/actions/auth'
+import { isSupabaseConfigured } from '@/lib/supabase/env'
 import { isValidIranPhone } from '@/lib/utils'
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -46,13 +47,6 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   access_denied: 'دسترسی رد شد. لطفاً دوباره تلاش کنید.',
   auth_callback_failed: 'احراز هویت ناموفق بود. لطفاً دوباره تلاش کنید.',
   invalid_request: 'درخواست نامعتبر است. لطفاً دوباره تلاش کنید.',
-}
-
-function isSupabaseConfigured(): boolean {
-  return !!(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
-  )
 }
 
 // ─── Login Form ───────────────────────────────────────────────────────────────
