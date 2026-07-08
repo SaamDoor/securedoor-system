@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ROLE_HOME, type UserRole } from "@/types/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 const ROLE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
@@ -25,11 +26,15 @@ export async function GET(request: NextRequest) {
   if (code) {
     const cookieStore = await cookies();
     type CookieSetOptions = Parameters<typeof cookieStore.set>[2];
+    const url = getSupabaseUrl();
+    const key = getSupabaseAnonKey();
+    if (!url || !key) {
+      return NextResponse.redirect(
+        `${origin}/auth/login?auth_error=auth_callback_failed`,
+      );
+    }
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
+    const supabase = createServerClient(url, key, {
         cookies: {
           getAll() {
             return cookieStore.getAll();

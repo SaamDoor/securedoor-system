@@ -1,12 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { getSupabaseAnonKey, getSupabaseUrl } from './env'
 
 export async function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  const url = getSupabaseUrl()
+  const key = getSupabaseAnonKey()
 
   if (!url || !key) {
-    throw new Error("CRITICAL: Supabase Environment Variables are missing in Vercel/Local environment")
+    throw new Error('CRITICAL: Supabase Environment Variables are missing in Vercel/Local environment')
   }
 
   const cookieStore = await cookies()
@@ -35,11 +36,11 @@ export async function createClient() {
 }
 
 export async function createAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const url = getSupabaseUrl()
   const key = process.env.SUPABASE_SECRET_KEY
 
   if (!url || !key) {
-    throw new Error("CRITICAL: Supabase Environment Variables are missing in Vercel/Local environment")
+    throw new Error('CRITICAL: Supabase Environment Variables are missing in Vercel/Local environment')
   }
 
   const cookieStore = await cookies()

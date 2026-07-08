@@ -84,8 +84,11 @@ export default function AdminProductsPage() {
           <h1 className="text-2xl font-black text-white">مدیریت محصولات</h1>
           <p className="text-sm text-[#A0A0A0]">{toPersianNumber(products.length)} محصول</p>
         </div>
-        <Button asChild variant="gold" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-          <Link href="/admin/products/new">افزودن محصول</Link>
+        <Button asChild variant="gold" size="sm">
+          <Link href="/admin/products/new">
+            <Plus className="h-4 w-4" />
+            افزودن محصول
+          </Link>
         </Button>
       </div>
 

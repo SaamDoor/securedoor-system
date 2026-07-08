@@ -73,8 +73,11 @@ export default function CartPage() {
           </div>
           <h2 className="text-2xl font-black text-white mb-3">سبد خرید شما خالی است</h2>
           <p className="text-[#A0A0A0] mb-8">محصولات مورد نظر خود را به سبد اضافه کنید.</p>
-          <Button asChild variant="gold" size="lg" rightIcon={<ArrowLeft className="h-5 w-5" />}>
-            <Link href="/products">مشاهده محصولات</Link>
+          <Button asChild variant="gold" size="lg">
+            <Link href="/products">
+              مشاهده محصولات
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
           </Button>
         </div>
       </div>

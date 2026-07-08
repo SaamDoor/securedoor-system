@@ -97,25 +97,49 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading = false, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
+    const classes = cn(buttonVariants({ variant, size, className }))
+
+    // Slot (asChild) merges props onto its single child. Wrapping children in a
+    // Fragment would forward className onto React.Fragment and crash.
+    let content: React.ReactNode = children
+    if (loading) {
+      content = (
+        <>
+          <LoadingSpinner />
+          {children}
+        </>
+      )
+    } else if (leftIcon || rightIcon) {
+      content = (
+        <>
+          {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+          {children}
+          {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
+        </>
+      )
+    }
+
+    if (asChild) {
+      if (loading || leftIcon || rightIcon) {
+        console.warn(
+          '[Button] asChild ignores loading/leftIcon/rightIcon — wrap icons inside the child element instead.',
+        )
+      }
+      return (
+        <Comp ref={ref} className={classes} {...props}>
+          {children}
+        </Comp>
+      )
+    }
+
     return (
       <Comp
         ref={ref}
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={classes}
         disabled={disabled || loading}
         {...props}
       >
-        {loading ? (
-          <>
-            <LoadingSpinner />
-            {children}
-          </>
-        ) : (
-          <>
-            {leftIcon  && <span className="flex-shrink-0">{leftIcon}</span>}
-            {children}
-            {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
-          </>
-        )}
+        {content}
       </Comp>
     )
   },

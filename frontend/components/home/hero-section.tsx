@@ -325,8 +325,11 @@ export function HeroSection() {
             transition={{ duration: 0.7, delay: 0.75 }}
             className="flex flex-wrap items-center gap-3"
           >
-            <Button asChild variant="gold" size="lg" rightIcon={<ArrowLeft className="h-5 w-5" />}>
-              <Link href="/products">مشاهده محصولات</Link>
+            <Button asChild variant="gold" size="lg">
+              <Link href="/products">
+                مشاهده محصولات
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
             </Button>
             <Button asChild variant="gold-outline" size="lg">
               <Link href="/contact">مشاوره رایگان</Link>

@@ -70,8 +70,9 @@ function hashPrices(prices: Record<number, number>): string {
 interface Snapshot { price_hash: string; changed_at: string }
 
 async function readSnapshot(): Promise<Snapshot | null> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const { getSupabaseAnonKey, getSupabaseUrl } = await import('@/lib/supabase/env')
+  const url = getSupabaseUrl()
+  const key = getSupabaseAnonKey()
 
   if (!url || !key) return null
 
@@ -96,10 +97,11 @@ async function readSnapshot(): Promise<Snapshot | null> {
 }
 
 async function upsertSnapshot(newHash: string): Promise<string> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const { getSupabaseAnonKey, getSupabaseUrl } = await import('@/lib/supabase/env')
+  const url = getSupabaseUrl()
   const key =
     process.env.SUPABASE_SECRET_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    getSupabaseAnonKey()
 
   const changedAt = new Date().toISOString()
 
