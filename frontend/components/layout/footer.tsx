@@ -1,5 +1,17 @@
 import Link from 'next/link'
-import { Phone, Mail, MapPin, Instagram, Send, ArrowLeft } from 'lucide-react'
+import {
+  ArrowLeft,
+  Award,
+  Headphones,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  RotateCcw,
+  Send,
+  ShieldCheck,
+  Truck,
+} from 'lucide-react'
 import { CONTACT, SOCIAL_LINKS } from '@/lib/constants'
 
 const footerLinks = {
@@ -54,7 +66,7 @@ const socialLinks = [
 export function Footer() {
   return (
     /* ── Rounded-top card: sits inside a light or dark page bg ── */
-    <footer className="rounded-t-[2rem] overflow-hidden bg-zinc-950 border-t border-white/[0.06] shadow-[0_-24px_80px_rgba(0,0,0,0.6)]">
+    <footer className="relative overflow-hidden rounded-t-[2rem] border-t border-white/[0.06] bg-zinc-950 shadow-[0_-24px_80px_rgba(0,0,0,0.6)]">
 
       {/* ── Top highlight edge ── */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
@@ -80,7 +92,7 @@ export function Footer() {
             </p>
 
             {/* Newsletter input */}
-            <div className="flex gap-2 max-w-md mx-auto">
+            <div className="mx-auto flex max-w-md flex-col gap-2 sm:flex-row">
               <div className="relative flex-1">
                 <input
                   type="email"
@@ -280,18 +292,26 @@ export function Footer() {
           TRUST BADGES
       ════════════════════════════════════ */}
       <div className="border-t border-white/[0.05]">
-        <div className="container px-4 sm:px-6 py-7">
-          <div className="flex flex-wrap items-center justify-center gap-5">
+        <div className="container px-4 py-8 sm:px-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {[
-              { icon: '🔒', label: 'پرداخت امن' },
-              { icon: '🏆', label: 'ضمانت اصالت کالا' },
-              { icon: '🚚', label: 'ارسال سراسری' },
-              { icon: '📞', label: 'پشتیبانی ۲۴/۷' },
-              { icon: '↩️', label: 'ضمانت بازگشت' },
-            ].map(({ icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-xs text-zinc-600 px-3 py-2 rounded-full bg-white/[0.03] border border-white/[0.05]">
-                <span className="text-sm">{icon}</span>
-                {label}
+              { icon: ShieldCheck, label: 'پرداخت امن', caption: 'تراکنش محافظت‌شده' },
+              { icon: Award, label: 'ضمانت اصالت', caption: 'تضمین کیفیت کالا' },
+              { icon: Truck, label: 'ارسال سراسری', caption: 'به تمام نقاط کشور' },
+              { icon: Headphones, label: 'پشتیبانی', caption: 'همراه شما پس از خرید' },
+              { icon: RotateCcw, label: 'ضمانت بازگشت', caption: 'خرید با اطمینان' },
+            ].map(({ icon: Icon, label, caption }) => (
+              <div
+                key={label}
+                className="group flex min-h-20 items-center gap-3 rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.055] to-white/[0.02] p-3 transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:bg-primary/[0.06] sm:p-4"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-105">
+                  <Icon className="h-5 w-5" strokeWidth={1.8} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-zinc-200 sm:text-sm">{label}</div>
+                  <div className="mt-1 hidden text-[10px] text-zinc-600 sm:block">{caption}</div>
+                </div>
               </div>
             ))}
           </div>

@@ -14,12 +14,14 @@ import {
   Settings,
   LogOut,
   FileText,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { USER_PANEL_ROLES } from "@/types";
 
 const baseNavItems = [
+  { label: "کیف پول و واریز", href: "/user/wallet", icon: Wallet },
   { label: "سفارشات", href: "/user/orders", icon: ShoppingBag },
   { label: "فاکتورها", href: "/user/invoices", icon: FileText },
   { label: "علاقه‌مندی‌ها", href: "/user/wishlist", icon: Heart },

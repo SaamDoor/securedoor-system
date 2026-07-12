@@ -403,6 +403,13 @@
   .mie-auto { margin-inline-end: auto; }
   .mis-auto { margin-inline-start: auto; }
 
+  .text-gold-gradient {
+    background-image: linear-gradient(135deg, #C41E3A 0%, #E8506A 50%, #C41E3A 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
   .glow-primary {
     box-shadow: 0 0 20px rgba(196, 30, 58, 0.3),
                 0 0 60px rgba(196, 30, 58, 0.1);

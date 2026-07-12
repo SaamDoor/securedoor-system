@@ -45,7 +45,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {/* Features */}
           <div className="mt-10 flex flex-col gap-3 text-right max-w-sm mx-auto">
             {[
-              '✅ ضمانت ۱۰ ساله برای تمام محصولات',
+              '✅ ضمانت ۵ ساله برای تمام محصولات',
               '✅ نصب تخصصی در سراسر کشور',
               '✅ استاندارد EN 1627 Class 6',
               '✅ پشتیبانی ۲۴ ساعته',

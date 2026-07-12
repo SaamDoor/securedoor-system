@@ -13,7 +13,11 @@ export default async function EditProductPage({ params }: Props) {
   const supabase = await createClient()
 
   const [{ data: product, error }, { data: categories }, { data: framePrices }] = await Promise.all([
-    supabase.from('products').select('*, images:product_images(*)').eq('id', id).single(),
+    supabase
+      .from('products')
+      .select('*, images:product_images(*), specifications:product_specifications(*)')
+      .eq('id', id)
+      .single(),
     supabase.from('product_categories').select('id, name').eq('is_active', true).order('"order"'),
     supabase
       .from('frame_price_list')

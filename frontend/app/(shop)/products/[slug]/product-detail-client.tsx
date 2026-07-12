@@ -23,7 +23,7 @@ interface Spec {
   group: string
 }
 
-interface ProductData {
+export interface ProductData {
   id: string
   sku: string
   name: string
@@ -37,6 +37,10 @@ interface ProductData {
   image: string
   isNew: boolean
   badge: string | null
+  stockLeft?: number
+  stockRight?: number
+  dimensionOptions?: string[]
+  allowCustomDimensions?: boolean
 }
 
 // ─── Shared base specs builder ─────────────────────────────────────────────────
@@ -95,6 +99,10 @@ const PRODUCTS: Record<string, ProductData> = Object.fromEntries(
       image: `/products/${p.sku}/main.webp`,
       isNew: p.isNew ?? false,
       badge: p.badge ?? null,
+      stockLeft: 5,
+      stockRight: 5,
+      dimensionOptions: ['۱۰۵ × ۲۱۰ سانتی‌متر', '۱۱۰ × ۲۱۰ سانتی‌متر', '۱۱۵ × ۲۱۰ سانتی‌متر'],
+      allowCustomDimensions: true,
     } satisfies ProductData,
   ])
 )
@@ -103,12 +111,19 @@ const PRODUCTS: Record<string, ProductData> = Object.fromEntries(
 
 interface ProductDetailClientProps {
   slug: string
+  initialProduct?: ProductData
 }
 
-export function ProductDetailClient({ slug }: ProductDetailClientProps) {
-  const product = PRODUCTS[slug]
+export function ProductDetailClient({ slug, initialProduct }: ProductDetailClientProps) {
+  const product = initialProduct ?? PRODUCTS[slug]
   const [activeTab, setActiveTab] = useState<'description' | 'specs'>('description')
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [openingDirection, setOpeningDirection] = useState<'left' | 'right'>(
+    (product?.stockRight ?? 0) > 0 ? 'right' : 'left',
+  )
+  const [selectedDimension, setSelectedDimension] = useState(
+    product?.dimensionOptions?.[0] ?? '',
+  )
 
   if (!product) {
     return (
@@ -225,12 +240,16 @@ export function ProductDetailClient({ slug }: ProductDetailClientProps) {
 
             {/* Quick specs 2×2 grid */}
             <div className="grid grid-cols-2 gap-2.5">
-              {[
-                { label: 'کف', value: '۱۸ میلی‌متر' },
-                { label: 'ضخامت ورق', value: '۱.۲۵ ضد دیلم' },
-                { label: 'یراق', value: 'تیپ ترک' },
-                { label: 'ضمانت یراق', value: '۲ سال' },
-              ].map(({ label, value }) => (
+              {(product.specs.length > 0
+                ? product.specs.slice(0, 4).map((spec) => ({
+                    label: spec.label,
+                    value: `${spec.value}${spec.unit ? ` ${spec.unit}` : ''}`,
+                  }))
+                : [
+                    { label: 'ساختار', value: 'فولادی سرتاسری' },
+                    { label: 'ضمانت', value: '۵ سال رسمی' },
+                  ]
+              ).map(({ label, value }) => (
                 <div
                   key={label}
                   className="flex flex-col gap-1 px-4 py-3 rounded-xl bg-zinc-900 border border-white/[0.07]"
@@ -241,6 +260,77 @@ export function ProductDetailClient({ slug }: ProductDetailClientProps) {
               ))}
             </div>
 
+            {/* Configurable product options */}
+            <div className="space-y-5 rounded-2xl border border-white/[0.08] bg-zinc-950 p-4 sm:p-5">
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-sm font-bold text-white">جهت بازشو</span>
+                  <span className="text-xs text-zinc-500">نمای بیرونی درب</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { value: 'right', label: 'راست‌بازشو', stock: product.stockRight ?? 0 },
+                    { value: 'left', label: 'چپ‌بازشو', stock: product.stockLeft ?? 0 },
+                  ] as const).map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      disabled={option.stock === 0}
+                      onClick={() => setOpeningDirection(option.value)}
+                      className={cn(
+                        'rounded-xl border px-3 py-3 text-sm font-bold transition-all disabled:cursor-not-allowed disabled:opacity-40',
+                        openingDirection === option.value
+                          ? 'border-gold bg-gold/10 text-gold'
+                          : 'border-white/10 bg-white/[0.025] text-zinc-300 hover:border-white/20',
+                      )}
+                    >
+                      {option.label}
+                      <span className="mr-2 text-[10px] font-normal opacity-70">
+                        {option.stock > 0 ? `${toPersianNumber(option.stock)} موجود` : 'ناموجود'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {!!product.dimensionOptions?.length && (
+                <div>
+                  <div className="mb-3 text-sm font-bold text-white">انتخاب ابعاد</div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {product.dimensionOptions.map((dimension) => (
+                      <button
+                        key={dimension}
+                        type="button"
+                        onClick={() => setSelectedDimension(dimension)}
+                        className={cn(
+                          'rounded-xl border px-3 py-3 text-xs transition-all',
+                          selectedDimension === dimension
+                            ? 'border-gold bg-gold/10 font-bold text-gold'
+                            : 'border-white/10 text-zinc-400 hover:border-white/20',
+                        )}
+                      >
+                        {dimension}
+                      </button>
+                    ))}
+                    {product.allowCustomDimensions && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDimension('ابعاد سفارشی')}
+                        className={cn(
+                          'rounded-xl border px-3 py-3 text-xs transition-all',
+                          selectedDimension === 'ابعاد سفارشی'
+                            ? 'border-gold bg-gold/10 font-bold text-gold'
+                            : 'border-dashed border-white/15 text-zinc-400 hover:border-gold/40',
+                        )}
+                      >
+                        ابعاد سفارشی
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* CTA row */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
@@ -249,7 +339,7 @@ export function ProductDetailClient({ slug }: ProductDetailClientProps) {
                 size="lg"
                 className="flex-1 justify-center"
               >
-                <Link href={`/contact?type=inquiry&product=${product.sku}`}>
+                <Link href={`/contact?type=inquiry&product=${product.sku}&direction=${openingDirection}&dimension=${encodeURIComponent(selectedDimension)}`}>
                   <ClipboardList className="h-5 w-5 ml-2" />
                   استعلام قیمت
                 </Link>

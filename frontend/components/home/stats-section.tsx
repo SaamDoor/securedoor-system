@@ -7,10 +7,10 @@ import { toPersianNumber } from '@/lib/utils'
 const stats = [
   { value: 10, suffix: '+', unit: 'سال', label: 'سابقه تولید', description: 'فعالیت تخصصی از ۱۳۹۵' },
   { value: 15000, suffix: '+', unit: '', label: 'درب نصب شده', description: 'در سراسر کشور' },
-  { value: 850, suffix: '+', unit: '', label: 'نمایندگی فعال', description: 'در ۳۱ استان' },
+  { value: 850, suffix: '+', unit: '', label: 'عاملیت فروش', description: 'در سراسر کشور' },
   { value: 12, suffix: '', unit: '', label: 'جایزه ملی', description: 'کیفیت و نوآوری' },
   { value: 99, suffix: '٪', unit: '', label: 'رضایت مشتری', description: 'بر اساس نظرسنجی' },
-  { value: 10, suffix: '', unit: 'سال', label: 'ضمانت‌نامه', description: 'برای تمام محصولات' },
+  { value: 5, suffix: '', unit: 'سال', label: 'ضمانت‌نامه', description: 'برای تمام محصولات' },
 ]
 
 export function StatsSection() {
@@ -30,14 +30,14 @@ export function StatsSection() {
         style={{
           backgroundImage: `repeating-linear-gradient(
             90deg,
-            rgba(200,168,93,0.5) 0px,
-            rgba(200,168,93,0.5) 1px,
+            rgba(196,30,58,0.5) 0px,
+            rgba(196,30,58,0.5) 1px,
             transparent 1px,
             transparent 80px
           ), repeating-linear-gradient(
             0deg,
-            rgba(200,168,93,0.5) 0px,
-            rgba(200,168,93,0.5) 1px,
+            rgba(196,30,58,0.5) 0px,
+            rgba(196,30,58,0.5) 1px,
             transparent 1px,
             transparent 80px
           )`,
@@ -50,7 +50,7 @@ export function StatsSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-20"
+          className="mb-12 text-center sm:mb-16 lg:mb-20"
         >
           <div className="inline-flex items-center gap-3 mb-4">
             <div className="h-px w-12 bg-gold" />
@@ -66,7 +66,7 @@ export function StatsSection() {
         </motion.div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:gap-8">
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -79,7 +79,7 @@ export function StatsSection() {
               }}
               className="group"
             >
-              <div className="relative p-8 rounded-2xl bg-surface border border-white/8 text-center overflow-hidden hover:border-gold/30 transition-all duration-400 hover:shadow-gold">
+              <div className="relative flex min-h-44 flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/8 bg-surface p-4 text-center transition-all duration-400 hover:border-gold/30 hover:shadow-gold sm:min-h-52 sm:p-8">
                 {/* Corner accent */}
                 <div className="absolute top-0 left-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   style={{
@@ -129,13 +129,13 @@ function AnimatedNumber({
 }) {
   return (
     <motion.div
-      className="text-5xl font-black text-gold-gradient leading-none mb-2"
+      className="mb-2 text-3xl font-black leading-none text-gold-gradient sm:text-4xl lg:text-5xl"
       initial={{ opacity: 0 }}
       animate={isInView ? { opacity: 1 } : {}}
       transition={{ duration: 0.3, delay }}
     >
       {toPersianNumber((value).toLocaleString())}{suffix}
-      {unit && <span className="text-xl font-semibold text-gold mr-1">{unit}</span>}
+      {unit && <span className="mr-1 text-base font-semibold text-gold sm:text-xl">{unit}</span>}
     </motion.div>
   )
 }

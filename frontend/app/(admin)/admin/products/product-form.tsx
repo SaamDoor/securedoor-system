@@ -9,14 +9,14 @@ import { toast } from 'sonner'
 import {
   Upload, X, ImageIcon, Loader2, Save, Star,
   Plus, Trash2, Info, Check, ChevronDown, ChevronUp,
-  Package, FileText, Search, Share2, Bot, Layers, BarChart3,
+  Package, FileText, Search, Share2, Bot, Layers, BarChart3, ListChecks,
 } from 'lucide-react'
 import { Input, Textarea } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn, slugify } from '@/lib/utils'
 import {
   createProduct, updateProduct, uploadProductImages,
-  type AdminProductImageInput,
+  type AdminProductImageInput, type AdminProductSpecificationInput,
 } from '@/lib/api/products'
 import { productFormSchema, type ProductFormData } from '@/lib/validations/product'
 
@@ -28,17 +28,22 @@ interface FramePriceOption { id: string; frame_type: string; color_name: string;
 interface ExistingProduct {
   id: string; name: string; slug: string; sku: string; category_id: string
   brand?: string | null; short_description?: string | null; description: string
-  body_content?: string | null; tags?: string | null
-  price: number; compare_price?: number | null; stock: number
+  body_content?: string | null; tags?: string[] | string | null
+  price: number; compare_price?: number | null; cost_price?: number | null; stock: number
+  stock_left?: number; stock_right?: number
+  low_stock_threshold?: number; weight?: number | null; width?: number | null
+  height?: number | null; depth?: number | null; dimension_unit?: 'cm' | 'mm' | 'm'
+  dimension_options?: string[] | null; allow_custom_dimensions?: boolean
   stock_status: ProductFormData['stock_status']
   is_active: boolean; is_featured: boolean; is_new: boolean
   focus_keyword?: string | null; meta_title?: string | null; meta_description?: string | null
   canonical_url?: string | null; robots?: string | null
   og_title?: string | null; og_description?: string | null; og_image_url?: string | null
   faq_pairs?: { question: string; answer: string }[] | null
-  ai_summary?: string | null; entity_keywords?: string | null
+  ai_summary?: string | null; entity_keywords?: string[] | string | null
   linked_frame_ids?: string[] | null
   images?: { url: string; alt?: string | null; is_primary: boolean; order: number }[]
+  specifications?: { label: string; value: string; unit?: string | null; group?: string | null; order: number }[]
 }
 
 interface Props {
@@ -49,12 +54,13 @@ interface Props {
 
 // ─── Tab definition ───────────────────────────────────────────────────────────
 
-type TabId = 'basic' | 'content' | 'pricing' | 'images' | 'seo' | 'aeo' | 'geo' | 'frames'
+type TabId = 'basic' | 'content' | 'pricing' | 'specifications' | 'images' | 'seo' | 'aeo' | 'geo' | 'frames'
 
 const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'basic',   label: 'اطلاعات پایه',   icon: Package },
   { id: 'content', label: 'محتوا',           icon: FileText },
   { id: 'pricing', label: 'قیمت و موجودی',  icon: BarChart3 },
+  { id: 'specifications', label: 'مشخصات فنی', icon: ListChecks },
   { id: 'images',  label: 'تصاویر',          icon: ImageIcon },
   { id: 'seo',     label: 'سئو',             icon: Search },
   { id: 'aeo',     label: 'AEO',             icon: Share2 },
@@ -139,6 +145,18 @@ export function ProductForm({ product, categories, framePrices }: Props) {
   )
   const [uploading, setUploading] = useState(false)
   const [linkedFrameIds, setLinkedFrameIds] = useState<string[]>(product?.linked_frame_ids ?? [])
+  const [specifications, setSpecifications] = useState<AdminProductSpecificationInput[]>(
+    (product?.specifications ?? [])
+      .slice()
+      .sort((a, b) => a.order - b.order)
+      .map((item, index) => ({
+        label: item.label,
+        value: item.value,
+        unit: item.unit ?? '',
+        group: item.group ?? '',
+        order: index,
+      })),
+  )
 
   const {
     register, handleSubmit, setValue, watch, control,
@@ -154,11 +172,24 @@ export function ProductForm({ product, categories, framePrices }: Props) {
       short_description: product?.short_description ?? '',
       description: product?.description ?? '',
       body_content: product?.body_content ?? '',
-      tags: product?.tags ?? '',
+      tags: Array.isArray(product?.tags) ? product.tags.join('، ') : product?.tags ?? '',
       price: product?.price ?? 0,
       compare_price: product?.compare_price ?? '',
+      cost_price: product?.cost_price ?? '',
       stock: product?.stock ?? 0,
+      stock_left: product?.stock_left ?? 0,
+      stock_right: product?.stock_right ?? product?.stock ?? 0,
+      low_stock_threshold: product?.low_stock_threshold ?? 5,
       stock_status: product?.stock_status ?? 'in_stock',
+      weight: product?.weight ?? '',
+      width: product?.width ?? '',
+      height: product?.height ?? '',
+      depth: product?.depth ?? '',
+      dimension_unit: product?.dimension_unit ?? 'cm',
+      dimension_option_1: product?.dimension_options?.[0] ?? '',
+      dimension_option_2: product?.dimension_options?.[1] ?? '',
+      dimension_option_3: product?.dimension_options?.[2] ?? '',
+      allow_custom_dimensions: product?.allow_custom_dimensions ?? false,
       is_active: product?.is_active ?? true,
       is_featured: product?.is_featured ?? false,
       is_new: product?.is_new ?? true,
@@ -172,7 +203,9 @@ export function ProductForm({ product, categories, framePrices }: Props) {
       og_image_url: product?.og_image_url ?? '',
       faq_pairs: product?.faq_pairs ?? [],
       ai_summary: product?.ai_summary ?? '',
-      entity_keywords: product?.entity_keywords ?? '',
+      entity_keywords: Array.isArray(product?.entity_keywords)
+        ? product.entity_keywords.join('، ')
+        : product?.entity_keywords ?? '',
       linked_frame_ids: product?.linked_frame_ids ?? [],
     },
   })
@@ -236,13 +269,34 @@ export function ProductForm({ product, categories, framePrices }: Props) {
     setGallery((prev) => prev.map((img, i) => ({ ...img, isPrimary: i === idx })))
   }
 
+  function updateImageAlt(idx: number, alt: string) {
+    setGallery((prev) => prev.map((image, index) => index === idx ? { ...image, alt } : image))
+  }
+
+  function addSpecification() {
+    setSpecifications((prev) => [
+      ...prev,
+      { label: '', value: '', unit: '', group: '', order: prev.length },
+    ])
+  }
+
+  function updateSpecification(
+    index: number,
+    key: keyof AdminProductSpecificationInput,
+    value: string,
+  ) {
+    setSpecifications((prev) =>
+      prev.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item),
+    )
+  }
+
   async function onSubmit(data: ProductFormData) {
     try {
       if (isEdit) {
-        await updateProduct(product!.id, data, gallery)
+        await updateProduct(product!.id, data, gallery, specifications)
         toast.success('محصول با موفقیت به‌روزرسانی شد')
       } else {
-        await createProduct(data, gallery)
+        await createProduct(data, gallery, specifications)
         toast.success('محصول با موفقیت ثبت شد')
       }
       router.push('/admin/products')
@@ -317,10 +371,10 @@ export function ProductForm({ product, categories, framePrices }: Props) {
                 />
                 <Input
                   label="اسلاگ URL *"
-                  placeholder="artos-platinum"
+                  placeholder="درب-ضد-سرقت-سپیدار یا darb-sepidar"
                   error={errors.slug?.message}
                   dir="ltr"
-                  hint="فقط حروف انگلیسی کوچک، اعداد و خط تیره"
+                  hint="اسلاگ فارسی و انگلیسی مجاز است؛ فاصله‌ها را با خط تیره جدا کنید"
                   {...register('slug')}
                 />
               </div>
@@ -414,8 +468,9 @@ export function ProductForm({ product, categories, framePrices }: Props) {
 
         {/* ══════════════ TAB: PRICING ══════════════ */}
         {activeTab === 'pricing' && (
-          <Section title="قیمت و موجودی">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="space-y-6">
+            <Section title="قیمت و موجودی">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <Input
                 label="قیمت پایه (تومان) *"
                 type="number"
@@ -431,10 +486,35 @@ export function ProductForm({ product, categories, framePrices }: Props) {
                 {...register('compare_price')}
               />
               <Input
-                label="موجودی انبار"
+                label="قیمت تمام‌شده"
                 type="number"
-                error={errors.stock?.message}
-                {...register('stock')}
+                placeholder="اختیاری"
+                error={errors.cost_price?.message}
+                {...register('cost_price')}
+              />
+              <Input
+                label="موجودی کل (خودکار)"
+                type="number"
+                readOnly
+                value={Number(watch('stock_left') || 0) + Number(watch('stock_right') || 0)}
+              />
+              <Input
+                label="موجودی چپ‌بازشو"
+                type="number"
+                error={errors.stock_left?.message}
+                {...register('stock_left')}
+              />
+              <Input
+                label="موجودی راست‌بازشو"
+                type="number"
+                error={errors.stock_right?.message}
+                {...register('stock_right')}
+              />
+              <Input
+                label="هشدار کمبود موجودی"
+                type="number"
+                error={errors.low_stock_threshold?.message}
+                {...register('low_stock_threshold')}
               />
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-muted">وضعیت موجودی</label>
@@ -448,6 +528,104 @@ export function ProductForm({ product, categories, framePrices }: Props) {
                 </select>
               </div>
             </div>
+            </Section>
+            <Section title="وزن و ابعاد محصول">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+                <Input label="وزن (کیلوگرم)" type="number" step="0.001" {...register('weight')} />
+                <Input label="عرض" type="number" step="0.01" {...register('width')} />
+                <Input label="ارتفاع" type="number" step="0.01" {...register('height')} />
+                <Input label="عمق" type="number" step="0.01" {...register('depth')} />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-muted">واحد ابعاد</label>
+                  <select
+                    {...register('dimension_unit')}
+                    className="h-11 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white focus:border-gold focus:outline-none"
+                  >
+                    <option value="cm" className="bg-[#181818]">سانتی‌متر</option>
+                    <option value="mm" className="bg-[#181818]">میلی‌متر</option>
+                    <option value="m" className="bg-[#181818]">متر</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <Input
+                  label="اندازه استاندارد اول"
+                  placeholder="مثال: ۱۰۵ × ۲۱۰ سانتی‌متر"
+                  {...register('dimension_option_1')}
+                />
+                <Input
+                  label="اندازه استاندارد دوم"
+                  placeholder="مثال: ۱۱۰ × ۲۱۰ سانتی‌متر"
+                  {...register('dimension_option_2')}
+                />
+                <Input
+                  label="اندازه استاندارد سوم"
+                  placeholder="مثال: ۱۱۵ × ۲۱۰ سانتی‌متر"
+                  {...register('dimension_option_3')}
+                />
+              </div>
+              <label className="flex cursor-pointer items-center gap-2">
+                <input type="checkbox" className="h-4 w-4 accent-gold" {...register('allow_custom_dimensions')} />
+                <span className="text-sm text-muted">امکان سفارش با ابعاد سفارشی</span>
+              </label>
+            </Section>
+          </div>
+        )}
+
+        {/* ══════════════ TAB: SPECIFICATIONS ══════════════ */}
+        {activeTab === 'specifications' && (
+          <Section title="جدول مشخصات فنی">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted">ویژگی‌های ساختاریافته‌ای که در صفحه محصول نمایش داده می‌شوند.</p>
+              <button
+                type="button"
+                onClick={addSpecification}
+                className="flex items-center gap-1.5 rounded-xl border border-gold/20 bg-gold/10 px-3 py-2 text-xs font-bold text-gold"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                افزودن مشخصه
+              </button>
+            </div>
+            {specifications.length === 0 ? (
+              <div className="rounded-xl border-2 border-dashed border-white/10 py-10 text-center text-sm text-muted">
+                هنوز مشخصه‌ای ثبت نشده است
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {specifications.map((item, index) => (
+                  <div key={index} className="grid grid-cols-1 gap-3 rounded-xl border border-white/8 bg-white/[0.02] p-3 sm:grid-cols-[1.2fr_1.5fr_.6fr_1fr_auto]">
+                    <Input
+                      placeholder="عنوان؛ مثال: جنس ورق"
+                      value={item.label}
+                      onChange={(event) => updateSpecification(index, 'label', event.target.value)}
+                    />
+                    <Input
+                      placeholder="مقدار؛ مثال: فولاد"
+                      value={item.value}
+                      onChange={(event) => updateSpecification(index, 'value', event.target.value)}
+                    />
+                    <Input
+                      placeholder="واحد"
+                      value={item.unit}
+                      onChange={(event) => updateSpecification(index, 'unit', event.target.value)}
+                    />
+                    <Input
+                      placeholder="گروه؛ مثال: ساختار"
+                      value={item.group}
+                      onChange={(event) => updateSpecification(index, 'group', event.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setSpecifications((prev) => prev.filter((_, itemIndex) => itemIndex !== index))}
+                      className="flex h-11 items-center justify-center rounded-xl px-3 text-muted hover:bg-red-500/10 hover:text-red-400"
+                      aria-label="حذف مشخصه"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </Section>
         )}
 
@@ -496,6 +674,12 @@ export function ProductForm({ product, categories, framePrices }: Props) {
                         تنظیم به‌عنوان تصویر اصلی
                       </button>
                     )}
+                    <Input
+                      value={img.alt ?? ''}
+                      onChange={(event) => updateImageAlt(idx, event.target.value)}
+                      placeholder="متن جایگزین تصویر"
+                      className="mt-2"
+                    />
                   </div>
                 ))}
               </div>

@@ -139,42 +139,107 @@ export interface AdminProductImageInput {
   order?: number
 }
 
+export interface AdminProductSpecificationInput {
+  label: string
+  value: string
+  unit?: string
+  group?: string
+  order?: number
+}
+
 export interface AdminProductInput {
   name: string
   slug: string
   sku: string
   category_id: string
+  brand?: string | null
   short_description?: string | null
   description: string
+  body_content?: string | null
+  tags?: string | null
   price: number
   compare_price?: number | '' | null
+  cost_price?: number | '' | null
   stock: number
+  stock_left?: number
+  stock_right?: number
+  low_stock_threshold?: number
   stock_status: StockStatus
+  weight?: number | '' | null
+  width?: number | '' | null
+  height?: number | '' | null
+  depth?: number | '' | null
+  dimension_unit?: 'cm' | 'mm' | 'm'
+  dimension_option_1?: string | null
+  dimension_option_2?: string | null
+  dimension_option_3?: string | null
+  allow_custom_dimensions?: boolean
   is_active: boolean
   is_featured: boolean
   is_new: boolean
   meta_title?: string | null
   meta_description?: string | null
+  focus_keyword?: string | null
+  canonical_url?: string | null
+  robots?: string | null
+  og_title?: string | null
+  og_description?: string | null
+  og_image_url?: string | null
+  faq_pairs?: { question: string; answer: string }[]
+  ai_summary?: string | null
+  entity_keywords?: string | null
   linked_frame_ids?: string[]
 }
 
 function toProductRow(input: AdminProductInput) {
+  const splitList = (value?: string | null) =>
+    value
+      ? value.split(/[,،]/).map((item) => item.trim()).filter(Boolean)
+      : []
+
   return {
     name: input.name,
     slug: input.slug,
     sku: input.sku,
     category_id: input.category_id,
+    brand: input.brand || null,
     short_description: input.short_description || null,
     description: input.description,
+    body_content: input.body_content || null,
+    tags: splitList(input.tags),
     price: input.price,
     compare_price: input.compare_price || null,
-    stock: input.stock,
+    cost_price: input.cost_price || null,
+    stock: (input.stock_left ?? 0) + (input.stock_right ?? 0),
+    stock_left: input.stock_left ?? 0,
+    stock_right: input.stock_right ?? 0,
+    low_stock_threshold: input.low_stock_threshold ?? 5,
     stock_status: input.stock_status,
+    weight: input.weight || null,
+    width: input.width || null,
+    height: input.height || null,
+    depth: input.depth || null,
+    dimension_unit: input.dimension_unit ?? 'cm',
+    dimension_options: [
+      input.dimension_option_1,
+      input.dimension_option_2,
+      input.dimension_option_3,
+    ].filter((item): item is string => Boolean(item?.trim())).map((item) => item.trim()),
+    allow_custom_dimensions: input.allow_custom_dimensions ?? false,
     is_active: input.is_active,
     is_featured: input.is_featured,
     is_new: input.is_new,
     meta_title: input.meta_title || null,
     meta_description: input.meta_description || null,
+    focus_keyword: input.focus_keyword || null,
+    canonical_url: input.canonical_url || null,
+    robots: input.robots || null,
+    og_title: input.og_title || null,
+    og_description: input.og_description || null,
+    og_image_url: input.og_image_url || null,
+    faq_pairs: input.faq_pairs ?? [],
+    ai_summary: input.ai_summary || null,
+    entity_keywords: splitList(input.entity_keywords),
     linked_frame_ids: input.linked_frame_ids ?? [],
   }
 }
@@ -201,6 +266,33 @@ async function replaceProductImages(productId: string, images: AdminProductImage
 
   const { error: insertError } = await supabase.from('product_images').insert(rows)
   if (insertError) throw insertError
+}
+
+async function replaceProductSpecifications(
+  productId: string,
+  specifications: AdminProductSpecificationInput[],
+) {
+  const supabase = createClient()
+  const { error: deleteError } = await supabase
+    .from('product_specifications')
+    .delete()
+    .eq('product_id', productId)
+  if (deleteError) throw deleteError
+
+  const rows = specifications
+    .filter((item) => item.label.trim() && item.value.trim())
+    .map((item, index) => ({
+      product_id: productId,
+      label: item.label.trim(),
+      value: item.value.trim(),
+      unit: item.unit?.trim() || null,
+      group: item.group?.trim() || null,
+      order: item.order ?? index,
+    }))
+
+  if (!rows.length) return
+  const { error } = await supabase.from('product_specifications').insert(rows)
+  if (error) throw error
 }
 
 /** Fetches the full product list for the admin table — no `is_active` filter. */
@@ -231,7 +323,7 @@ export async function getAdminProductById(id: string) {
 
   const { data, error } = await supabase
     .from('products')
-    .select('*, images:product_images(*)')
+    .select('*, images:product_images(*), specifications:product_specifications(*)')
     .eq('id', id)
     .single()
 
@@ -239,12 +331,18 @@ export async function getAdminProductById(id: string) {
   return data
 }
 
-export async function createProduct(input: AdminProductInput, images: AdminProductImageInput[] = []) {
+export async function createProduct(
+  input: AdminProductInput,
+  images: AdminProductImageInput[] = [],
+  specifications: AdminProductSpecificationInput[] = [],
+) {
   const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('برای ثبت محصول باید وارد حساب مدیریت شوید')
 
   const { data: product, error } = await supabase
     .from('products')
-    .insert(toProductRow(input))
+    .insert({ ...toProductRow(input), created_by: user.id })
     .select('*')
     .single()
 
@@ -252,6 +350,9 @@ export async function createProduct(input: AdminProductInput, images: AdminProdu
 
   if (images.length) {
     await replaceProductImages(product.id, images)
+  }
+  if (specifications.length) {
+    await replaceProductSpecifications(product.id, specifications)
   }
 
   return product
@@ -261,6 +362,7 @@ export async function updateProduct(
   id: string,
   input: AdminProductInput,
   images?: AdminProductImageInput[],
+  specifications?: AdminProductSpecificationInput[],
 ) {
   const supabase = createClient()
 
@@ -275,6 +377,9 @@ export async function updateProduct(
 
   if (images) {
     await replaceProductImages(id, images)
+  }
+  if (specifications) {
+    await replaceProductSpecifications(id, specifications)
   }
 
   return product

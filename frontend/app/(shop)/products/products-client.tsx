@@ -15,6 +15,7 @@ import { CATALOG, CATEGORY_LABELS } from '@/lib/data/products-catalog'
 import type { DoorCategory } from '@/lib/data/products-catalog'
 
 interface ProductsPageClientProps {
+  products?: Product[]
   searchParams: {
     category?: string
     search?: string
@@ -63,12 +64,13 @@ const REAL_PRODUCTS: Product[] = CATALOG.map((p) => ({
   updatedAt: '2025-01-01T00:00:00Z',
 }))
 
-export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
+export function ProductsPageClient({ searchParams, products }: ProductsPageClientProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [sortBy, setSortBy] = useState(searchParams.sortBy ?? 'newest')
 
-  const totalProducts = REAL_PRODUCTS.length
+  const visibleProducts = products?.length ? products : REAL_PRODUCTS
+  const totalProducts = visibleProducts.length
 
   return (
     <div className="min-h-screen bg-black">
@@ -189,7 +191,7 @@ export function ProductsPageClient({ searchParams }: ProductsPageClientProps) {
               layout
             >
               <AnimatePresence mode="popLayout">
-                {REAL_PRODUCTS.map((product, i) => (
+                {visibleProducts.map((product, i) => (
                   <motion.div
                     key={product.id}
                     layout

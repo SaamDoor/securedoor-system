@@ -197,6 +197,7 @@ const NAV: NavGroup[] = [
     title: 'امور مالی',
     items: [
       { label: 'کیف پول‌ها', href: '/admin/finance/wallets', icon: Wallet },
+      { label: 'حساب‌ها و واریز بانکی', href: '/admin/finance/bank-transfers', icon: Banknote, roles: SA_ADM },
       {
         label: 'همکاران فروش', icon: TrendingUp,
         children: [

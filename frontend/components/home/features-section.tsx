@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import {
-  Shield, Zap, Award, Headphones, Truck, RotateCcw,
+  Shield, Award, Headphones, Truck,
   Lock, Layers, Thermometer, Volume2,
 } from 'lucide-react'
 import { SectionHeader } from '@/components/ui/section-header'
@@ -11,8 +11,8 @@ import { cn } from '@/lib/utils'
 const features = [
   {
     icon: Shield,
-    title: 'امنیت نظامی',
-    description: 'سیستم قفل چند نقطه‌ای با مقاومت در برابر تخریب بیش از ۲۰ دقیقه',
+    title: 'امنیت ساختمان',
+    description: 'مقاوم در برابر هرگونه سرقت با ساختار تقویت‌شده و ورق‌های فولادی مستحکم',
     color: 'from-blue-500/20 to-blue-600/5',
     iconColor: 'text-blue-400',
     borderColor: 'border-blue-500/20',
@@ -20,7 +20,7 @@ const features = [
   {
     icon: Layers,
     title: 'متریال درجه یک',
-    description: 'فولاد گالوانیزه گرم ایتالیایی با ضخامت ۳ میلی‌متر، مقاوم در برابر خوردگی',
+    description: 'فولاد سراسری ضد دیلم به همراه ورق MDF هشت میل برای استحکام و دوام بیشتر',
     color: 'from-gold/20 to-gold/5',
     iconColor: 'text-gold',
     borderColor: 'border-gold/20',
@@ -43,8 +43,8 @@ const features = [
   },
   {
     icon: Award,
-    title: 'گواهینامه بین‌المللی',
-    description: 'دارای ۱۲ استاندارد معتبر اروپایی از جمله EN 1627 و Class 6',
+    title: 'گواهینامه ۲۴۰ دقیقه‌ای آتش‌نشانی',
+    description: 'دارای گواهینامه مقاومت در برابر حریق تا ۲۴۰ دقیقه از مراجع آتش‌نشانی',
     color: 'from-gold/20 to-yellow-600/5',
     iconColor: 'text-gold',
     borderColor: 'border-gold/20',
@@ -94,7 +94,7 @@ export function FeaturesSection() {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
           {features.map((feature, i) => {
             const Icon = feature.icon
             return (
@@ -110,7 +110,7 @@ export function FeaturesSection() {
                 }}
                 whileHover={{ y: -4, transition: { duration: 0.3 } }}
                 className={cn(
-                  'group relative p-6 rounded-2xl overflow-hidden',
+                  'group relative flex min-h-56 overflow-hidden rounded-2xl p-5 sm:p-6',
                   'bg-surface border transition-all duration-400',
                   feature.borderColor,
                   'hover:shadow-lg',
@@ -123,8 +123,9 @@ export function FeaturesSection() {
                     `bg-gradient-to-br ${feature.color}`,
                   )}
                 />
+                <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-60" />
 
-                <div className="relative z-10">
+                <div className="relative z-10 flex flex-1 flex-col">
                   <div
                     className={cn(
                       'w-12 h-12 rounded-xl flex items-center justify-center mb-5',
@@ -135,7 +136,7 @@ export function FeaturesSection() {
                     <Icon className={cn('h-6 w-6', feature.iconColor)} />
                   </div>
 
-                  <h3 className="font-bold text-white mb-2 text-base">{feature.title}</h3>
+                  <h3 className="mb-2 line-clamp-2 min-h-12 text-base font-bold text-white">{feature.title}</h3>
                   <p className="text-sm text-muted leading-relaxed">{feature.description}</p>
                 </div>
               </motion.div>

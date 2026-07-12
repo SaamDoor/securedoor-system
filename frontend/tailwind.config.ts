@@ -48,6 +48,7 @@ const config: Config = {
         /* ── gold: backward-compat alias → maps to crimson ── */
         gold: {
           DEFAULT: '#C41E3A',
+          light: '#E8506A',
           50:  '#FFF0F3',
           100: '#FFCDD6',
           200: '#FFA8B8',

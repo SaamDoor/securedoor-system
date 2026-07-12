@@ -27,7 +27,7 @@ const categories = [
     name: 'درب ضد حریق',
     slug: 'darb-zed-hariq',
     count: '۲۴ محصول',
-    description: 'مقاوم در برابر آتش تا ۱۲۰ دقیقه',
+    description: 'مقاوم در برابر آتش تا ۲۴۰ دقیقه',
     accent: '#E74C3C',
     size: 'small',
     image: {
@@ -79,51 +79,23 @@ export function CategoriesSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-          {/* Large card — left (col-span-5) */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="lg:col-span-5"
-          >
-            <CategoryCard category={categories[0]} large />
-          </motion.div>
-
-          {/* Two small cards — middle (col-span-4) */}
-          <div className="lg:col-span-4 grid gap-4">
-            {[categories[1], categories[2]].map((cat, i) => (
-              <motion.div
-                key={cat.slug}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{
-                  duration: 0.6,
-                  delay: i * 0.1 + 0.1,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                }}
-              >
-                <CategoryCard category={cat} />
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Large card — right (col-span-3) */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{
-              duration: 0.7,
-              delay: 0.2,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
-            className="lg:col-span-3"
-          >
-            <CategoryCard category={categories[3]} large />
-          </motion.div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6">
+          {categories.map((category, i) => (
+            <motion.div
+              key={category.slug}
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{
+                duration: 0.65,
+                delay: i * 0.08,
+                ease: [0.25, 0.46, 0.45, 0.94],
+              }}
+              className="min-w-0"
+            >
+              <CategoryCard category={category} />
+            </motion.div>
+          ))}
         </div>
 
         <div className="flex lg:hidden justify-center mt-8">
@@ -140,25 +112,17 @@ export function CategoriesSection() {
   )
 }
 
-function CategoryCard({
-  category,
-  large = false,
-}: {
-  category: (typeof categories)[0]
-  large?: boolean
-}) {
+function CategoryCard({ category }: { category: (typeof categories)[0] }) {
   const { image } = category
   const hasResponsive = 'desktop' in image && image.desktop !== undefined
 
   return (
-    <Link href={`/categories/${category.slug}`} className="group block">
+    <Link href={`/categories/${category.slug}`} className="group block h-full">
       <div
         className={cn(
-          'relative overflow-hidden rounded-2xl bg-slate-900',
-          'border border-white/8 group-hover:border-white/20 transition-all duration-400',
-          large
-            ? 'aspect-[4/3] lg:aspect-[3/4]'
-            : 'aspect-[4/3] lg:aspect-[3/2]',
+          'relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-900 sm:aspect-[5/4] lg:aspect-[16/10]',
+          'border border-white/8 shadow-[0_18px_50px_rgba(0,0,0,0.25)] transition-all duration-500',
+          'group-hover:-translate-y-1 group-hover:border-white/20 group-hover:shadow-[0_24px_70px_rgba(0,0,0,0.45)]',
         )}
       >
         {/* ── Background images ── */}
@@ -175,8 +139,8 @@ function CategoryCard({
                 src={(image as { desktop: string; mobile: string }).desktop}
                 alt={category.name}
                 fill
-                className="object-cover"
-                sizes="(min-width: 1024px) 42vw, 100vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                sizes="(min-width: 640px) 50vw, 100vw"
                 priority={false}
               />
             </div>
@@ -185,7 +149,7 @@ function CategoryCard({
                 src={(image as { desktop: string; mobile: string }).mobile}
                 alt={category.name}
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                 sizes="100vw"
                 priority={false}
               />
@@ -197,8 +161,8 @@ function CategoryCard({
               src={(image as { default: string }).default}
               alt={category.name}
               fill
-              className="object-cover"
-              sizes="(min-width: 1024px) 42vw, 100vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+              sizes="(min-width: 640px) 50vw, 100vw"
               priority={false}
             />
           </div>
@@ -213,10 +177,10 @@ function CategoryCard({
         />
 
         {/* ── Dark bottom gradient overlay — keeps text readable ── */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-black via-black/25 to-transparent" />
 
         {/* ── Text content — z-20 sits above all overlays ── */}
-        <div className="absolute bottom-0 right-0 left-0 p-6 z-20">
+        <div className="absolute inset-x-0 bottom-0 z-20 p-5 sm:p-6">
           <div
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-2xs font-semibold mb-3"
             style={{
@@ -230,16 +194,13 @@ function CategoryCard({
 
           <h3
             className={cn(
-              'font-black text-white mb-1',
-              large ? 'text-xl' : 'text-base',
+              'mb-1 text-lg font-black text-white sm:text-xl',
             )}
           >
             {category.name}
           </h3>
 
-          {large && (
-            <p className="text-sm text-muted mb-4">{category.description}</p>
-          )}
+          <p className="mb-3 line-clamp-1 text-xs text-white/65 sm:text-sm">{category.description}</p>
 
           <div
             className="flex items-center gap-2 text-sm font-medium transition-all duration-300"

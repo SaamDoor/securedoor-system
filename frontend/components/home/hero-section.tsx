@@ -34,7 +34,7 @@ const stats = [
 
 const features = [
   { icon: Shield, label: 'امنیت بالا' },
-  { icon: Award,  label: 'گارانتی ۱۰ ساله روکش' },
+  { icon: Award,  label: 'گارانتی ۵ ساله روکش' },
   { icon: Award,  label: 'گارانتی ۵ ساله یراق' },
   { icon: Wrench, label: 'نصب حرفه‌ای' },
 ]
