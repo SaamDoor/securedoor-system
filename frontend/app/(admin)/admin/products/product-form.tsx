@@ -22,7 +22,7 @@ import { productFormSchema, type ProductFormData } from '@/lib/validations/produ
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface CategoryOption { id: string; name: string }
+interface CategoryOption { id: string; name: string; parent_id?: string | null }
 interface FramePriceOption { id: string; frame_type: string; color_name: string; price_3klaf: number }
 
 interface ExistingProduct {
@@ -393,9 +393,14 @@ export function ProductForm({ product, categories, framePrices }: Props) {
                     className="h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
                   >
                     <option value="" className="bg-[#181818]">انتخاب دسته‌بندی</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id} className="bg-[#181818]">{c.name}</option>
-                    ))}
+                    {categories.map((category) => {
+                      const parent = categories.find((item) => item.id === category.parent_id)
+                      return (
+                        <option key={category.id} value={category.id} className="bg-[#181818]">
+                          {parent ? `↳ ${parent.name} / ${category.name}` : `● ${category.name}`}
+                        </option>
+                      )
+                    })}
                   </select>
                   {errors.category_id && <p className="text-xs text-red-400">{errors.category_id.message}</p>}
                 </div>

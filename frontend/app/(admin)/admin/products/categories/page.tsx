@@ -29,6 +29,7 @@ const emptyForm = {
 export default function ProductCategoriesPage() {
   const [categories, setCategories] = useState<CategoryRow[]>([])
   const [form, setForm] = useState(emptyForm)
+  const [categoryType, setCategoryType] = useState<'root' | 'child'>('root')
   const [editingId, setEditingId] = useState<string>()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -49,11 +50,13 @@ export default function ProductCategoriesPage() {
 
   function reset() {
     setEditingId(undefined)
+    setCategoryType('root')
     setForm(emptyForm)
   }
 
   function edit(category: CategoryRow) {
     setEditingId(category.id)
+    setCategoryType(category.parent_id ? 'child' : 'root')
     setForm({
       name: category.name,
       slug: category.slug,
@@ -66,6 +69,10 @@ export default function ProductCategoriesPage() {
 
   async function save(event: React.FormEvent) {
     event.preventDefault()
+    if (categoryType === 'child' && !form.parent_id) {
+      toast.error('برای زیر‌دسته، یک دسته اصلی انتخاب کنید')
+      return
+    }
     const normalizedSlug = slugify(form.slug || form.name)
     if (!normalizedSlug) {
       toast.error('اسلاگ معتبر وارد کنید')
@@ -77,7 +84,7 @@ export default function ProductCategoriesPage() {
       name: form.name.trim(),
       slug: normalizedSlug,
       description: form.description.trim() || null,
-      parent_id: form.parent_id || null,
+      parent_id: categoryType === 'child' ? form.parent_id : null,
       order: Number(form.order),
       is_active: form.is_active,
     }
@@ -176,12 +183,53 @@ export default function ProductCategoriesPage() {
             <h2 className="flex items-center gap-2 font-bold text-white"><Plus className="h-4 w-4 text-gold" />{editingId ? 'ویرایش دسته' : 'دسته جدید'}</h2>
             {editingId && <button type="button" onClick={reset} className="text-muted hover:text-white"><X className="h-4 w-4" /></button>}
           </div>
-          <input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value, slug: editingId ? form.slug : slugify(event.target.value) })} placeholder="نام دسته‌بندی" className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none focus:border-gold" />
-          <input required value={form.slug} onChange={(event) => setForm({ ...form, slug: event.target.value })} placeholder="اسلاگ فارسی یا انگلیسی" dir="ltr" className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none focus:border-gold" />
-          <select value={form.parent_id} onChange={(event) => setForm({ ...form, parent_id: event.target.value })} className="h-11 w-full rounded-xl border border-white/10 bg-zinc-800 px-4 text-sm text-white outline-none focus:border-gold">
-            <option value="">دسته اصلی</option>
-            {roots.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
-          </select>
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-black/20 p-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                setCategoryType('root')
+                setForm({ ...form, parent_id: '' })
+              }}
+              className={`rounded-lg px-3 py-2.5 text-xs font-bold transition-all ${categoryType === 'root' ? 'bg-gold text-black' : 'text-muted hover:text-white'}`}
+            >
+              دسته اصلی
+            </button>
+            <button
+              type="button"
+              disabled={roots.length === 0}
+              onClick={() => setCategoryType('child')}
+              className={`rounded-lg px-3 py-2.5 text-xs font-bold transition-all disabled:cursor-not-allowed disabled:opacity-40 ${categoryType === 'child' ? 'bg-gold text-black' : 'text-muted hover:text-white'}`}
+            >
+              زیر‌دسته
+            </button>
+          </div>
+          {roots.length === 0 && !editingId && (
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-300">
+              ابتدا اولین دسته اصلی را ایجاد کنید؛ سپس گزینه «زیر‌دسته» فعال می‌شود.
+            </div>
+          )}
+          {categoryType === 'child' && (
+            <div className="rounded-xl border border-blue-500/15 bg-blue-500/5 p-3 text-xs leading-relaxed text-blue-300">
+              این مورد زیرمجموعه دسته اصلی انتخاب‌شده خواهد بود و در فرم افزودن محصول زیر همان دسته نمایش داده می‌شود.
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted">نام دسته‌بندی *</label>
+            <input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value, slug: editingId ? form.slug : slugify(event.target.value) })} placeholder={categoryType === 'root' ? 'مثال: درب ضد سرقت' : 'مثال: رویه فلزی'} className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none focus:border-gold" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted">اسلاگ URL *</label>
+            <input required value={form.slug} onChange={(event) => setForm({ ...form, slug: event.target.value })} placeholder="اسلاگ فارسی یا انگلیسی" dir="ltr" className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none focus:border-gold" />
+          </div>
+          {categoryType === 'child' && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted">دسته اصلی والد *</label>
+              <select required value={form.parent_id} onChange={(event) => setForm({ ...form, parent_id: event.target.value })} className="h-11 w-full rounded-xl border border-white/10 bg-zinc-800 px-4 text-sm text-white outline-none focus:border-gold">
+                <option value="">انتخاب دسته اصلی</option>
+                {roots.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+              </select>
+            </div>
+          )}
           <textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="توضیح کوتاه دسته‌بندی" className="min-h-24 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none focus:border-gold" />
           <input type="number" value={form.order} onChange={(event) => setForm({ ...form, order: Number(event.target.value) })} placeholder="ترتیب نمایش" className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none focus:border-gold" />
           <label className="flex cursor-pointer items-center gap-2 text-sm text-muted">
