@@ -252,6 +252,7 @@ async function replaceProductImages(productId: string, images: AdminProductImage
     .from('product_images')
     .delete()
     .eq('product_id', productId)
+    .abortSignal(AbortSignal.timeout(15_000))
   if (deleteError) throw deleteError
 
   if (!images.length) return
@@ -264,7 +265,10 @@ async function replaceProductImages(productId: string, images: AdminProductImage
     order: img.order ?? idx,
   }))
 
-  const { error: insertError } = await supabase.from('product_images').insert(rows)
+  const { error: insertError } = await supabase
+    .from('product_images')
+    .insert(rows)
+    .abortSignal(AbortSignal.timeout(15_000))
   if (insertError) throw insertError
 }
 
@@ -277,6 +281,7 @@ async function replaceProductSpecifications(
     .from('product_specifications')
     .delete()
     .eq('product_id', productId)
+    .abortSignal(AbortSignal.timeout(15_000))
   if (deleteError) throw deleteError
 
   const rows = specifications
@@ -291,7 +296,10 @@ async function replaceProductSpecifications(
     }))
 
   if (!rows.length) return
-  const { error } = await supabase.from('product_specifications').insert(rows)
+  const { error } = await supabase
+    .from('product_specifications')
+    .insert(rows)
+    .abortSignal(AbortSignal.timeout(15_000))
   if (error) throw error
 }
 
@@ -337,12 +345,11 @@ export async function createProduct(
   specifications: AdminProductSpecificationInput[] = [],
 ) {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('برای ثبت محصول باید وارد حساب مدیریت شوید')
 
   const { data: product, error } = await supabase
     .from('products')
-    .insert({ ...toProductRow(input), created_by: user.id })
+    .insert(toProductRow(input))
+    .abortSignal(AbortSignal.timeout(15_000))
     .select('*')
     .single()
 
@@ -370,6 +377,7 @@ export async function updateProduct(
     .from('products')
     .update({ ...toProductRow(input), updated_at: new Date().toISOString() })
     .eq('id', id)
+    .abortSignal(AbortSignal.timeout(15_000))
     .select('*')
     .single()
 

@@ -1,55 +1,78 @@
+'use client'
+
+import { useEffect, useState, useTransition } from 'react'
 import { RotateCcw } from 'lucide-react'
-
-const mockReturns = [
-  { id: 1, orderId: 'ORD-085', customer: 'احمد رضایی', product: 'درب ضد سرقت استاندارد', reason: 'عدم تطابق با توضیحات', date: '۱۴۰۳/۰۳/۲۵', status: 'در انتظار بررسی' },
-  { id: 2, orderId: 'ORD-079', customer: 'مریم احمدی', product: 'چهارچوب فلزی Z-پروفیل', reason: 'آسیب دیدگی در حمل', date: '۱۴۰۳/۰۳/۱۸', status: 'تأیید شده' },
-]
-
-const statusStyle: Record<string, string> = {
-  'در انتظار بررسی': 'bg-yellow-900/50 text-yellow-400',
-  'تأیید شده': 'bg-green-900/50 text-green-400',
-  'رد شده': 'bg-red-900/50 text-red-400',
-}
+import { formatJalaliDate } from '@/lib/utils'
+import { getReturnsAction, updateReturnStatusAction } from '../../actions'
 
 export default function ReturnsPage() {
+  const [returns, setReturns] = useState<Record<string, any>[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  async function load() {
+    const result = await getReturnsAction()
+    if (!result.ok) {
+      setError(result.error)
+      return
+    }
+    setReturns(result.data ?? [])
+    setError(null)
+  }
+
+  useEffect(() => { void load() }, [])
+
+  function updateStatus(item: Record<string, any>, status: string) {
+    startTransition(async () => {
+      const result = await updateReturnStatusAction(item.id, status)
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      await load()
+    })
+  }
+
   return (
     <div dir="rtl" className="min-h-screen bg-zinc-900 p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-zinc-100">مرجوعی‌ها</h1>
-          <p className="text-zinc-400 mt-1">سفارشات برگشتی و درخواست‌های استرداد وجه</p>
+          <p className="mt-1 text-zinc-400">درخواست‌های برگشت سفارش</p>
         </div>
 
-        <div className="bg-zinc-800 rounded-xl overflow-hidden">
+        {error && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+
+        <div className="overflow-hidden rounded-xl bg-zinc-800">
           <table className="w-full">
             <thead>
               <tr className="border-b border-zinc-700">
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">شماره سفارش</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">مشتری</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">محصول</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">دلیل برگشت</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">تاریخ</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">وضعیت</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">سفارش</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">کاربر</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">دلیل</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">وضعیت</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">تاریخ</th>
               </tr>
             </thead>
             <tbody>
-              {mockReturns.map(r => (
-                <tr key={r.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
-                  <td className="px-6 py-4">
+              {returns.length === 0 ? (
+                <tr><td colSpan={5} className="px-6 py-10 text-center text-sm text-zinc-500">درخواست مرجوعی وجود ندارد</td></tr>
+              ) : returns.map((item) => (
+                <tr key={item.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
+                  <td className="px-6 py-4 text-amber-400">
                     <div className="flex items-center gap-2">
-                      <RotateCcw size={14} className="text-amber-400" />
-                      <span className="text-amber-400 font-mono font-bold">{r.orderId}</span>
+                      <RotateCcw size={14} />
+                      <span className="font-mono">{item.order?.order_number ?? '—'}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-zinc-100 font-medium">{r.customer}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm">{r.product}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm">{r.reason}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm">{r.date}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-300">{`${item.user?.first_name ?? ''} ${item.user?.last_name ?? ''}`.trim() || item.user?.phone || '—'}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{item.reason ?? '—'}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle[r.status]}`}>
-                      {r.status}
-                    </span>
+                    <select value={item.status ?? ''} onChange={(e) => updateStatus(item, e.target.value)} disabled={isPending} className="rounded-lg border border-zinc-600 bg-zinc-900 px-2 py-1 text-xs text-zinc-200">
+                      {['pending', 'approved', 'rejected', 'refunded'].map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
                   </td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{item.created_at ? formatJalaliDate(item.created_at) : '—'}</td>
                 </tr>
               ))}
             </tbody>

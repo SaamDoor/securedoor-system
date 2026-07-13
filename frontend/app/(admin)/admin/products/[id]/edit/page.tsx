@@ -18,7 +18,7 @@ export default async function EditProductPage({ params }: Props) {
       .select('*, images:product_images(*), specifications:product_specifications(*)')
       .eq('id', id)
       .single(),
-    supabase.from('product_categories').select('id, name, parent_id').eq('is_active', true).order('"order"'),
+    supabase.from('product_categories').select('id, name, parent_id').eq('is_active', true).order('"order"', { ascending: true }),
     supabase
       .from('frame_price_list')
       .select('id, frame_type, color_name, price_3klaf')

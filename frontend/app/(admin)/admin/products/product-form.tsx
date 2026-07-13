@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm, useFieldArray, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import {
@@ -15,7 +15,11 @@ import { Input, Textarea } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn, slugify } from '@/lib/utils'
 import {
-  createProduct, updateProduct, uploadProductImages,
+  createProductAction,
+  updateProductAction,
+} from './actions'
+import {
+  uploadProductImages,
   type AdminProductImageInput, type AdminProductSpecificationInput,
 } from '@/lib/api/products'
 import { productFormSchema, type ProductFormData } from '@/lib/validations/product'
@@ -138,6 +142,13 @@ function Section({ title, badge, children }: { title: string; badge?: string; ch
 export function ProductForm({ product, categories, framePrices }: Props) {
   const router = useRouter()
   const isEdit = !!product
+
+  useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7589/ingest/5a232d27-556f-403d-98b2-82415887fe5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8b5927'},body:JSON.stringify({sessionId:'8b5927',runId:'pre-fix',hypothesisId:'H4',location:'product-form.tsx:mount',message:'product form mounted',data:{isEdit,categoryCount:categories.length,framePriceCount:framePrices.length},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+  }, [categories.length, framePrices.length, isEdit])
+
   const [activeTab, setActiveTab] = useState<TabId>('basic')
   const [gallery, setGallery] = useState<AdminProductImageInput[]>(
     (product?.images ?? []).slice().sort((a, b) => a.order - b.order)
@@ -291,19 +302,60 @@ export function ProductForm({ product, categories, framePrices }: Props) {
   }
 
   async function onSubmit(data: ProductFormData) {
+    // #region agent log
+    fetch('http://127.0.0.1:7589/ingest/5a232d27-556f-403d-98b2-82415887fe5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8b5927'},body:JSON.stringify({sessionId:'8b5927',runId:'pre-fix',hypothesisId:'H3',location:'product-form.tsx:onSubmit',message:'product submit started',data:{isEdit,categoryId:data.category_id,slug:data.slug,price:data.price,categoryCount:categories.length},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     try {
       if (isEdit) {
-        await updateProduct(product!.id, data, gallery, specifications)
+        const result = await updateProductAction(product!.id, data, gallery, specifications)
+        if (!result.ok) throw new Error(result.error)
         toast.success('محصول با موفقیت به‌روزرسانی شد')
       } else {
-        await createProduct(data, gallery, specifications)
+        const result = await createProductAction(data, gallery, specifications)
+        if (!result.ok) throw new Error(result.error)
         toast.success('محصول با موفقیت ثبت شد')
       }
       router.push('/admin/products')
       router.refresh()
     } catch (err) {
-      toast.error('خطا در ذخیره محصول: ' + (err instanceof Error ? err.message : String(err)))
+      const message = err instanceof Error ? err.message : String(err)
+      // #region agent log
+      fetch('http://127.0.0.1:7589/ingest/5a232d27-556f-403d-98b2-82415887fe5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8b5927'},body:JSON.stringify({sessionId:'8b5927',runId:'pre-fix',hypothesisId:'H1-H2',location:'product-form.tsx:onSubmit',message:'product submit failed',data:{error:message,errorCode:(err as {code?:string})?.code??null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      toast.error(
+        err instanceof DOMException && err.name === 'TimeoutError'
+          ? 'ارتباط با پایگاه داده بیش از حد طول کشید؛ اتصال اینترنت را بررسی و دوباره تلاش کنید'
+          : 'خطا در ذخیره محصول: ' + message,
+      )
     }
+  }
+
+  function onInvalid(formErrors: FieldErrors<ProductFormData>) {
+    // #region agent log
+    fetch('http://127.0.0.1:7589/ingest/5a232d27-556f-403d-98b2-82415887fe5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8b5927'},body:JSON.stringify({sessionId:'8b5927',runId:'pre-fix',hypothesisId:'H3',location:'product-form.tsx:onInvalid',message:'product form validation failed',data:{errors:Object.fromEntries(Object.entries(formErrors).map(([k,v])=>[k,(v as {message?:string})?.message??'invalid']))},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+    if (formErrors.name || formErrors.slug || formErrors.sku || formErrors.category_id) {
+      setActiveTab('basic')
+    } else if (formErrors.description) {
+      setActiveTab('content')
+    } else if (
+      formErrors.price ||
+      formErrors.stock_left ||
+      formErrors.stock_right ||
+      formErrors.low_stock_threshold
+    ) {
+      setActiveTab('pricing')
+    } else if (
+      formErrors.meta_title ||
+      formErrors.meta_description ||
+      formErrors.canonical_url ||
+      formErrors.og_image_url
+    ) {
+      setActiveTab('seo')
+    } else if (formErrors.faq_pairs) {
+      setActiveTab('aeo')
+    }
+    toast.error('برخی اطلاعات معتبر یا کامل نیست؛ فیلد مشخص‌شده را اصلاح کنید')
   }
 
   // SEO score
@@ -325,7 +377,7 @@ export function ProductForm({ product, categories, framePrices }: Props) {
   )
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate>
       {/* ── Tab bar ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-zinc-900 border border-white/8 mb-8 overflow-x-auto hide-scrollbar">
         {TABS.map(({ id, label, icon: Icon }) => {

@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Truck,
 } from 'lucide-react'
+import { Logo } from '@/components/ui/logo'
 import { CONTACT, SOCIAL_LINKS } from '@/lib/constants'
 
 const footerLinks = {
@@ -154,11 +155,7 @@ export function Footer() {
           {/* ── Brand column (5/12) ── */}
           <div className="lg:col-span-5">
             <Link href="/" className="group inline-flex items-center gap-3 mb-7 w-fit">
-              <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-[0_4px_16px_rgba(196,30,58,0.4)]">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#D42B47] to-[#8B0020]" />
-                <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
-                <span className="relative text-white font-black text-xl">م</span>
-              </div>
+              <Logo href={false} variant="icon-only" size="lg" />
               <div>
                 <div className="text-lg font-black text-white group-hover:text-primary-400 transition-colors">
                   گروه صنعتی مشعوف

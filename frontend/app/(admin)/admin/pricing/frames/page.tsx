@@ -1,53 +1,57 @@
-import { Edit } from 'lucide-react'
+'use client'
 
-const mockFrames = [
-  { id: 1, type: 'Z-پروفیل استاندارد', dims: '۲۱۰×۹۰ سانتی‌متر', basePrice: '2,800,000 ت', installPrice: '400,000 ت', total: '3,200,000 ت' },
-  { id: 2, type: 'Z-پروفیل پهن', dims: '۲۱۰×۱۰۰ سانتی‌متر', basePrice: '3,200,000 ت', installPrice: '450,000 ت', total: '3,650,000 ت' },
-  { id: 3, type: 'آلومینیومی استاندارد', dims: '۲۱۰×۹۰ سانتی‌متر', basePrice: '4,500,000 ت', installPrice: '500,000 ت', total: '5,000,000 ت' },
-  { id: 4, type: 'آلومینیومی دوبل', dims: '۲۱۰×۱۸۰ سانتی‌متر', basePrice: '8,200,000 ت', installPrice: '800,000 ت', total: '9,000,000 ت' },
-  { id: 5, type: 'فولادی ضد حریق', dims: '۲۱۰×۹۰ سانتی‌متر', basePrice: '6,800,000 ت', installPrice: '600,000 ت', total: '7,400,000 ت' },
-  { id: 6, type: 'فولادی ضد حریق دوبل', dims: '۲۱۰×۱۸۰ سانتی‌متر', basePrice: '12,500,000 ت', installPrice: '1,200,000 ت', total: '13,700,000 ت' },
-]
+import { useEffect, useState } from 'react'
+import { formatPrice, toPersianNumber } from '@/lib/utils'
+import { getFramePricesAction } from '../../actions'
 
 export default function FramePricingPage() {
+  const [frames, setFrames] = useState<Record<string, any>[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    void (async () => {
+      const result = await getFramePricesAction()
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      setFrames(result.data ?? [])
+    })()
+  }, [])
+
   return (
     <div dir="rtl" className="min-h-screen bg-zinc-900 p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-zinc-100">لیست قیمت چهارچوب</h1>
-          <p className="text-zinc-400 mt-1">جدول قیمت‌گذاری انواع چهارچوب‌ها</p>
+          <p className="mt-1 text-zinc-400">اطلاعات واقعی جدول `frame_price_list`</p>
         </div>
-
-        <div className="bg-zinc-800 rounded-xl overflow-hidden">
+        {error && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+        <div className="overflow-hidden rounded-xl bg-zinc-800">
           <table className="w-full">
             <thead>
               <tr className="border-b border-zinc-700">
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">نوع چهارچوب</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">ابعاد</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">قیمت پایه</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">قیمت نصب</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">قیمت کل</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">عملیات</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">نوع</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">ابعاد</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">قیمت</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">فعال</th>
               </tr>
             </thead>
             <tbody>
-              {mockFrames.map(f => (
-                <tr key={f.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
-                  <td className="px-6 py-4 text-zinc-100 font-medium">{f.type}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm">{f.dims}</td>
-                  <td className="px-6 py-4 text-zinc-400">{f.basePrice}</td>
-                  <td className="px-6 py-4 text-zinc-400">{f.installPrice}</td>
-                  <td className="px-6 py-4 text-amber-400 font-semibold">{f.total}</td>
-                  <td className="px-6 py-4">
-                    <button className="flex items-center gap-1 text-amber-400 hover:text-amber-300 text-sm transition-colors">
-                      <Edit size={14} /> ویرایش
-                    </button>
-                  </td>
+              {frames.length === 0 ? (
+                <tr><td colSpan={4} className="px-6 py-10 text-center text-sm text-zinc-500">قیمتی ثبت نشده است</td></tr>
+              ) : frames.map((frame) => (
+                <tr key={frame.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
+                  <td className="px-6 py-4 text-sm text-zinc-100">{frame.frame_type ?? '—'}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{frame.dimensions ?? frame.dimension_label ?? '—'}</td>
+                  <td className="px-6 py-4 text-sm text-amber-400">{formatPrice(Number(frame.price ?? frame.total_price ?? 0))}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{frame.is_active === false ? 'خیر' : 'بله'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="mt-3 text-xs text-zinc-500">{toPersianNumber(frames.length)} ردیف قیمت</p>
       </div>
     </div>
   )

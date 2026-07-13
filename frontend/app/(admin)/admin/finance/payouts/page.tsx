@@ -1,67 +1,59 @@
-import { CheckCircle, XCircle, CreditCard } from 'lucide-react'
+'use client'
 
-const mockPayouts = [
-  { id: 1, partner: 'احمد رضایی', amount: '625,000 ت', iban: 'IR12 3456 7890 1234 5678 9012', date: '۱۴۰۳/۰۴/۰۲', status: 'در انتظار' },
-  { id: 2, partner: 'مریم احمدی', amount: '574,000 ت', iban: 'IR98 7654 3210 9876 5432 1098', date: '۱۴۰۳/۰۴/۰۱', status: 'در انتظار' },
-  { id: 3, partner: 'فاطمه موسوی', amount: '900,000 ت', iban: 'IR11 2233 4455 6677 8899 0011', date: '۱۴۰۳/۰۳/۳۰', status: 'پرداخت شد' },
-]
-
-const statusStyle: Record<string, string> = {
-  'در انتظار': 'bg-yellow-900/50 text-yellow-400',
-  'پرداخت شد': 'bg-green-900/50 text-green-400',
-  'رد شد': 'bg-red-900/50 text-red-400',
-}
+import { useEffect, useState } from 'react'
+import { formatJalaliDate, formatPrice, toPersianNumber } from '@/lib/utils'
+import { getPayoutsAction } from '../../actions'
 
 export default function PayoutsPage() {
+  const [payouts, setPayouts] = useState<Record<string, any>[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    void (async () => {
+      const result = await getPayoutsAction()
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      setPayouts(result.data ?? [])
+    })()
+  }, [])
+
   return (
     <div dir="rtl" className="min-h-screen bg-zinc-900 p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-zinc-100">درخواست‌های برداشت</h1>
-          <p className="text-zinc-400 mt-1">تأیید یا رد درخواست‌های پرداخت کمیسیون همکاران</p>
+          <p className="mt-1 text-zinc-400">لیست برداشت‌های ثبت‌شده</p>
         </div>
 
-        <div className="bg-zinc-800 rounded-xl overflow-hidden">
+        {error && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+
+        <div className="overflow-hidden rounded-xl bg-zinc-800">
           <table className="w-full">
             <thead>
               <tr className="border-b border-zinc-700">
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">نام همکار</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">مبلغ درخواستی</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">شماره شبا</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">تاریخ درخواست</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">وضعیت</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">عملیات</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">کاربر</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">مبلغ</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">وضعیت</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">تاریخ</th>
               </tr>
             </thead>
             <tbody>
-              {mockPayouts.map(p => (
-                <tr key={p.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
-                  <td className="px-6 py-4 text-zinc-100 font-medium">{p.partner}</td>
-                  <td className="px-6 py-4 text-amber-400 font-semibold">{p.amount}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-xs font-mono">{p.iban}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm">{p.date}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle[p.status]}`}>
-                      {p.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {p.status === 'در انتظار' && (
-                      <div className="flex items-center gap-2">
-                        <button className="flex items-center gap-1 text-green-400 hover:text-green-300 text-sm transition-colors">
-                          <CheckCircle size={14} /> تأیید
-                        </button>
-                        <button className="flex items-center gap-1 text-red-400 hover:text-red-300 text-sm transition-colors">
-                          <XCircle size={14} /> رد
-                        </button>
-                      </div>
-                    )}
-                  </td>
+              {payouts.length === 0 ? (
+                <tr><td colSpan={4} className="px-6 py-10 text-center text-sm text-zinc-500">درخواستی ثبت نشده است</td></tr>
+              ) : payouts.map((item) => (
+                <tr key={item.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
+                  <td className="px-6 py-4 text-sm text-zinc-200">{`${item.user?.first_name ?? ''} ${item.user?.last_name ?? ''}`.trim() || item.user?.email || '—'}</td>
+                  <td className="px-6 py-4 text-sm font-semibold text-amber-400">{formatPrice(Number(item.amount ?? 0))}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{item.status ?? 'pending'}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{item.created_at ? formatJalaliDate(item.created_at) : '—'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="mt-3 text-xs text-zinc-500">{toPersianNumber(payouts.length)} درخواست</p>
       </div>
     </div>
   )

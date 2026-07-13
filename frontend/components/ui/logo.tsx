@@ -30,13 +30,13 @@ const sizeMap: Record<LogoSize, { icon: number; text: string; sub: string }> = {
   xl: { icon: 72,  text: 'text-4xl',   sub: 'text-sm'    },
 }
 
-// Variant → whether to use gold SVG or default SVG
-const usesGoldSvg: Record<LogoVariant, boolean> = {
-  default: false,
-  gold: true,
-  light: false,
-  admin: false,
-  'icon-only': false,
+// Variant → logo asset (logo.svg is the main brand mark)
+const logoSrc: Record<LogoVariant, string> = {
+  default: '/logo.svg',
+  gold: '/logo.svg',
+  light: '/logo.svg',
+  admin: '/logo.svg',
+  'icon-only': '/logo.svg',
 }
 
 // Text color per variant
@@ -50,7 +50,7 @@ const textColorMap: Record<LogoVariant, { name: string; tagline: string }> = {
 
 function LogoContent({ variant = 'default', size = 'md', showTagline = false }: Omit<LogoProps, 'href' | 'className'>) {
   const s = sizeMap[size]
-  const isGold = usesGoldSvg[variant]
+  const src = logoSrc[variant]
   const colors = textColorMap[variant]
   const iconSize = s.icon
 
@@ -61,7 +61,7 @@ function LogoContent({ variant = 'default', size = 'md', showTagline = false }: 
         className="relative flex-shrink-0"
       >
         <Image
-          src={isGold ? '/logo-gold.svg' : '/logo.svg'}
+          src={src}
           alt="گروه صنعتی مشعوف"
           width={iconSize}
           height={iconSize}
@@ -80,7 +80,7 @@ function LogoContent({ variant = 'default', size = 'md', showTagline = false }: 
         className="relative flex-shrink-0"
       >
         <Image
-          src={isGold ? '/logo-gold.svg' : '/logo.svg'}
+          src={src}
           alt="گروه صنعتی مشعوف"
           width={iconSize}
           height={iconSize}

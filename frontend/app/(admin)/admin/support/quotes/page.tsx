@@ -1,62 +1,69 @@
-import { FileText, Eye } from 'lucide-react'
+'use client'
 
-const mockQuotes = [
-  { id: 'QT-001', title: 'درب ضد سرقت آپارتمان', user: 'احمد رضایی', date: '۱۴۰۳/۰۴/۰۲', status: 'در انتظار بررسی' },
-  { id: 'QT-002', title: 'چهارچوب و درب دوبل ویلایی', user: 'مریم احمدی', date: '۱۴۰۳/۰۴/۰۱', status: 'پیش‌فاکتور ارسال شد' },
-  { id: 'QT-003', title: 'درب اتوماتیک پارکینگ', user: 'علی کریمی', date: '۱۴۰۳/۰۳/۳۰', status: 'تأیید شده' },
-]
-
-const statusStyle: Record<string, string> = {
-  'در انتظار بررسی': 'bg-yellow-900/50 text-yellow-400',
-  'پیش‌فاکتور ارسال شد': 'bg-blue-900/50 text-blue-400',
-  'تأیید شده': 'bg-green-900/50 text-green-400',
-}
+import { useEffect, useState } from 'react'
+import { FileText } from 'lucide-react'
+import { formatJalaliDate, toPersianNumber } from '@/lib/utils'
+import { getBulkQuotesAction } from '../../actions'
 
 export default function QuotesPage() {
+  const [quotes, setQuotes] = useState<Record<string, any>[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    void (async () => {
+      const result = await getBulkQuotesAction()
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      setQuotes(result.data ?? [])
+    })()
+  }, [])
+
   return (
     <div dir="rtl" className="min-h-screen bg-zinc-900 p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-zinc-100">درخواست‌های پیش‌فاکتور</h1>
-          <p className="text-zinc-400 mt-1">بررسی و صدور پیش‌فاکتور برای درخواست‌های مشتریان</p>
+          <p className="mt-1 text-zinc-400">دریافت‌شده از فرم ثبت سفارش عمده</p>
         </div>
 
-        <div className="bg-zinc-800 rounded-xl overflow-hidden">
+        {error && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+
+        <div className="overflow-hidden rounded-xl bg-zinc-800">
           <table className="w-full">
             <thead>
               <tr className="border-b border-zinc-700">
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">شماره پیش‌فاکتور</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">عنوان</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">کاربر</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">تاریخ</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">وضعیت</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">عملیات</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">عنوان</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">نام</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">شماره تماس</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">وضعیت</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">تاریخ</th>
               </tr>
             </thead>
             <tbody>
-              {mockQuotes.map(q => (
-                <tr key={q.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="text-amber-400 font-mono font-bold">{q.id}</span>
+              {quotes.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-zinc-500">درخواستی ثبت نشده است</td>
+                </tr>
+              ) : quotes.map((quote) => (
+                <tr key={quote.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
+                  <td className="px-6 py-4 text-zinc-100">
+                    <div className="flex items-center gap-2">
+                      <FileText size={14} className="text-amber-400" />
+                      <span>{quote.project_name ?? quote.subject ?? 'بدون عنوان'}</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-zinc-100 font-medium">{q.title}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm">{q.user}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm">{q.date}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle[q.status]}`}>
-                      {q.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <button className="flex items-center gap-1 text-amber-400 hover:text-amber-300 text-sm transition-colors">
-                      <Eye size={14} /> مشاهده
-                    </button>
-                  </td>
+                  <td className="px-6 py-4 text-sm text-zinc-300">{quote.name ?? quote.full_name ?? '—'}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{quote.phone ?? '—'}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{quote.status ?? 'جدید'}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{quote.created_at ? formatJalaliDate(quote.created_at) : '—'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="mt-3 text-xs text-zinc-500">{toPersianNumber(quotes.length)} درخواست</p>
       </div>
     </div>
   )

@@ -25,7 +25,7 @@ interface ProductsPageProps {
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
-  const params = await searchParams
+  const params = { ...(await searchParams) }
   const supabase = await createClient()
   let query = supabase
     .from('products')

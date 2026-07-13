@@ -1,60 +1,63 @@
-import { Plus, BookOpen, Eye, Edit } from 'lucide-react'
+'use client'
 
-const mockArticles = [
-  { id: 1, title: 'چگونه سفارش ثبت کنیم؟', category: 'سفارش‌دهی', views: 1240 },
-  { id: 2, title: 'روش‌های پرداخت', category: 'مالی', views: 890 },
-  { id: 3, title: 'زمان‌بندی نصب', category: 'نصب', views: 654 },
-  { id: 4, title: 'گارانتی محصولات', category: 'خدمات پس از فروش', views: 432 },
-]
+import { useEffect, useState } from 'react'
+import { BookOpen } from 'lucide-react'
+import { toPersianNumber } from '@/lib/utils'
+import { getKbArticlesAction } from '../../actions'
 
 export default function KnowledgeBasePage() {
+  const [articles, setArticles] = useState<Record<string, any>[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    void (async () => {
+      const result = await getKbArticlesAction()
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      setArticles(result.data ?? [])
+    })()
+  }, [])
+
   return (
     <div dir="rtl" className="min-h-screen bg-zinc-900 p-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-100">پایگاه دانش</h1>
-            <p className="text-zinc-400 mt-1">مقالات راهنما و سوالات متداول</p>
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-zinc-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors">
-            <Plus size={16} />
-            مقاله جدید
-          </button>
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-zinc-100">پایگاه دانش</h1>
+          <p className="mt-1 text-zinc-400">مقالات راهنمای ثبت‌شده در سیستم</p>
         </div>
 
-        <div className="bg-zinc-800 rounded-xl overflow-hidden">
+        {error && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+
+        <div className="overflow-hidden rounded-xl bg-zinc-800">
           <table className="w-full">
             <thead>
               <tr className="border-b border-zinc-700">
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">عنوان مقاله</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">دسته‌بندی</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">بازدید</th>
-                <th className="text-right text-xs font-medium text-zinc-400 px-6 py-3">عملیات</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">عنوان</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">اسلاگ</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400">وضعیت</th>
               </tr>
             </thead>
             <tbody>
-              {mockArticles.map(article => (
+              {articles.length === 0 ? (
+                <tr><td colSpan={3} className="px-6 py-10 text-center text-sm text-zinc-500">مقاله‌ای ثبت نشده است</td></tr>
+              ) : articles.map((article) => (
                 <tr key={article.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-zinc-100">
                     <div className="flex items-center gap-2">
-                      <BookOpen size={16} className="text-amber-400" />
-                      <span className="text-zinc-100 font-medium">{article.title}</span>
+                      <BookOpen size={14} className="text-amber-400" />
+                      <span>{article.title ?? 'بدون عنوان'}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2.5 py-0.5 bg-zinc-700 text-zinc-300 rounded-full text-xs">{article.category}</span>
-                  </td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm flex items-center gap-1">
-                    <Eye size={14} /> {article.views.toLocaleString('fa')}
-                  </td>
-                  <td className="px-6 py-4">
-                    <button className="text-amber-400 hover:text-amber-300 transition-colors"><Edit size={16} /></button>
-                  </td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{article.slug ?? '—'}</td>
+                  <td className="px-6 py-4 text-sm text-zinc-400">{article.is_published ? 'منتشرشده' : 'پیش‌نویس'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="mt-3 text-xs text-zinc-500">{toPersianNumber(articles.length)} مقاله</p>
       </div>
     </div>
   )

@@ -78,6 +78,9 @@ CREATE TABLE IF NOT EXISTS public.products (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE public.products
+  ALTER COLUMN created_by SET DEFAULT auth.uid();
+
 CREATE TABLE IF NOT EXISTS public.product_images (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,

@@ -27,7 +27,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10 text-center px-12">
           <Link href="/" className="inline-flex items-center gap-4 mb-12 group">
-            <Image src="/logo-gold.svg" alt="گروه صنعتی مشعوف" width={56} height={56} priority />
+            <Image src="/logo.svg" alt="گروه صنعتی مشعوف" width={56} height={56} priority />
             <div className="text-right">
               <div className="text-2xl font-black text-white">{SITE_NAME}</div>
               <div className="text-xs text-gold tracking-widest">MASHOUF INDUSTRIAL GROUP</div>
@@ -61,7 +61,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Mobile logo */}
         <div className="lg:hidden p-6">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo-gold.svg" alt="گروه صنعتی مشعوف" width={36} height={36} />
+            <Image src="/logo.svg" alt="گروه صنعتی مشعوف" width={36} height={36} />
             <span className="font-bold text-white">{SITE_NAME}</span>
           </Link>
         </div>

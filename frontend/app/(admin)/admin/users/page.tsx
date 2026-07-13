@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Shield, UserCheck, UserX, X, Percent, Loader2 } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/badge'
 import type { BadgeVariant } from '@/components/ui/badge'
@@ -54,6 +55,7 @@ const tierBadgeClass: Record<CustomerTier, string> = {
 
 export default function AdminUsersPage() {
   const supabase = createClient()
+  const searchParams = useSearchParams()
 
   const [search, setSearch]               = useState('')
   const [users, setUsers]                 = useState<AdminUser[]>([])
@@ -98,12 +100,25 @@ export default function AdminUsersPage() {
 
   useEffect(() => { fetchUsers() }, [fetchUsers])
 
-  const filtered = users.filter(
-    (u) =>
+  const roleFilter = searchParams.get('role')?.toLowerCase()
+
+  const filtered = users.filter((u) => {
+    const matchesSearch =
       `${u.firstName} ${u.lastName}`.includes(search) ||
       u.email.includes(search) ||
-      (u.phone ?? '').includes(search),
-  )
+      (u.phone ?? '').includes(search)
+
+    let matchesRole = true
+    if (roleFilter === 'vip') {
+      matchesRole = u.role === 'customer' && (u.customerTier === 'mass_builder' || u.customerTier === 'reseller')
+    } else if (roleFilter === 'manager') {
+      matchesRole = u.role === 'manager'
+    } else if (roleFilter === 'admin') {
+      matchesRole = u.role === 'admin' || u.role === 'super_admin'
+    }
+
+    return matchesSearch && matchesRole
+  })
 
   function openEdit(user: AdminUser) {
     setEditing(user)
