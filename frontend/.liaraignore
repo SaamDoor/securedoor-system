@@ -1,0 +1,34 @@
+# Avoid broken npm ci on Liara builders when using Next platform
+/package-lock.json
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Heavy local artifacts only at project root (NOT liara-release/*)
+/node_modules/
+/.next/
+/out/
+/dist/
+/coverage/
+*.tsbuildinfo
+.vercel
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Source not needed for Docker runtime deploy
+/app/
+/components/
+/hooks/
+/lib/
+/store/
+/types/
+/scripts/
+/supabase/
+/*.config.*
+!/next.config.ts
+/tsconfig*.json
+/middleware.ts

@@ -3,9 +3,10 @@
   "private": true,
   "scripts": {
     "dev": "npm run dev --prefix frontend",
-    "build": "npm run build --prefix frontend",
+    "build": "npm ci --prefix frontend && npm run build --prefix frontend",
     "start": "npm run start --prefix frontend",
     "lint": "npm run lint --prefix frontend",
-    "type-check": "npm run type-check --prefix frontend"
+    "type-check": "npm run type-check --prefix frontend",
+    "deploy:liara": "powershell -ExecutionPolicy Bypass -File ./frontend/deploy-liara.ps1"
   }
 }

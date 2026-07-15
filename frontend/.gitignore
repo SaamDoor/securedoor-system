@@ -1,2 +1,37 @@
+# dependencies — root only so liara-release/node_modules is kept for Docker deploy
+/node_modules/
+
+# next.js cache/output — root only
+/.next/
+/out/
+
+# production
+/build/
+/dist/
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env
+.env
+.env.*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# vercel / liara local
 .vercel
-.env*
+.liara
+
+# ide
+.idea/
+.vscode/

@@ -5,6 +5,8 @@ import { fetchShopPaymentSettings } from '@/lib/shop/payment-settings.server'
 import { SITE_NAME } from '@/lib/constants'
 import { CheckoutClient } from './checkout-client'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: `تسویه حساب | ${SITE_NAME}`,
   description: 'تکمیل سفارش و انتخاب روش پرداخت',
