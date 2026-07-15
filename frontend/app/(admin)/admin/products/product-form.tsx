@@ -9,17 +9,18 @@ import { toast } from 'sonner'
 import {
   Upload, X, ImageIcon, Loader2, Save, Star,
   Plus, Trash2, Info, Check, ChevronDown, ChevronUp,
-  Package, FileText, Search, Share2, Bot, Layers, BarChart3, ListChecks,
+  Package, FileText, Search, Share2, Bot, BarChart3, ListChecks,
+  ChevronLeft, ChevronRight, GripVertical,
 } from 'lucide-react'
 import { Input, Textarea } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { cn, slugify } from '@/lib/utils'
+import { cn, productSlugFromName } from '@/lib/utils'
 import {
   createProductAction,
   updateProductAction,
+  uploadProductImagesAction,
 } from './actions'
 import {
-  uploadProductImages,
   type AdminProductImageInput, type AdminProductSpecificationInput,
 } from '@/lib/api/products'
 import { productFormSchema, type ProductFormData } from '@/lib/validations/product'
@@ -27,7 +28,6 @@ import { productFormSchema, type ProductFormData } from '@/lib/validations/produ
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CategoryOption { id: string; name: string; parent_id?: string | null }
-interface FramePriceOption { id: string; frame_type: string; color_name: string; price_3klaf: number }
 
 interface ExistingProduct {
   id: string; name: string; slug: string; sku: string; category_id: string
@@ -53,12 +53,11 @@ interface ExistingProduct {
 interface Props {
   product?: ExistingProduct
   categories: CategoryOption[]
-  framePrices: FramePriceOption[]
 }
 
 // ─── Tab definition ───────────────────────────────────────────────────────────
 
-type TabId = 'basic' | 'content' | 'pricing' | 'specifications' | 'images' | 'seo' | 'aeo' | 'geo' | 'frames'
+type TabId = 'basic' | 'content' | 'pricing' | 'specifications' | 'images' | 'seo' | 'aeo' | 'geo'
 
 const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'basic',   label: 'اطلاعات پایه',   icon: Package },
@@ -69,7 +68,6 @@ const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'seo',     label: 'سئو',             icon: Search },
   { id: 'aeo',     label: 'AEO',             icon: Share2 },
   { id: 'geo',     label: 'GEO / AI',        icon: Bot },
-  { id: 'frames',  label: 'چهارچوب',         icon: Layers },
 ]
 
 const STOCK_OPTIONS = [
@@ -139,15 +137,15 @@ function Section({ title, badge, children }: { title: string; badge?: string; ch
 
 // ─── Main Form ────────────────────────────────────────────────────────────────
 
-export function ProductForm({ product, categories, framePrices }: Props) {
+export function ProductForm({ product, categories }: Props) {
   const router = useRouter()
   const isEdit = !!product
 
   useEffect(() => {
     // #region agent log
-    fetch('http://127.0.0.1:7589/ingest/5a232d27-556f-403d-98b2-82415887fe5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8b5927'},body:JSON.stringify({sessionId:'8b5927',runId:'pre-fix',hypothesisId:'H4',location:'product-form.tsx:mount',message:'product form mounted',data:{isEdit,categoryCount:categories.length,framePriceCount:framePrices.length},timestamp:Date.now()})}).catch(()=>{});
+    fetch('http://127.0.0.1:7589/ingest/5a232d27-556f-403d-98b2-82415887fe5c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8b5927'},body:JSON.stringify({sessionId:'8b5927',runId:'pre-fix',hypothesisId:'H4',location:'product-form.tsx:mount',message:'product form mounted',data:{isEdit,categoryCount:categories.length},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
-  }, [categories.length, framePrices.length, isEdit])
+  }, [categories.length, isEdit])
 
   const [activeTab, setActiveTab] = useState<TabId>('basic')
   const [gallery, setGallery] = useState<AdminProductImageInput[]>(
@@ -155,7 +153,6 @@ export function ProductForm({ product, categories, framePrices }: Props) {
       .map((img, idx) => ({ url: img.url, alt: img.alt ?? undefined, isPrimary: img.is_primary, order: idx })),
   )
   const [uploading, setUploading] = useState(false)
-  const [linkedFrameIds, setLinkedFrameIds] = useState<string[]>(product?.linked_frame_ids ?? [])
   const [specifications, setSpecifications] = useState<AdminProductSpecificationInput[]>(
     (product?.specifications ?? [])
       .slice()
@@ -217,7 +214,7 @@ export function ProductForm({ product, categories, framePrices }: Props) {
       entity_keywords: Array.isArray(product?.entity_keywords)
         ? product.entity_keywords.join('، ')
         : product?.entity_keywords ?? '',
-      linked_frame_ids: product?.linked_frame_ids ?? [],
+      linked_frame_ids: [],
     },
   })
 
@@ -231,7 +228,9 @@ export function ProductForm({ product, categories, framePrices }: Props) {
   // Auto slug
   const nameValue = watch('name')
   function handleNameBlur() {
-    if (!isEdit && nameValue && !watch('slug')) setValue('slug', slugify(nameValue))
+    if (!isEdit && nameValue && !watch('slug')) {
+      setValue('slug', productSlugFromName(nameValue, watch('sku')))
+    }
   }
 
   // Auto-fill meta title from name
@@ -242,24 +241,28 @@ export function ProductForm({ product, categories, framePrices }: Props) {
     }
   }
 
-  function toggleFrame(id: string) {
-    setLinkedFrameIds((prev) => {
-      const next = prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-      setValue('linked_frame_ids', next)
-      return next
-    })
-  }
-
   async function handleGalleryAdd(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files?.length) return
     setUploading(true)
     try {
-      const urls = await uploadProductImages(Array.from(files))
-      setGallery((prev) => [
-        ...prev,
-        ...urls.map((url, i) => ({ url, isPrimary: prev.length === 0 && i === 0, order: prev.length + i })),
-      ])
+      const formData = new FormData()
+      Array.from(files).forEach((file) => formData.append('files', file))
+      const result = await uploadProductImagesAction(formData)
+      if (!result.ok) throw new Error(result.error)
+      setGallery((prev) => {
+        const next = [
+          ...prev,
+          ...result.urls.map((url, i) => ({
+            url,
+            alt: '',
+            isPrimary: prev.length === 0 && i === 0,
+            order: prev.length + i,
+          })),
+        ]
+        return next.map((img, order) => ({ ...img, order }))
+      })
+      toast.success(`${result.urls.length} تصویر با فرمت یکسان ذخیره شد`)
     } catch (err) {
       toast.error('خطا در آپلود تصویر: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
@@ -268,10 +271,22 @@ export function ProductForm({ product, categories, framePrices }: Props) {
     }
   }
 
+  function moveImage(idx: number, direction: -1 | 1) {
+    setGallery((prev) => {
+      const target = idx + direction
+      if (target < 0 || target >= prev.length) return prev
+      const next = [...prev]
+      ;[next[idx], next[target]] = [next[target], next[idx]]
+      return next.map((img, order) => ({ ...img, order }))
+    })
+  }
+
   function removeImage(idx: number) {
     setGallery((prev) => {
-      const next = prev.filter((_, i) => i !== idx)
-      if (!next.some((img) => img.isPrimary) && next.length > 0) next[0] = { ...next[0], isPrimary: true }
+      const next = prev.filter((_, i) => i !== idx).map((img, order) => ({ ...img, order }))
+      if (!next.some((img) => img.isPrimary) && next.length > 0) {
+        next[0] = { ...next[0], isPrimary: true }
+      }
       return next
     })
   }
@@ -689,42 +704,70 @@ export function ProductForm({ product, categories, framePrices }: Props) {
         {/* ══════════════ TAB: IMAGES ══════════════ */}
         {activeTab === 'images' && (
           <Section title="تصاویر محصول">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-muted">تصویر اول به‌عنوان تصویر اصلی در لیست محصولات نمایش داده می‌شود.</p>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted">هر تصویر هنگام آپلود به <span className="text-gold">WebP مربع ۱۲۰۰×۱۲۰۰</span> تبدیل می‌شود.</p>
+                <p className="text-xs text-muted/80">فرمت ورودی: JPG / PNG / WebP / AVIF — حداکثر ۱۵ مگابایت. با دکمه‌های چپ/راست ترتیب را عوض کنید.</p>
+              </div>
               <label className={cn(
                 'inline-flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer text-sm transition-all',
                 uploading ? 'border-gold/40 text-gold opacity-60 cursor-not-allowed' : 'border-white/20 text-muted hover:border-gold hover:text-gold',
               )}>
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                {uploading ? 'در حال آپلود...' : 'افزودن تصویر'}
-                <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryAdd} disabled={uploading} />
+                {uploading ? 'در حال پردازش...' : 'افزودن تصویر'}
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif,.jpg,.jpeg,.png,.webp,.avif,.gif" multiple className="hidden" onChange={handleGalleryAdd} disabled={uploading} />
               </label>
             </div>
 
             {gallery.length === 0 ? (
               <div className="text-center py-16 text-muted border-2 border-dashed border-white/15 rounded-xl">
                 <ImageIcon className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">فایل‌ها را اینجا بکشید یا با دکمه بالا اضافه کنید</p>
-                <p className="text-xs mt-1 opacity-60">JPG، PNG، WebP — حداقل ۸۰۰×۸۰۰ پیکسل</p>
+                <p className="text-sm">تصاویر را انتخاب کنید تا استانداردسازی و ذخیره شوند</p>
+                <p className="text-xs mt-1 opacity-60">خروجی نهایی: WebP · ۱۲۰۰×۱۲۰۰ · کیفیت ۸۲</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {gallery.map((img, idx) => (
-                  <div key={img.url} className="relative group">
+                  <div key={`${img.url}-${idx}`} className="relative group">
                     <div className={cn('relative w-full aspect-square rounded-xl overflow-hidden border', img.isPrimary ? 'border-gold' : 'border-white/10')}>
-                      <Image src={img.url} alt={img.alt ?? `image-${idx}`} fill className="object-cover" />
+                      <Image src={img.url} alt={img.alt ?? `image-${idx}`} fill className="object-cover" unoptimized />
                       {img.isPrimary && (
                         <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-gold text-black text-[10px] font-bold flex items-center gap-1">
                           <Star className="h-2.5 w-2.5" /> اصلی
                         </span>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => removeImage(idx)}
-                        className="absolute top-2 right-2 p-1 bg-black/70 rounded-full text-white hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          onClick={() => moveImage(idx, -1)}
+                          disabled={idx === 0}
+                          className="p-1 bg-black/70 rounded-full text-white hover:text-gold disabled:opacity-30"
+                          aria-label="انتقال به قبل"
+                        >
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveImage(idx, 1)}
+                          disabled={idx === gallery.length - 1}
+                          className="p-1 bg-black/70 rounded-full text-white hover:text-gold disabled:opacity-30"
+                          aria-label="انتقال به بعد"
+                        >
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="p-1 bg-black/70 rounded-full text-white hover:text-red-400"
+                          aria-label="حذف تصویر"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] text-white/80">
+                        <GripVertical className="h-3 w-3" />
+                        {idx + 1}
+                      </div>
                     </div>
                     {!img.isPrimary && (
                       <button type="button" onClick={() => setPrimary(idx)} className="w-full mt-1 text-xs text-muted hover:text-gold transition-colors">
@@ -1080,39 +1123,6 @@ export function ProductForm({ product, categories, framePrices }: Props) {
               </div>
             </Section>
           </div>
-        )}
-
-        {/* ══════════════ TAB: FRAMES ══════════════ */}
-        {activeTab === 'frames' && (
-          <Section title="اتصال به موتور قیمت‌گذاری چهارچوب">
-            <p className="text-sm text-muted">
-              رنگ/نوع چهارچوب‌هایی که این محصول می‌تواند با آن‌ها سفارش داده شود را انتخاب کنید.
-            </p>
-            {framePrices.length === 0 ? (
-              <p className="text-sm text-muted py-4">هیچ ردیفی در لیست قیمت چهارچوب ثبت نشده است.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {framePrices.map((f) => {
-                  const checked = linkedFrameIds.includes(f.id)
-                  return (
-                    <label
-                      key={f.id}
-                      className={cn(
-                        'flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border cursor-pointer text-sm transition-all',
-                        checked ? 'border-gold/50 bg-gold/10 text-white' : 'border-white/10 text-muted hover:border-white/20',
-                      )}
-                    >
-                      <span className="flex items-center gap-2">
-                        <input type="checkbox" className="accent-gold w-4 h-4" checked={checked} onChange={() => toggleFrame(f.id)} />
-                        {f.frame_type === 'french' ? 'فرانسوی' : 'مکزیکی'} — {f.color_name}
-                      </span>
-                      <span className="text-xs text-muted" dir="ltr">{f.price_3klaf.toLocaleString('fa-IR')}</span>
-                    </label>
-                  )
-                })}
-              </div>
-            )}
-          </Section>
         )}
       </div>
 

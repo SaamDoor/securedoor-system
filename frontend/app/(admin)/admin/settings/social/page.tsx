@@ -1,6 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Save, Link } from 'lucide-react'
+import { toast } from 'sonner'
+import { getSettingsAction, saveSettingsAction } from '../../actions'
 
 export default function SocialSettingsPage() {
   const [form, setForm] = useState({
@@ -11,9 +13,46 @@ export default function SocialSettingsPage() {
     linkedin: '',
     aparat: '',
   })
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    alert('لینک‌های شبکه‌های اجتماعی ذخیره شد')
+  useEffect(() => {
+    void (async () => {
+      const result = await getSettingsAction()
+      if (!result.ok) {
+        toast.error(result.error)
+        setLoading(false)
+        return
+      }
+      const map = new Map((result.data ?? []).map((item: Record<string, unknown>) => [String(item.key), item.value]))
+      setForm({
+        instagram: String(map.get('social_instagram') ?? ''),
+        telegram: String(map.get('social_telegram') ?? ''),
+        whatsapp: String(map.get('social_whatsapp') ?? ''),
+        youtube: String(map.get('social_youtube') ?? ''),
+        linkedin: String(map.get('social_linkedin') ?? ''),
+        aparat: String(map.get('social_aparat') ?? ''),
+      })
+      setLoading(false)
+    })()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    const result = await saveSettingsAction([
+      { key: 'social_instagram', value: form.instagram, group: 'social' },
+      { key: 'social_telegram', value: form.telegram, group: 'social' },
+      { key: 'social_whatsapp', value: form.whatsapp, group: 'social' },
+      { key: 'social_youtube', value: form.youtube, group: 'social' },
+      { key: 'social_linkedin', value: form.linkedin, group: 'social' },
+      { key: 'social_aparat', value: form.aparat, group: 'social' },
+    ])
+    setSaving(false)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('شبکه‌های اجتماعی ذخیره شد')
   }
 
   const fields = [
@@ -34,6 +73,7 @@ export default function SocialSettingsPage() {
         </div>
 
         <div className="bg-zinc-800 rounded-xl p-6 space-y-5">
+          {loading && <p className="text-sm text-zinc-400">در حال بارگذاری تنظیمات...</p>}
           {fields.map(field => (
             <div key={field.key}>
               <label className="block text-sm font-medium text-zinc-300 mb-1 flex items-center gap-1">
@@ -52,10 +92,11 @@ export default function SocialSettingsPage() {
           <div className="pt-2">
             <button
               onClick={handleSave}
+              disabled={loading || saving}
               className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-zinc-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
             >
               <Save size={16} />
-              ذخیره تنظیمات
+              {saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
             </button>
           </div>
         </div>

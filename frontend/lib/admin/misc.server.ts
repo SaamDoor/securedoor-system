@@ -14,6 +14,7 @@ export async function upsertSettingsServer(entries: { key: SettingKey | string; 
     key: e.key,
     value: e.value,
     group: e.group ?? 'general',
+    is_public: String(e.key).startsWith('payment_'),
     updated_at: new Date().toISOString(),
   }))
   const { error } = await supabase.from('settings').upsert(rows, { onConflict: 'key' })
@@ -84,13 +85,6 @@ export async function fetchWebhookLogsServer() {
     .select('*, webhook:webhooks(name)')
     .order('created_at', { ascending: false })
     .limit(200)
-  if (error) throw error
-  return data ?? []
-}
-
-export async function fetchFramePricesServer() {
-  const supabase = await createClient()
-  const { data, error } = await supabase.from('frame_price_list').select('*').order('frame_type')
   if (error) throw error
   return data ?? []
 }

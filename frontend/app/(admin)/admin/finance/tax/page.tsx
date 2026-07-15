@@ -1,14 +1,45 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Save, Percent } from 'lucide-react'
+import { toast } from 'sonner'
+import { getSettingsAction, saveSettingsAction } from '../../actions'
 
 export default function TaxPage() {
-  const [vatRate, setVatRate] = useState('9')
-  const [applyOnFrames, setApplyOnFrames] = useState(true)
+  const [vatRate, setVatRate] = useState('')
+  const [applyOnFrames, setApplyOnFrames] = useState(false)
   const [applyOnInstall, setApplyOnInstall] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    alert('تنظیمات مالیات ذخیره شد')
+  useEffect(() => {
+    void (async () => {
+      const result = await getSettingsAction()
+      if (!result.ok) {
+        toast.error(result.error)
+        setLoading(false)
+        return
+      }
+      const map = new Map((result.data ?? []).map((item: Record<string, unknown>) => [String(item.key), item.value]))
+      setVatRate(String(map.get('tax_rate_percent') ?? '9'))
+      setApplyOnFrames(Boolean(map.get('tax_apply_on_frames') ?? true))
+      setApplyOnInstall(Boolean(map.get('tax_apply_on_install') ?? false))
+      setLoading(false)
+    })()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    const result = await saveSettingsAction([
+      { key: 'tax_rate_percent', value: Number(vatRate || 0), group: 'financial' },
+      { key: 'tax_apply_on_frames', value: applyOnFrames, group: 'financial' },
+      { key: 'tax_apply_on_install', value: applyOnInstall, group: 'financial' },
+    ])
+    setSaving(false)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('تنظیمات مالیات ذخیره شد')
   }
 
   return (
@@ -18,6 +49,7 @@ export default function TaxPage() {
           <h1 className="text-2xl font-bold text-zinc-100">تنظیمات مالیات</h1>
           <p className="text-zinc-400 mt-1">پیکربندی نرخ مالیات ارزش افزوده</p>
         </div>
+        {loading && <p className="mb-4 text-sm text-zinc-400">در حال دریافت تنظیمات مالیات...</p>}
 
         <div className="bg-zinc-800 rounded-xl p-6 space-y-5">
           <div>
@@ -62,10 +94,11 @@ export default function TaxPage() {
           <div className="pt-2">
             <button
               onClick={handleSave}
+              disabled={loading || saving}
               className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-zinc-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
             >
               <Save size={16} />
-              ذخیره تنظیمات
+              {saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
             </button>
           </div>
         </div>

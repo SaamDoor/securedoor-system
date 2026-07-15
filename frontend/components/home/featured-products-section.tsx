@@ -3,76 +3,54 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Heart, ShoppingCart, Eye, ArrowLeft } from 'lucide-react'
+import { Heart, ShoppingCart, Eye, ArrowLeft, Package } from 'lucide-react'
 import { SectionHeader } from '@/components/ui/section-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { formatPrice, toPersianNumber } from '@/lib/utils'
-import { cn } from '@/lib/utils'
-import { CATALOG, CATEGORY_LABELS } from '@/lib/data/products-catalog'
-import type { DoorCategory } from '@/lib/data/products-catalog'
+import { formatPrice, toPersianNumber, cn } from '@/lib/utils'
+import { getProductPath } from '@/lib/shop/product-path'
 
-// French frame is a non-catalog item — keep as the first featured card
-const frenchFrameCard = {
-  id: 'fr-frame-001',
-  name: 'چهارچوب فلزی فرانسوی',
-  slug: 'chaharcharb-felezi-faransavi',
-  sku: 'MSH-FR',
-  price: 3_600_000,
-  comparePrice: null as number | null,
-  category: 'چهارچوب فلزی',
-  rating: 4.8,
-  reviewCount: 5,
-  isNew: false,
-  isFeatured: true,
-  badge: 'ویژه' as string | null,
-  pricePrefix: 'از' as string | undefined,
-  image: '/products/chaharcharb-felezi-faransavi/cover.webp',
+export interface FeaturedProductCard {
+  id: string
+  name: string
+  slug: string
+  sku: string
+  price: number
+  comparePrice: number | null
+  category: string
+  isNew: boolean
+  isFeatured: boolean
+  image: string | null
 }
 
-// Pull the first 3 isFeatured products from catalog
-const featuredFromCatalog = CATALOG.filter((p) => p.isFeatured).slice(0, 3).map((p) => ({
-  id: String(p.code),
-  name: p.name,
-  slug: p.slug,
-  sku: p.sku,
-  price: p.price,
-  comparePrice: null as number | null,
-  category: CATEGORY_LABELS[p.category as DoorCategory],
-  rating: 0,
-  reviewCount: 0,
-  isNew: p.isNew ?? false,
-  isFeatured: p.isFeatured ?? false,
-  badge: p.badge ?? null,
-  pricePrefix: undefined as string | undefined,
-  image: `/products/${p.sku}/main.webp`,
-}))
+interface FeaturedProductsSectionProps {
+  products: FeaturedProductCard[]
+}
 
-const products = [frenchFrameCard, ...featuredFromCatalog]
+export function FeaturedProductsSection({ products }: FeaturedProductsSectionProps) {
+  if (!products.length) return null
 
-export function FeaturedProductsSection() {
   return (
-    <section className="section-padding bg-black relative overflow-hidden">
-      {/* Decorative gradient */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-gold/4 blur-[120px] pointer-events-none" />
+    <section className="section-padding relative overflow-hidden bg-black">
+      <div className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] rounded-full bg-gold/4 blur-[120px]" />
 
       <div className="container relative">
-        <div className="flex items-end justify-between mb-12">
+        <div className="mb-12 flex items-end justify-between">
           <SectionHeader
             eyebrow="محصولات ویژه"
             title="بهترین‌های گروه مشعوف"
-            description="برگزیده‌ترین محصولات با بالاترین امتیاز مشتریان."
+            description="منتخب سوپر ادمین — بر اساس اولویت نمایش در پنل مدیریت."
           />
           <Link
             href="/products?featured=true"
-            className="hidden lg:flex items-center gap-2 text-gold hover:text-gold-light text-sm font-medium transition-colors"
+            className="hidden items-center gap-2 text-sm font-medium text-gold transition-colors hover:text-gold-light lg:flex"
           >
             مشاهده همه
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {products.map((product, i) => (
             <motion.div
               key={product.id}
@@ -85,12 +63,12 @@ export function FeaturedProductsSection() {
                 ease: [0.25, 0.46, 0.45, 0.94],
               }}
             >
-              <ProductCard product={product} />
+              <FeaturedCard product={product} />
             </motion.div>
           ))}
         </div>
 
-        <div className="flex lg:hidden justify-center mt-8">
+        <div className="mt-8 flex justify-center lg:hidden">
           <Button asChild variant="gold-outline" size="md">
             <Link href="/products">مشاهده همه محصولات</Link>
           </Button>
@@ -100,103 +78,94 @@ export function FeaturedProductsSection() {
   )
 }
 
-function ProductCard({ product }: { product: (typeof products)[0] }) {
+function FeaturedCard({ product }: { product: FeaturedProductCard }) {
   const discount = product.comparePrice
     ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
     : null
 
   return (
-    <Link href={`/products/${product.slug}`} className="group relative bg-surface border border-white/8 rounded-2xl overflow-hidden hover:border-gold/30 transition-all duration-400 hover:shadow-gold block">
-      {/* Image */}
+    <Link
+      href={getProductPath(product)}
+      className="group relative block overflow-hidden rounded-2xl border border-white/8 bg-surface transition-all duration-400 hover:border-gold/30 hover:shadow-gold"
+    >
       <div className="relative aspect-product overflow-hidden bg-zinc-900">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className="object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-        />
-        {/* Fallback gradient when image not yet uploaded */}
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 -z-10" />
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900">
+            <Package className="h-12 w-12 text-zinc-700" />
+          </div>
+        )}
 
-        {/* Vignette */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-400 group-hover:opacity-100" />
 
-        {/* Badges */}
-        <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-10">
-          {product.badge && (
-            <Badge variant={product.badge === 'جدید' ? 'success' : 'gold'} size="sm">
-              {product.badge}
+        <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
+          {product.isNew && (
+            <Badge variant="success" size="sm">
+              جدید
             </Badge>
           )}
-          {discount !== null && (
+          {product.isFeatured && !product.isNew && (
+            <Badge variant="gold" size="sm">
+              ویژه
+            </Badge>
+          )}
+          {discount !== null && discount > 0 && (
             <Badge variant="danger" size="sm">
               {toPersianNumber(discount)}٪ تخفیف
             </Badge>
           )}
         </div>
 
-        {/* SKU chip */}
-        <div className="absolute top-3 left-3 z-10">
-          <div className="px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-[10px] font-bold text-gold/80 border border-gold/20 tracking-widest">
+        <div className="absolute left-3 top-3 z-10">
+          <div className="rounded-lg border border-gold/20 bg-black/60 px-2 py-1 text-[10px] font-bold tracking-widest text-gold/80 backdrop-blur-sm">
             {product.sku}
           </div>
         </div>
 
-        {/* Actions overlay */}
-        <div className={cn(
-          'absolute inset-0 flex items-center justify-center gap-3',
-          'opacity-0 group-hover:opacity-100 transition-all duration-300',
-          'bg-black/25 backdrop-blur-[2px]',
-        )}>
-          <button
-            onClick={(e) => e.preventDefault()}
-            className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-gold/20 hover:border-gold/40 transition-all"
-          >
+        <div
+          className={cn(
+            'absolute inset-0 flex items-center justify-center gap-3',
+            'bg-black/25 opacity-0 backdrop-blur-[2px] transition-all duration-300 group-hover:opacity-100',
+          )}
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white">
             <Heart className="h-4 w-4" />
-          </button>
-          <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-gold/20 hover:border-gold/40 transition-all">
+          </span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white">
             <Eye className="h-4 w-4" />
-          </div>
-          <button
-            onClick={(e) => e.preventDefault()}
-            className="w-10 h-10 rounded-xl bg-gold/20 border border-gold/40 flex items-center justify-center text-gold hover:bg-gold hover:text-black transition-all"
-          >
+          </span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/40 bg-gold/20 text-gold">
             <ShoppingCart className="h-4 w-4" />
-          </button>
+          </span>
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-4">
-        <div className="text-xs text-muted mb-1.5">{product.category}</div>
-
-        <h3 className="font-bold text-white text-sm mb-3 group-hover:text-gold transition-colors line-clamp-2 min-h-[2.5rem]">
+        <div className="mb-1.5 text-xs text-muted">{product.category}</div>
+        <h3 className="mb-3 line-clamp-2 min-h-[2.5rem] text-sm font-bold text-white transition-colors group-hover:text-gold">
           {product.name}
         </h3>
-
-        {/* Price */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-black text-white text-base flex items-baseline gap-1">
-              {'pricePrefix' in product && product.pricePrefix && (
-                <span className="text-xs text-muted font-semibold">{product.pricePrefix}</span>
-              )}
-              {formatPrice(product.price)}
-            </div>
+            <div className="text-base font-black text-white">{formatPrice(product.price)}</div>
             {product.comparePrice && (
-              <div className="text-xs text-muted line-through">
-                {formatPrice(product.comparePrice)}
-              </div>
+              <div className="text-xs text-muted line-through">{formatPrice(product.comparePrice)}</div>
             )}
           </div>
-
-          <div className={cn(
-            'w-9 h-9 rounded-xl flex items-center justify-center',
-            'bg-gold/10 border border-gold/30 text-gold',
-            'group-hover:bg-gold group-hover:text-black transition-all duration-300',
-          )}>
+          <div
+            className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-xl',
+              'border border-gold/30 bg-gold/10 text-gold',
+              'transition-all duration-300 group-hover:bg-gold group-hover:text-black',
+            )}
+          >
             <ShoppingCart className="h-4 w-4" />
           </div>
         </div>

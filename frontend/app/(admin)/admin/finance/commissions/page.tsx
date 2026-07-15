@@ -1,13 +1,28 @@
 import { TrendingUp } from 'lucide-react'
+import { formatPrice } from '@/lib/utils'
+import { getPayoutsAction, getSettingsAction } from '../../actions'
 
-const mockCommissions = [
-  { id: 1, partner: 'احمد رضایی', percent: '5%', base: '12,500,000 ت', commission: '625,000 ت', month: 'خرداد ۱۴۰۳' },
-  { id: 2, partner: 'مریم احمدی', percent: '7%', base: '8,200,000 ت', commission: '574,000 ت', month: 'خرداد ۱۴۰۳' },
-  { id: 3, partner: 'علی کریمی', percent: '5%', base: '5,900,000 ت', commission: '295,000 ت', month: 'خرداد ۱۴۰۳' },
-  { id: 4, partner: 'فاطمه موسوی', percent: '6%', base: '15,000,000 ت', commission: '900,000 ت', month: 'خرداد ۱۴۰۳' },
-]
+export default async function CommissionsPage() {
+  const [payoutsResult, settingsResult] = await Promise.all([getPayoutsAction(), getSettingsAction()])
+  const payouts = payoutsResult.ok ? payoutsResult.data ?? [] : []
+  const settings = settingsResult.ok ? settingsResult.data ?? [] : []
+  const commissionPercent = Number(settings.find((item: Record<string, unknown>) => item.key === 'global_commission_pct')?.value ?? 5)
 
-export default function CommissionsPage() {
+  const rows = payouts.map((item) => {
+    const user = item.user as { first_name?: string; last_name?: string; email?: string } | null
+    const userName = `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim() || user?.email || 'کاربر'
+    const base = Number(item.amount ?? 0)
+    const commission = Math.round((base * commissionPercent) / 100)
+    return {
+      id: String(item.id),
+      partner: userName,
+      percent: `${commissionPercent}%`,
+      base,
+      commission,
+      month: String(item.created_at ?? ''),
+    }
+  })
+
   return (
     <div dir="rtl" className="min-h-screen bg-zinc-900 p-6">
       <div className="max-w-6xl mx-auto">
@@ -28,19 +43,23 @@ export default function CommissionsPage() {
               </tr>
             </thead>
             <tbody>
-              {mockCommissions.map(c => (
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-zinc-500">کمیسیونی برای نمایش وجود ندارد</td>
+                </tr>
+              ) : rows.map((c) => (
                 <tr key={c.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
                   <td className="px-6 py-4 text-zinc-100 font-medium">{c.partner}</td>
                   <td className="px-6 py-4">
                     <span className="text-amber-400 font-bold">{c.percent}</span>
                   </td>
-                  <td className="px-6 py-4 text-zinc-400">{c.base}</td>
+                  <td className="px-6 py-4 text-zinc-400">{formatPrice(c.base)}</td>
                   <td className="px-6 py-4">
                     <span className="flex items-center gap-1 text-green-400 font-semibold">
-                      <TrendingUp size={14} /> {c.commission}
+                      <TrendingUp size={14} /> {formatPrice(c.commission)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm">{c.month}</td>
+                  <td className="px-6 py-4 text-zinc-400 text-sm">{new Date(c.month).toLocaleDateString('fa-IR')}</td>
                 </tr>
               ))}
             </tbody>

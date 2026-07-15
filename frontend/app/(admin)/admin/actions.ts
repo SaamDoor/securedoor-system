@@ -58,7 +58,6 @@ import {
   fetchWebhooksServer,
   saveWebhookServer,
   fetchWebhookLogsServer,
-  fetchFramePricesServer,
   fetchBuilderTiersServer,
   fetchPayoutsServer,
   fetchInvoicesServer,
@@ -457,11 +456,6 @@ export async function saveWebhookAction(input: Record<string, unknown>, id?: str
 
 export async function getWebhookLogsAction() {
   try { await requirePanelAdmin(); return actionOk(await fetchWebhookLogsServer()) }
-  catch (e) { return actionError(e instanceof Error ? e.message : 'خطا') }
-}
-
-export async function getFramePricesAction() {
-  try { await requirePanelAdmin(); return actionOk(await fetchFramePricesServer()) }
   catch (e) { return actionError(e instanceof Error ? e.message : 'خطا') }
 }
 

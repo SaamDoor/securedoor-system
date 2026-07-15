@@ -55,7 +55,6 @@ function toProductRow(input: AdminProductInput) {
     faq_pairs: input.faq_pairs ?? [],
     ai_summary: input.ai_summary || null,
     entity_keywords: splitList(input.entity_keywords),
-    linked_frame_ids: input.linked_frame_ids ?? [],
   }
 }
 
@@ -119,6 +118,10 @@ export interface AdminCategoryRow {
   description: string | null
   order: number
   is_active: boolean
+  image_url: string | null
+  banner_url: string | null
+  meta_title: string | null
+  meta_description: string | null
   products: { count: number }[]
 }
 
@@ -129,6 +132,10 @@ export interface CategorySaveInput {
   parent_id: string | null
   order: number
   is_active: boolean
+  image_url?: string | null
+  banner_url?: string | null
+  meta_title?: string | null
+  meta_description?: string | null
 }
 
 async function getServerClient() {
@@ -162,7 +169,7 @@ export async function fetchAdminCategoriesServer() {
   const [{ data, error }, { data: productRows, error: productsError }] = await Promise.all([
     supabase
       .from('product_categories')
-      .select('id, parent_id, name, slug, description, "order", is_active')
+      .select('id, parent_id, name, slug, description, image_url, banner_url, meta_title, meta_description, "order", is_active')
       .order('"order"', { ascending: true }),
     supabase.from('products').select('category_id'),
   ])

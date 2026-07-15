@@ -1,17 +1,52 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Save, Shield } from 'lucide-react'
+import { toast } from 'sonner'
+import { getSettingsAction, saveSettingsAction } from '../../actions'
 
 export default function SecuritySettingsPage() {
   const [form, setForm] = useState({
-    maxLoginAttempts: '5',
-    lockDuration: '30',
-    tokenExpiry: '24',
+    maxLoginAttempts: '',
+    lockDuration: '',
+    tokenExpiry: '',
   })
   const [twoFactor, setTwoFactor] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    alert('تنظیمات امنیتی ذخیره شد')
+  useEffect(() => {
+    void (async () => {
+      const result = await getSettingsAction()
+      if (!result.ok) {
+        toast.error(result.error)
+        setLoading(false)
+        return
+      }
+      const map = new Map((result.data ?? []).map((item: Record<string, unknown>) => [String(item.key), item.value]))
+      setForm({
+        maxLoginAttempts: String(map.get('security_max_login_attempts') ?? '5'),
+        lockDuration: String(map.get('security_lock_duration_min') ?? '30'),
+        tokenExpiry: String(map.get('security_token_expiry_hours') ?? '24'),
+      })
+      setTwoFactor(Boolean(map.get('security_two_factor_required') ?? false))
+      setLoading(false)
+    })()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    const result = await saveSettingsAction([
+      { key: 'security_max_login_attempts', value: Number(form.maxLoginAttempts || 5), group: 'security' },
+      { key: 'security_lock_duration_min', value: Number(form.lockDuration || 30), group: 'security' },
+      { key: 'security_token_expiry_hours', value: Number(form.tokenExpiry || 24), group: 'security' },
+      { key: 'security_two_factor_required', value: twoFactor, group: 'security' },
+    ])
+    setSaving(false)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('تنظیمات امنیتی ذخیره شد')
   }
 
   return (
@@ -23,6 +58,7 @@ export default function SecuritySettingsPage() {
         </div>
 
         <div className="bg-zinc-800 rounded-xl p-6 space-y-5">
+          {loading && <p className="text-sm text-zinc-400">در حال بارگذاری تنظیمات...</p>}
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1">حداکثر تلاش ورود</label>
             <input
@@ -74,10 +110,11 @@ export default function SecuritySettingsPage() {
           <div className="pt-2">
             <button
               onClick={handleSave}
+              disabled={loading || saving}
               className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-zinc-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
             >
               <Save size={16} />
-              ذخیره تنظیمات
+              {saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
             </button>
           </div>
         </div>

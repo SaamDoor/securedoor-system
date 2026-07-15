@@ -3,78 +3,41 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Package } from 'lucide-react'
 import { SectionHeader } from '@/components/ui/section-header'
-import { cn } from '@/lib/utils'
+import { toPersianNumber, cn } from '@/lib/utils'
 
-type CategoryImage =
-  | { default: string; desktop?: never; mobile?: never }
-  | { desktop: string; mobile: string; default?: never }
+export interface HomeCategoryCard {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  productCount: number
+  imageUrl: string | null
+  accent: string
+}
 
-const categories = [
-  {
-    name: 'درب ضد سرقت',
-    slug: 'darb-zed-sereqat',
-    count: '۴۸ محصول',
-    description: 'بالاترین سطح امنیت با قفل‌های چند نقطه‌ای',
-    accent: '#C8A85D',
-    size: 'large',
-    image: {
-      default: '/images/categories/category-anti-theft-doors.webp',
-    } as CategoryImage,
-  },
-  {
-    name: 'درب ضد حریق',
-    slug: 'darb-zed-hariq',
-    count: '۲۴ محصول',
-    description: 'مقاوم در برابر آتش تا ۲۴۰ دقیقه',
-    accent: '#E74C3C',
-    size: 'small',
-    image: {
-      desktop: '/images/categories/category-fireproof-doors-desktop.webp',
-      mobile: '/images/categories/category-fireproof-doors-mobile.webp',
-    } as CategoryImage,
-  },
-  {
-    name: 'درب آپارتمانی',
-    slug: 'darb-apartmani',
-    count: '۳۶ محصول',
-    description: 'طراحی مدرن برای فضاهای آپارتمانی',
-    accent: '#C8A85D',
-    size: 'small',
-    image: {
-      default: '/images/categories/category-apartment-doors.webp',
-    } as CategoryImage,
-  },
-  {
-    name: 'درب ویلایی',
-    slug: 'darb-villaei',
-    count: '۱۸ محصول',
-    description: 'لوکس‌ترین درب‌ها برای ویلا و خانه‌های مستقل',
-    accent: '#27AE60',
-    size: 'large',
-    image: {
-      desktop: '/images/categories/category-villa-doors-desktop.webp',
-      mobile: '/images/categories/category-villa-doors-mobile.webp',
-    } as CategoryImage,
-  },
-]
+interface CategoriesSectionProps {
+  categories: HomeCategoryCard[]
+}
 
-export function CategoriesSection() {
+export function CategoriesSection({ categories }: CategoriesSectionProps) {
+  if (!categories.length) return null
+
   return (
-    <section className="section-padding bg-black relative overflow-hidden">
+    <section className="section-padding relative overflow-hidden bg-black">
       <div className="container">
-        <div className="flex items-end justify-between mb-12">
+        <div className="mb-12 flex items-end justify-between">
           <SectionHeader
             eyebrow="دسته‌بندی‌ها"
             title="هر فضا، یک راه‌حل"
-            description="محصولات گروه صنعتی مشعوف برای هر نوع ساختمان و کاربری طراحی شده‌اند."
+            description="دسته‌بندی‌های فعال پنل مدیریت — همان‌هایی که در سوپر ادمین کنترل می‌شوند."
           />
           <Link
-            href="/categories"
-            className="hidden lg:flex items-center gap-2 text-gold hover:text-gold-light text-sm font-medium transition-colors"
+            href="/products"
+            className="hidden items-center gap-2 text-sm font-medium text-gold transition-colors hover:text-gold-light lg:flex"
           >
-            همه دسته‌بندی‌ها
+            همه محصولات
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </div>
@@ -82,7 +45,7 @@ export function CategoriesSection() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6">
           {categories.map((category, i) => (
             <motion.div
-              key={category.slug}
+              key={category.id}
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
@@ -98,12 +61,9 @@ export function CategoriesSection() {
           ))}
         </div>
 
-        <div className="flex lg:hidden justify-center mt-8">
-          <Link
-            href="/categories"
-            className="flex items-center gap-2 text-gold text-sm font-medium"
-          >
-            همه دسته‌بندی‌ها
+        <div className="mt-8 flex justify-center lg:hidden">
+          <Link href="/products" className="flex items-center gap-2 text-sm font-medium text-gold">
+            همه محصولات
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </div>
@@ -112,12 +72,9 @@ export function CategoriesSection() {
   )
 }
 
-function CategoryCard({ category }: { category: (typeof categories)[0] }) {
-  const { image } = category
-  const hasResponsive = 'desktop' in image && image.desktop !== undefined
-
+function CategoryCard({ category }: { category: HomeCategoryCard }) {
   return (
-    <Link href={`/categories/${category.slug}`} className="group block h-full">
+    <Link href={`/products?category=${encodeURIComponent(category.slug)}`} className="group block h-full">
       <div
         className={cn(
           'relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-900 sm:aspect-[5/4] lg:aspect-[16/10]',
@@ -125,99 +82,57 @@ function CategoryCard({ category }: { category: (typeof categories)[0] }) {
           'group-hover:-translate-y-1 group-hover:border-white/20 group-hover:shadow-[0_24px_70px_rgba(0,0,0,0.45)]',
         )}
       >
-        {/* ── Background images ── */}
-        {hasResponsive ? (
-          <>
-            {/*
-              Each variant lives in its own absolute inset-0 wrapper so the
-              responsive visibility class (hidden/block) targets a block element,
-              not the <img> itself. The fill <img> is then relative to this wrapper
-              (which is itself a containing block because position: absolute).
-            */}
-            <div className="absolute inset-0 hidden md:block">
-              <Image
-                src={(image as { desktop: string; mobile: string }).desktop}
-                alt={category.name}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                sizes="(min-width: 640px) 50vw, 100vw"
-                priority={false}
-              />
-            </div>
-            <div className="absolute inset-0 block md:hidden">
-              <Image
-                src={(image as { desktop: string; mobile: string }).mobile}
-                alt={category.name}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                sizes="100vw"
-                priority={false}
-              />
-            </div>
-          </>
-        ) : (
+        {category.imageUrl ? (
           <div className="absolute inset-0">
             <Image
-              src={(image as { default: string }).default}
+              src={category.imageUrl}
               alt={category.name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
               sizes="(min-width: 640px) 50vw, 100vw"
-              priority={false}
             />
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
+            <Package className="h-14 w-14 text-zinc-700" />
           </div>
         )}
 
-        {/* ── Gold corner accent — z-10 sits above images ── */}
         <div
-          className="absolute top-0 right-0 w-24 h-24 opacity-20 transition-opacity duration-300 group-hover:opacity-40 z-10"
+          className="absolute right-0 top-0 z-10 h-24 w-24 opacity-20 transition-opacity duration-300 group-hover:opacity-40"
           style={{
             background: `radial-gradient(circle at top right, ${category.accent}, transparent 70%)`,
           }}
         />
 
-        {/* ── Dark bottom gradient overlay — keeps text readable ── */}
         <div className="absolute inset-0 z-10 bg-gradient-to-t from-black via-black/25 to-transparent" />
 
-        {/* ── Text content — z-20 sits above all overlays ── */}
         <div className="absolute inset-x-0 bottom-0 z-20 p-5 sm:p-6">
           <div
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-2xs font-semibold mb-3"
+            className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-2xs font-semibold"
             style={{
               background: `rgba(${hexToRgb(category.accent)}, 0.15)`,
               color: category.accent,
               border: `1px solid rgba(${hexToRgb(category.accent)}, 0.3)`,
             }}
           >
-            {category.count}
+            {toPersianNumber(category.productCount)} محصول
           </div>
 
-          <h3
-            className={cn(
-              'mb-1 text-lg font-black text-white sm:text-xl',
-            )}
-          >
-            {category.name}
-          </h3>
+          <h3 className="mb-1 text-lg font-black text-white sm:text-xl">{category.name}</h3>
 
-          <p className="mb-3 line-clamp-1 text-xs text-white/65 sm:text-sm">{category.description}</p>
+          {category.description && (
+            <p className="mb-3 line-clamp-1 text-xs text-white/65 sm:text-sm">{category.description}</p>
+          )}
 
           <div
             className="flex items-center gap-2 text-sm font-medium transition-all duration-300"
             style={{ color: category.accent }}
           >
             مشاهده محصولات
-            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           </div>
         </div>
-
-        {/* ── Hover colour glow ── */}
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10"
-          style={{
-            background: `radial-gradient(circle at center, rgba(${hexToRgb(category.accent)}, 0.06), transparent 70%)`,
-          }}
-        />
       </div>
     </Link>
   )

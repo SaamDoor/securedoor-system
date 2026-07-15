@@ -7,6 +7,7 @@ import { StatsSection } from '@/components/home/stats-section'
 import { TestimonialsSection } from '@/components/home/testimonials-section'
 import { FaqSection } from '@/components/home/faq-section'
 import { FeaturedProductsSection } from '@/components/home/featured-products-section'
+import { EngineeringToolsSection } from '@/components/home/engineering-tools-section'
 import { ProcessSection } from '@/components/home/process-section'
 import { CertificatesSection } from '@/components/home/certificates-section'
 import { BlogHighlightsSection } from '@/components/home/blog-highlights-section'
@@ -14,6 +15,7 @@ import { ContactCtaSection } from '@/components/home/contact-cta-section'
 import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/constants'
 import { organizationSchema } from '@/lib/seo'
 import { fetchFramePrices } from '@/lib/api/google-sheets'
+import { fetchFeaturedShopProducts, fetchShopCategories } from '@/lib/shop/catalog.server'
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — درب ضد سرقت لوکس`,
@@ -25,7 +27,39 @@ export const metadata: Metadata = {
   },
 }
 
-export const revalidate = 600
+export const revalidate = 120
+
+const CATEGORY_IMAGE_FALLBACKS: Array<{ match: RegExp; image: string; accent: string }> = [
+  {
+    match: /ضد\s*سرقت|zed-?sereqat|anti.?theft/i,
+    image: '/images/categories/category-anti-theft-doors.webp',
+    accent: '#C8A85D',
+  },
+  {
+    match: /ضد\s*حریق|zed-?hariq|fire/i,
+    image: '/images/categories/category-fireproof-doors-desktop.webp',
+    accent: '#E74C3C',
+  },
+  {
+    match: /آپارتمان|apartman/i,
+    image: '/images/categories/category-apartment-doors.webp',
+    accent: '#C8A85D',
+  },
+  {
+    match: /ویلا|villa/i,
+    image: '/images/categories/category-villa-doors-desktop.webp',
+    accent: '#27AE60',
+  },
+]
+
+function resolveCategoryVisual(name: string, slug: string, imageUrl: string | null) {
+  const haystack = `${name} ${slug}`
+  const fallback = CATEGORY_IMAGE_FALLBACKS.find((item) => item.match.test(haystack))
+  return {
+    imageUrl: imageUrl || fallback?.image || null,
+    accent: fallback?.accent ?? '#C8A85D',
+  }
+}
 
 export default async function HomePage() {
   let frenchPrices: import('@/lib/api/google-sheets').PriceRow[] = []
@@ -41,6 +75,40 @@ export default async function HomePage() {
     console.error('[Google Sheets API Error]:', error)
   }
 
+  const [featuredProducts, shopCategories] = await Promise.all([
+    fetchFeaturedShopProducts(8).catch(() => []),
+    fetchShopCategories().catch(() => []),
+  ])
+
+  const featuredCards = featuredProducts.slice(0, 8).map((product) => {
+    const primary = product.images.find((img) => img.isPrimary) ?? product.images[0]
+    return {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      sku: product.sku,
+      price: product.price,
+      comparePrice: product.comparePrice ?? null,
+      category: product.category.name,
+      isNew: product.isNew,
+      isFeatured: product.isFeatured,
+      image: primary?.url ?? null,
+    }
+  })
+
+  const categoryCards = shopCategories.slice(0, 4).map((category) => {
+    const visual = resolveCategoryVisual(category.name, category.slug, category.imageUrl)
+    return {
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      description: category.description,
+      productCount: category.productCount,
+      imageUrl: visual.imageUrl,
+      accent: visual.accent,
+    }
+  })
+
   return (
     <>
       <script
@@ -53,9 +121,10 @@ export default async function HomePage() {
         mexicanPrices={mexicanPrices}
         lastUpdated={lastUpdated}
       />
-      <FeaturedProductsSection />
+      <FeaturedProductsSection products={featuredCards} />
+      <EngineeringToolsSection />
       <FeaturesSection />
-      <CategoriesSection />
+      <CategoriesSection categories={categoryCards} />
       <StatsSection />
       <ProcessSection />
       <TestimonialsSection />

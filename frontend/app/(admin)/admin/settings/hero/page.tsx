@@ -1,6 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Save, Image } from 'lucide-react'
+import { toast } from 'sonner'
+import { getSettingsAction, saveSettingsAction } from '../../actions'
 
 export default function HeroSettingsPage() {
   const [form, setForm] = useState({
@@ -10,9 +12,44 @@ export default function HeroSettingsPage() {
     ctaLink: '',
     bgImage: '',
   })
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    alert('تنظیمات هیرو با موفقیت ذخیره شد')
+  useEffect(() => {
+    void (async () => {
+      const result = await getSettingsAction()
+      if (!result.ok) {
+        toast.error(result.error)
+        setLoading(false)
+        return
+      }
+      const map = new Map((result.data ?? []).map((item: Record<string, unknown>) => [String(item.key), item.value]))
+      setForm({
+        title: String(map.get('hero_title') ?? ''),
+        subtitle: String(map.get('hero_subtitle') ?? ''),
+        ctaText: String(map.get('hero_cta_text') ?? ''),
+        ctaLink: String(map.get('hero_cta_url') ?? ''),
+        bgImage: String(map.get('hero_image_url') ?? ''),
+      })
+      setLoading(false)
+    })()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    const result = await saveSettingsAction([
+      { key: 'hero_title', value: form.title, group: 'hero' },
+      { key: 'hero_subtitle', value: form.subtitle, group: 'hero' },
+      { key: 'hero_cta_text', value: form.ctaText, group: 'hero' },
+      { key: 'hero_cta_url', value: form.ctaLink, group: 'hero' },
+      { key: 'hero_image_url', value: form.bgImage, group: 'hero' },
+    ])
+    setSaving(false)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('تنظیمات هیرو ذخیره شد')
   }
 
   return (
@@ -24,6 +61,7 @@ export default function HeroSettingsPage() {
         </div>
 
         <div className="bg-zinc-800 rounded-xl p-6 space-y-5">
+          {loading && <p className="text-sm text-zinc-400">در حال بارگذاری تنظیمات...</p>}
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1">عنوان هیرو</label>
             <input
@@ -84,10 +122,11 @@ export default function HeroSettingsPage() {
           <div className="pt-2">
             <button
               onClick={handleSave}
+              disabled={loading || saving}
               className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-zinc-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
             >
               <Save size={16} />
-              ذخیره تنظیمات
+              {saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
             </button>
           </div>
         </div>

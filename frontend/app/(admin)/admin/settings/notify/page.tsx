@@ -1,17 +1,53 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Save, Bell } from 'lucide-react'
+import { toast } from 'sonner'
+import { getSettingsAction, saveSettingsAction } from '../../actions'
 
 export default function NotifySettingsPage() {
   const [toggles, setToggles] = useState({
-    newOrder: true,
-    ticket: true,
+    newOrder: false,
+    ticket: false,
     registration: false,
   })
   const [sendType, setSendType] = useState<'sms' | 'email' | 'both'>('both')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    alert('تنظیمات اطلاع‌رسانی ذخیره شد')
+  useEffect(() => {
+    void (async () => {
+      const result = await getSettingsAction()
+      if (!result.ok) {
+        toast.error(result.error)
+        setLoading(false)
+        return
+      }
+      const map = new Map((result.data ?? []).map((item: Record<string, unknown>) => [String(item.key), item.value]))
+      setToggles({
+        newOrder: Boolean(map.get('notify_new_order') ?? true),
+        ticket: Boolean(map.get('notify_new_ticket') ?? true),
+        registration: Boolean(map.get('notify_user_registration') ?? false),
+      })
+      const type = String(map.get('notify_send_type') ?? 'both')
+      setSendType(type === 'sms' || type === 'email' ? type : 'both')
+      setLoading(false)
+    })()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    const result = await saveSettingsAction([
+      { key: 'notify_new_order', value: toggles.newOrder, group: 'notify' },
+      { key: 'notify_new_ticket', value: toggles.ticket, group: 'notify' },
+      { key: 'notify_user_registration', value: toggles.registration, group: 'notify' },
+      { key: 'notify_send_type', value: sendType, group: 'notify' },
+    ])
+    setSaving(false)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('تنظیمات اطلاع‌رسانی ذخیره شد')
   }
 
   const Toggle = ({ value, onChange, label }: { value: boolean; onChange: (v: boolean) => void; label: string }) => (
@@ -35,6 +71,7 @@ export default function NotifySettingsPage() {
         </div>
 
         <div className="bg-zinc-800 rounded-xl p-6 space-y-2">
+          {loading && <p className="pb-3 text-sm text-zinc-400">در حال بارگذاری تنظیمات...</p>}
           <Toggle
             label="اطلاع‌رسانی سفارش جدید"
             value={toggles.newOrder}
@@ -73,10 +110,11 @@ export default function NotifySettingsPage() {
           <div className="pt-4">
             <button
               onClick={handleSave}
+              disabled={loading || saving}
               className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-zinc-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
             >
               <Save size={16} />
-              ذخیره تنظیمات
+              {saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
             </button>
           </div>
         </div>

@@ -168,3 +168,22 @@ export async function updateProductAction(
     return { ok: false as const, error: message }
   }
 }
+
+/** Normalize + upload product gallery images (1200×1200 WebP) via server. */
+export async function uploadProductImagesAction(formData: FormData) {
+  try {
+    await requireCatalogAdmin()
+    const files = formData
+      .getAll('files')
+      .filter((item): item is File => item instanceof File && item.size > 0)
+
+    if (!files.length) return { ok: false as const, error: 'هیچ فایلی انتخاب نشده است' }
+
+    const { uploadNormalizedProductImages } = await import('@/lib/admin/product-images.server')
+    const urls = await uploadNormalizedProductImages(files)
+    return { ok: true as const, urls }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'آپلود تصویر ناموفق بود'
+    return { ok: false as const, error: message }
+  }
+}

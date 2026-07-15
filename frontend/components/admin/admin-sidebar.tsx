@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import { SITE_NAME } from '@/lib/constants'
 import type { UserRole } from '@/types'
 import {
-  LayoutDashboard, ShoppingCart, Package, LayoutGrid, Layers,
+  LayoutDashboard, ShoppingCart, Package, LayoutGrid,
   Tag, DollarSign, List, History, Ticket, FileText, FolderOpen,
   Globe, Settings, Image, MapPin, Percent, Users, UserCog, Star,
   Wallet, TrendingUp, CreditCard, BarChart3, MessageSquare,
@@ -92,14 +92,6 @@ const NAV: NavGroup[] = [
           { label: 'نظرات محصولات',  href: '/admin/products/reviews',       icon: ThumbsUp   },
         ],
       },
-      {
-        label: 'چهارچوب‌ها', icon: Layers, roles: SA_ADM,
-        children: [
-          { label: 'لیست چهارچوب‌ها',  href: '/admin/frames',        icon: List       },
-          { label: 'سفارشات چهارچوب',  href: '/admin/frames/orders', icon: ClipboardList },
-          { label: 'قیمت‌گذاری',       href: '/admin/pricing/frames', icon: DollarSign },
-        ],
-      },
       { label: 'پروژه‌ها',        href: '/admin/projects', icon: FolderOpen, roles: SA_ADM },
       { label: 'کوپن‌های تخفیف', href: '/admin/coupons',  icon: Ticket,     roles: SA_ADM },
     ],
@@ -143,7 +135,6 @@ const NAV: NavGroup[] = [
         label: 'قیمت‌گذاری پویا', icon: DollarSign,
         children: [
           { label: 'قیمت پایه محصولات',   href: '/admin/pricing/products', icon: Package      },
-          { label: 'لیست قیمت چهارچوب',   href: '/admin/pricing/frames',   icon: List         },
           { label: 'تاریخچه تغییر قیمت',  href: '/admin/pricing/history',  icon: History      },
           { label: 'تیرهای تخفیف',        href: '/admin/pricing/tiers',    icon: BadgePercent },
           { label: 'مقایسه رقبا',          href: '/admin/pricing/compare',  icon: BarChart3    },

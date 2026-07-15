@@ -1,19 +1,53 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Save, Key, Eye, EyeOff } from 'lucide-react'
+import { toast } from 'sonner'
+import { getSettingsAction, saveSettingsAction } from '../../actions'
 
 export default function ApiConfigPage() {
   const [showKey, setShowKey] = useState(false)
-  const [enabled, setEnabled] = useState(true)
+  const [enabled, setEnabled] = useState(false)
   const [form, setForm] = useState({
-    name: 'درگاه پرداخت زرین‌پال',
-    endpoint: 'https://api.zarinpal.com/pg/v4',
+    name: '',
+    endpoint: '',
     apiKey: '',
-    rateLimit: '100',
+    rateLimit: '',
   })
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    alert('تنظیمات API ذخیره شد')
+  useEffect(() => {
+    void (async () => {
+      const result = await getSettingsAction()
+      if (!result.ok) {
+        toast.error(result.error)
+        return
+      }
+      const map = new Map((result.data ?? []).map((item: Record<string, unknown>) => [String(item.key), item.value]))
+      setForm({
+        name: String(map.get('integration_api_name') ?? 'درگاه پرداخت زرین‌پال'),
+        endpoint: String(map.get('integration_api_endpoint') ?? 'https://api.zarinpal.com/pg/v4'),
+        apiKey: String(map.get('integration_api_key') ?? ''),
+        rateLimit: String(map.get('integration_api_rate_limit') ?? '100'),
+      })
+      setEnabled(Boolean(map.get('integration_api_enabled') ?? true))
+    })()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    const result = await saveSettingsAction([
+      { key: 'integration_api_name', value: form.name, group: 'integrations' },
+      { key: 'integration_api_endpoint', value: form.endpoint, group: 'integrations' },
+      { key: 'integration_api_key', value: form.apiKey, group: 'integrations' },
+      { key: 'integration_api_rate_limit', value: Number(form.rateLimit || 0), group: 'integrations' },
+      { key: 'integration_api_enabled', value: enabled, group: 'integrations' },
+    ])
+    setSaving(false)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('تنظیمات API ذخیره شد')
   }
 
   return (
@@ -91,10 +125,11 @@ export default function ApiConfigPage() {
           <div className="pt-2">
             <button
               onClick={handleSave}
+              disabled={saving}
               className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-zinc-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
             >
               <Save size={16} />
-              ذخیره تنظیمات
+              {saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
             </button>
           </div>
         </div>

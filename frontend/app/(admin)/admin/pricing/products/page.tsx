@@ -1,14 +1,15 @@
-import { Edit } from 'lucide-react'
+import { formatJalaliDate, formatPrice } from '@/lib/utils'
+import { fetchAdminProductsServer } from '@/lib/api/products-admin.server'
 
-const mockProducts = [
-  { id: 1, name: 'درب ضد سرقت استاندارد', current: '8,500,000 ت', compare: '9,500,000 ت', lastChange: '۱۴۰۳/۰۴/۰۱' },
-  { id: 2, name: 'درب ضد سرقت دوبل', current: '14,200,000 ت', compare: '16,000,000 ت', lastChange: '۱۴۰۳/۰۳/۲۸' },
-  { id: 3, name: 'درب چوبی MDF', current: '5,800,000 ت', compare: '—', lastChange: '۱۴۰۳/۰۳/۱۵' },
-  { id: 4, name: 'درب اتوماتیک پارکینگ', current: '22,000,000 ت', compare: '24,500,000 ت', lastChange: '۱۴۰۳/۰۲/۲۰' },
-  { id: 5, name: 'چهارچوب فلزی Z-پروفیل', current: '3,200,000 ت', compare: '—', lastChange: '۱۴۰۳/۰۴/۰۲' },
-]
+export default async function ProductPricingPage() {
+  let products: Record<string, unknown>[] = []
+  let error: string | null = null
+  try {
+    products = (await fetchAdminProductsServer()) as Record<string, unknown>[]
+  } catch (e) {
+    error = e instanceof Error ? e.message : 'خطای دریافت محصولات'
+  }
 
-export default function ProductPricingPage() {
   return (
     <div dir="rtl" className="min-h-screen bg-zinc-900 p-6">
       <div className="max-w-6xl mx-auto">
@@ -16,6 +17,7 @@ export default function ProductPricingPage() {
           <h1 className="text-2xl font-bold text-zinc-100">قیمت‌گذاری محصولات</h1>
           <p className="text-zinc-400 mt-1">مدیریت قیمت محصولات و قیمت‌های مقایسه‌ای</p>
         </div>
+        {error && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>}
 
         <div className="bg-zinc-800 rounded-xl overflow-hidden">
           <table className="w-full">
@@ -29,17 +31,19 @@ export default function ProductPricingPage() {
               </tr>
             </thead>
             <tbody>
-              {mockProducts.map(p => (
-                <tr key={p.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
-                  <td className="px-6 py-4 text-zinc-100 font-medium">{p.name}</td>
-                  <td className="px-6 py-4 text-zinc-100 font-semibold">{p.current}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm line-through">{p.compare}</td>
-                  <td className="px-6 py-4 text-zinc-400 text-sm">{p.lastChange}</td>
-                  <td className="px-6 py-4">
-                    <button className="flex items-center gap-1 text-amber-400 hover:text-amber-300 text-sm transition-colors">
-                      <Edit size={14} /> ویرایش
-                    </button>
+              {products.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-zinc-500">محصولی برای قیمت‌گذاری یافت نشد</td>
+                </tr>
+              ) : products.map((p) => (
+                <tr key={String(p.id)} className="border-b border-zinc-700/50 hover:bg-zinc-700/30 transition-colors">
+                  <td className="px-6 py-4 text-zinc-100 font-medium">{String(p.name ?? '—')}</td>
+                  <td className="px-6 py-4 text-zinc-100 font-semibold">{formatPrice(Number(p.price ?? 0))}</td>
+                  <td className="px-6 py-4 text-zinc-400 text-sm line-through">
+                    {Number(p.compare_price ?? 0) > 0 ? formatPrice(Number(p.compare_price)) : '—'}
                   </td>
+                  <td className="px-6 py-4 text-zinc-400 text-sm">{p.created_at ? formatJalaliDate(String(p.created_at)) : '—'}</td>
+                  <td className="px-6 py-4 text-zinc-500 text-sm">مشاهده</td>
                 </tr>
               ))}
             </tbody>

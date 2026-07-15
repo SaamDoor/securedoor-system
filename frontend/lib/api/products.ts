@@ -240,7 +240,6 @@ function toProductRow(input: AdminProductInput) {
     faq_pairs: input.faq_pairs ?? [],
     ai_summary: input.ai_summary || null,
     entity_keywords: splitList(input.entity_keywords),
-    linked_frame_ids: input.linked_frame_ids ?? [],
   }
 }
 
@@ -408,38 +407,12 @@ export async function toggleProductActive(id: string, isActive: boolean) {
   if (error) throw error
 }
 
-/** Uploads images to the public `products` storage bucket and returns their public URLs. */
-export async function uploadProductImages(files: File[]): Promise<string[]> {
-  const supabase = createClient()
-  const urls: string[] = []
-
-  for (const file of files) {
-    const ext = file.name.split('.').pop()
-    const path = `gallery/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-
-    const { error } = await supabase.storage.from('products').upload(path, file, {
-      cacheControl: '31536000',
-      upsert: false,
-    })
-    if (error) throw error
-
-    const { data } = supabase.storage.from('products').getPublicUrl(path)
-    urls.push(data.publicUrl)
-  }
-
-  return urls
+/** @deprecated Prefer uploadProductImagesAction (server + sharp normalize). Kept for legacy callers. */
+export async function uploadProductImages(_files: File[]): Promise<string[]> {
+  throw new Error('آپلود تصویر باید از طریق سرور انجام شود؛ صفحه را تازه کنید')
 }
 
-/** Fetches active frame price rows for the product-form's frame-linking section. */
+/** Frame price options removed with frames admin module. */
 export async function getFramePriceOptions() {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('frame_price_list')
-    .select('id, frame_type, color_name, price_3klaf')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
-
-  if (error) throw error
-  return data ?? []
+  return [] as { id: string; frame_type: string; color_name: string; price_3klaf: number }[]
 }

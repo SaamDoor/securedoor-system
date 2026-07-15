@@ -1,6 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Save, Phone, Mail, MapPin, Clock } from 'lucide-react'
+import { toast } from 'sonner'
+import { getSettingsAction, saveSettingsAction } from '../../actions'
 
 export default function ContactSettingsPage() {
   const [form, setForm] = useState({
@@ -11,9 +13,46 @@ export default function ContactSettingsPage() {
     address: '',
     workingHours: '',
   })
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    alert('اطلاعات تماس با موفقیت ذخیره شد')
+  useEffect(() => {
+    void (async () => {
+      const result = await getSettingsAction()
+      if (!result.ok) {
+        toast.error(result.error)
+        setLoading(false)
+        return
+      }
+      const map = new Map((result.data ?? []).map((item: Record<string, unknown>) => [String(item.key), item.value]))
+      setForm({
+        phone1: String(map.get('contact_phone') ?? ''),
+        phone2: String(map.get('contact_phone_2') ?? ''),
+        whatsapp: String(map.get('social_whatsapp') ?? ''),
+        email: String(map.get('contact_email') ?? ''),
+        address: String(map.get('contact_address') ?? ''),
+        workingHours: String(map.get('working_hours') ?? ''),
+      })
+      setLoading(false)
+    })()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    const result = await saveSettingsAction([
+      { key: 'contact_phone', value: form.phone1, group: 'contact' },
+      { key: 'contact_phone_2', value: form.phone2, group: 'contact' },
+      { key: 'social_whatsapp', value: form.whatsapp, group: 'social' },
+      { key: 'contact_email', value: form.email, group: 'contact' },
+      { key: 'contact_address', value: form.address, group: 'contact' },
+      { key: 'working_hours', value: form.workingHours, group: 'contact' },
+    ])
+    setSaving(false)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('اطلاعات تماس ذخیره شد')
   }
 
   return (
@@ -25,6 +64,7 @@ export default function ContactSettingsPage() {
         </div>
 
         <div className="bg-zinc-800 rounded-xl p-6 space-y-5">
+          {loading && <p className="text-sm text-zinc-400">در حال بارگذاری تنظیمات...</p>}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1 flex items-center gap-1"><Phone size={14} /> شماره تلفن ۱</label>
@@ -95,10 +135,11 @@ export default function ContactSettingsPage() {
           <div className="pt-2">
             <button
               onClick={handleSave}
+              disabled={loading || saving}
               className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-zinc-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
             >
               <Save size={16} />
-              ذخیره تنظیمات
+              {saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
             </button>
           </div>
         </div>

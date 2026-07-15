@@ -14,14 +14,15 @@ import {
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { CONTACT, SOCIAL_LINKS } from '@/lib/constants'
+import type { ShopCategory } from '@/lib/shop/catalog.types'
+
+const FALLBACK_PRODUCT_LINKS = [
+  { label: 'همه محصولات', href: '/products' },
+]
 
 const footerLinks = {
-  products: [
-    { label: 'درب ضد سرقت',        href: '/products?category=darb-zed-sereqat' },
-    { label: 'درب ضد حریق',         href: '/products?category=darb-zed-hariq' },
-    { label: 'درب آپارتمانی',       href: '/products?category=darb-apartmani' },
-    { label: 'درب ویلایی',          href: '/products?category=darb-villaei' },
-    { label: 'متعلقات و یراق‌آلات', href: '/products?category=moteallaqat' },
+  tools: [
+    { label: 'محاسبه‌گر مصالح ساختمان', href: '/tools/materials-calculator' },
   ],
   company: [
     { label: 'درباره گروه مشعوف',      href: '/about' },
@@ -64,7 +65,22 @@ const socialLinks = [
   },
 ]
 
-export function Footer() {
+export function Footer({
+  productCategories = [],
+}: {
+  productCategories?: ShopCategory[]
+}) {
+  const productLinks =
+    productCategories.length > 0
+      ? [
+          ...productCategories.slice(0, 8).map((c) => ({
+            label: c.name,
+            href: `/products?category=${encodeURIComponent(c.slug)}`,
+          })),
+          { label: 'همه محصولات', href: '/products' },
+        ]
+      : FALLBACK_PRODUCT_LINKS
+
   return (
     /* ── Rounded-top card: sits inside a light or dark page bg ── */
     <footer className="relative overflow-hidden rounded-t-[2rem] border-t border-white/[0.06] bg-zinc-950 shadow-[0_-24px_80px_rgba(0,0,0,0.6)]">
@@ -219,7 +235,7 @@ export function Footer() {
           </div>
 
           {/* ── Link columns (7/12 split 3 ways) ── */}
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-8">
             {/* Products */}
             <div>
               <h4 className="font-bold text-white mb-5 flex items-center gap-2 text-sm">
@@ -227,7 +243,27 @@ export function Footer() {
                 محصولات
               </h4>
               <ul className="space-y-3">
-                {footerLinks.products.map((link) => (
+                {productLinks.map((link) => (
+                  <li key={`${link.href}-${link.label}`}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-zinc-500 hover:text-primary transition-all duration-200 hover:translate-x-[-3px] inline-block"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Engineering tools */}
+            <div>
+              <h4 className="font-bold text-white mb-5 flex items-center gap-2 text-sm">
+                <span className="w-1 h-4 bg-gradient-to-b from-[#D42B47] to-[#C41E3A] rounded-full shadow-[0_0_8px_rgba(196,30,58,0.4)]" />
+                ابزارهای مهندسی
+              </h4>
+              <ul className="space-y-3">
+                {footerLinks.tools.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}

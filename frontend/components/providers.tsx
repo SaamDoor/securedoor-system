@@ -18,10 +18,12 @@ import { useCartStore } from "@/store/cart.store";
  */
 function StoreHydrator() {
   useEffect(() => {
-    useAuthStore.persist.rehydrate();
-    useCartStore.persist.rehydrate();
-  }, []);
-  return null;
+    useAuthStore.persist.rehydrate()
+    void Promise.resolve(useCartStore.persist.rehydrate()).finally(() => {
+      useCartStore.getState().setHydrated(true)
+    })
+  }, [])
+  return null
 }
 
 /**

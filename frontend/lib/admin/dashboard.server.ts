@@ -11,7 +11,7 @@ export async function fetchDashboardStatsServer() {
     ticketsRes,
     reviewsRes,
   ] = await Promise.all([
-    supabase.from('orders').select('id, status, total, created_at', { count: 'exact' }),
+    supabase.from('orders').select('id, order_number, status, total, created_at', { count: 'exact' }),
     supabase.from('products').select('id', { count: 'exact', head: true }),
     supabase.from('users').select('id', { count: 'exact', head: true }),
     supabase.from('orders').select('total').eq('payment_status', 'paid'),

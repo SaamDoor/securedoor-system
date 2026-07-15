@@ -23,18 +23,20 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toPersianNumber } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { CONTACT } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/auth.store";
+import { useCartStore } from "@/store/cart.store";
 import {
   ADMIN_ROLES,
   USER_PANEL_ROLES,
   type User as AppUser,
   type UserRole,
 } from "@/types";
+import type { ShopCategory } from "@/lib/shop/catalog.types";
 
 interface AuthUser {
   name: string;
@@ -42,34 +44,51 @@ interface AuthUser {
   role: UserRole;
 }
 
-const navItems = [
-  { label: "خانه", href: "/" },
-  {
-    label: "محصولات",
-    href: "/products",
-    children: [
-      { label: "درب ضد سرقت",   href: "/products?category=darb-zed-sereqat" },
-      { label: "درب ضد حریق",   href: "/products?category=darb-zed-hariq" },
-      { label: "درب آپارتمانی", href: "/products?category=darb-apartmani" },
-      { label: "درب ویلایی",    href: "/products?category=darb-villaei" },
-      { label: "درب اداری",     href: "/products?category=darb-edari" },
-      { label: "متعلقات",       href: "/products?category=moteallaqat" },
-    ],
-  },
-  {
-    label: "پروژه‌ها",
-    href: "/projects",
-    children: [
-      { label: "همه پروژه‌ها", href: "/projects" },
-      { label: "پیش‌فروش",    href: "/projects?status=pre_sale" },
-      { label: "برای فروش",   href: "/projects?status=for_sale" },
-      { label: "تحویل‌شده",   href: "/projects?status=delivered" },
-    ],
-  },
-  { label: "وبلاگ",      href: "/blog" },
-  { label: "درباره ما",  href: "/about" },
-  { label: "تماس با ما", href: "/contact" },
+type NavChild = { label: string; href: string };
+type NavItem = { label: string; href: string; children?: NavChild[] };
+
+const FALLBACK_PRODUCT_CHILDREN: NavChild[] = [
+  { label: "همه محصولات", href: "/products" },
 ];
+
+function buildNavItems(productCategories: ShopCategory[]): NavItem[] {
+  const productChildren =
+    productCategories.length > 0
+      ? [
+          ...productCategories.slice(0, 10).map((c) => ({
+            label: c.name,
+            href: `/products?category=${encodeURIComponent(c.slug)}`,
+          })),
+          { label: "همه محصولات", href: "/products" },
+        ]
+      : FALLBACK_PRODUCT_CHILDREN;
+
+  return [
+    { label: "خانه", href: "/" },
+    {
+      label: "محصولات",
+      href: "/products",
+      children: productChildren,
+    },
+    {
+      label: "ابزارهای مهندسی",
+      href: "/tools/materials-calculator",
+    },
+    {
+      label: "پروژه‌ها",
+      href: "/projects",
+      children: [
+        { label: "همه پروژه‌ها", href: "/projects" },
+        { label: "پیش‌فروش", href: "/projects?status=pre_sale" },
+        { label: "برای فروش", href: "/projects?status=for_sale" },
+        { label: "تحویل‌شده", href: "/projects?status=delivered" },
+      ],
+    },
+    { label: "وبلاگ", href: "/blog" },
+    { label: "درباره ما", href: "/about" },
+    { label: "تماس با ما", href: "/contact" },
+  ];
+}
 
 function buildAuthUser(user: AppUser, role: UserRole): AuthUser {
   const name = [user.firstName, user.lastName].filter(Boolean).join(" ");
@@ -176,7 +195,11 @@ function UserMenu({
   );
 }
 
-export function Navbar() {
+export function Navbar({
+  productCategories = [],
+}: {
+  productCategories?: ShopCategory[];
+}) {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -184,12 +207,16 @@ export function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { scrollY } = useScroll();
   const dropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navItems = buildNavItems(productCategories);
 
   const storeUser      = useAuthStore((s) => s.user);
   const role           = useAuthStore((s) => s.role);
   const dashboardHref  = useAuthStore((s) => s.dashboardHref);
   const dashboardLabel = useAuthStore((s) => s.dashboardLabel);
   const clearAuth      = useAuthStore((s) => s.clearAuth);
+  const cartItems = useCartStore((s) => s.items);
+  const cartHydrated = useCartStore((s) => s.hydrated);
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const authUser               = storeUser && role ? buildAuthUser(storeUser, role) : null;
   const showProfile            = !!role && USER_PANEL_ROLES.includes(role);
@@ -297,7 +324,7 @@ export function Navbar() {
                         ))}
                         <div className="divider-primary mx-4 my-1.5" />
                         <Link
-                          href="/products"
+                          href={item.href}
                           className="flex items-center mx-1 rounded-xl px-3.5 py-2.5 text-sm text-primary transition-colors hover:text-primary-400 hover:bg-primary/8"
                         >
                           مشاهده همه ←
@@ -336,9 +363,11 @@ export function Navbar() {
                 aria-label="سبد خرید"
               >
                 <ShoppingCart className="h-4.5 w-4.5" />
-                <span className="absolute -left-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-[0_2px_8px_rgba(196,30,58,0.5)]">
-                  ۳
-                </span>
+                {cartHydrated && cartCount > 0 && (
+                  <span className="absolute -left-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-black text-white shadow-[0_2px_8px_rgba(196,30,58,0.5)]">
+                    {toPersianNumber(cartCount)}
+                  </span>
+                )}
               </Link>
 
               {/* Auth — desktop only */}

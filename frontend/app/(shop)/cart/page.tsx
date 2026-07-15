@@ -1,78 +1,42 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Tag, Package } from 'lucide-react'
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { formatPrice, toPersianNumber } from '@/lib/utils'
-import { cn } from '@/lib/utils'
+import { formatPrice, toPersianNumber, cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
-
-interface CartItem {
-  id: string
-  name: string
-  slug: string
-  price: number
-  quantity: number
-  sku: string
-}
-
-const INITIAL_ITEMS: CartItem[] = [
-  {
-    id: '1',
-    name: 'درب ضد سرقت آرتوس پلاتینیوم',
-    slug: 'artus-platinum',
-    price: 28_500_000,
-    quantity: 1,
-    sku: 'SD-1001',
-  },
-  {
-    id: '2',
-    name: 'درب ضد سرقت رگال مشکی',
-    slug: 'regal-black',
-    price: 19_800_000,
-    quantity: 2,
-    sku: 'SD-1002',
-  },
-]
+import { useCartStore } from '@/store/cart.store'
 
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>(INITIAL_ITEMS)
-  const [couponCode, setCouponCode] = useState('')
-  const [couponApplied, setCouponApplied] = useState(false)
-
-  const updateQty = (id: string, delta: number) => {
-    setItems((prev) =>
-      prev
-        .map((item) => item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item)
-        .filter((item) => item.quantity > 0),
-    )
-  }
-
-  const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id))
-  }
+  const items = useCartStore((s) => s.items)
+  const hydrated = useCartStore((s) => s.hydrated)
+  const updateQuantity = useCartStore((s) => s.updateQuantity)
+  const removeItem = useCartStore((s) => s.removeItem)
+  const subtotalFn = useCartStore((s) => s.subtotal)
 
   const authUser = useAuthStore((s) => s.user)
   const userDiscountPct = authUser?.specialDiscountPercent ?? 0
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const subtotal = subtotalFn()
   const userDiscount = userDiscountPct > 0 ? Math.round(subtotal * (userDiscountPct / 100)) : 0
-  const discount = (couponApplied ? Math.round(subtotal * 0.1) : 0) + userDiscount
-  const shipping = subtotal >= 5_000_000 ? 0 : 350_000
-  const total = subtotal - discount + shipping
+  const shipping = subtotal === 0 || subtotal >= 5_000_000 ? 0 : 350_000
+  const total = Math.max(0, subtotal - userDiscount + shipping)
+
+  if (!hydrated) {
+    return <div className="min-h-screen bg-black" />
+  }
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-black">
         <div className="text-center">
-          <div className="w-24 h-24 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center mx-auto mb-6">
+          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl border border-white/8 bg-white/5">
             <ShoppingCart className="h-10 w-10 text-[#A0A0A0]" />
           </div>
-          <h2 className="text-2xl font-black text-white mb-3">سبد خرید شما خالی است</h2>
-          <p className="text-[#A0A0A0] mb-8">محصولات مورد نظر خود را به سبد اضافه کنید.</p>
+          <h2 className="mb-3 text-2xl font-black text-white">سبد خرید شما خالی است</h2>
+          <p className="mb-8 text-[#A0A0A0]">محصولات مورد نظر خود را به سبد اضافه کنید.</p>
           <Button asChild variant="gold" size="lg">
             <Link href="/products">
               مشاهده محصولات
@@ -87,16 +51,17 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-black">
       <div
-        className="pt-28 pb-12"
+        className="pb-12 pt-28"
         style={{
-          background: 'radial-gradient(ellipse at center top, rgba(200,168,93,0.06) 0%, transparent 60%), linear-gradient(180deg, #0F0F0F 0%, #0B0B0B 100%)',
+          background:
+            'radial-gradient(ellipse at center top, rgba(200,168,93,0.06) 0%, transparent 60%), linear-gradient(180deg, #0F0F0F 0%, #0B0B0B 100%)',
         }}
       >
         <div className="container">
-          <h1 className="text-3xl font-black text-white flex items-center gap-3">
+          <h1 className="flex items-center gap-3 text-3xl font-black text-white">
             <ShoppingCart className="h-8 w-8 text-[#C8A85D]" />
             سبد خرید
-            <span className="text-[#A0A0A0] text-lg font-normal">
+            <span className="text-lg font-normal text-[#A0A0A0]">
               ({toPersianNumber(items.length)} محصول)
             </span>
           </h1>
@@ -104,56 +69,67 @@ export default function CartPage() {
       </div>
 
       <div className="container py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Items */}
-          <div className="lg:col-span-2 space-y-4">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-4 lg:col-span-2">
             {items.map((item) => (
               <motion.div
-                key={item.id}
+                key={item.productId}
                 layout
-                exit={{ opacity: 0, x: -20 }}
-                className="flex gap-5 p-5 rounded-2xl bg-[#181818] border border-white/8"
+                className="flex gap-5 rounded-2xl border border-white/8 bg-[#181818] p-5"
               >
-                {/* Image placeholder */}
-                <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 flex-shrink-0 flex items-center justify-center">
-                  <Package className="h-8 w-8 text-zinc-700" />
+                <div className="relative flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-900">
+                  {item.image ? (
+                    <Image src={item.image} alt={item.name} fill className="object-cover" sizes="96px" />
+                  ) : (
+                    <Package className="h-8 w-8 text-zinc-700" />
+                  )}
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs text-[#A0A0A0] mb-1">کد: {item.sku}</div>
-                  <Link href={`/products/${item.slug}`}>
-                    <h3 className="font-bold text-white hover:text-[#C8A85D] transition-colors text-sm mb-3">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 text-xs text-[#A0A0A0]">کد: {item.sku}</div>
+                  <Link href={`/products/${item.productId}`}>
+                    <h3 className="mb-3 text-sm font-bold text-white transition-colors hover:text-[#C8A85D]">
                       {item.name}
                     </h3>
                   </Link>
+                  {item.options && Object.keys(item.options).length > 0 && (
+                    <div className="mb-3 text-xs text-zinc-500">
+                      {Object.entries(item.options)
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(' · ')}
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 rounded-xl border border-white/15 overflow-hidden">
+                    <div className="flex items-center gap-1 overflow-hidden rounded-xl border border-white/15">
                       <button
-                        onClick={() => updateQty(item.id, -1)}
-                        className="w-9 h-9 flex items-center justify-center text-[#A0A0A0] hover:text-white hover:bg-white/5 transition-colors"
+                        type="button"
+                        onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                        className="flex h-9 w-9 items-center justify-center text-[#A0A0A0] transition-colors hover:bg-white/5 hover:text-white"
                       >
                         <Minus className="h-4 w-4" />
                       </button>
-                      <span className="w-8 text-center text-white text-sm font-bold">
+                      <span className="w-8 text-center text-sm font-bold text-white">
                         {toPersianNumber(item.quantity)}
                       </span>
                       <button
-                        onClick={() => updateQty(item.id, 1)}
-                        className="w-9 h-9 flex items-center justify-center text-[#A0A0A0] hover:text-white hover:bg-white/5 transition-colors"
+                        type="button"
+                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                        className="flex h-9 w-9 items-center justify-center text-[#A0A0A0] transition-colors hover:bg-white/5 hover:text-white"
                       >
                         <Plus className="h-4 w-4" />
                       </button>
                     </div>
 
                     <div className="flex items-center gap-4">
-                      <div className="font-black text-white text-base">
+                      <div className="text-base font-black text-white">
                         {formatPrice(item.price * item.quantity)}
                       </div>
                       <button
-                        onClick={() => removeItem(item.id)}
+                        type="button"
+                        onClick={() => removeItem(item.productId)}
                         aria-label="حذف از سبد"
-                        className="w-8 h-8 rounded-lg border border-white/8 flex items-center justify-center text-[#A0A0A0] hover:text-[#E74C3C] hover:border-[#C0392B]/30 transition-all"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/8 text-[#A0A0A0] transition-all hover:border-[#C0392B]/30 hover:text-[#E74C3C]"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -164,26 +140,19 @@ export default function CartPage() {
             ))}
           </div>
 
-          {/* Summary */}
           <div className="lg:col-span-1">
-            <div className="rounded-2xl bg-[#181818] border border-white/8 p-6 sticky top-24">
-              <h3 className="font-bold text-white mb-6 text-lg">خلاصه سفارش</h3>
+            <div className="sticky top-24 rounded-2xl border border-white/8 bg-[#181818] p-6">
+              <h3 className="mb-6 text-lg font-bold text-white">خلاصه سفارش</h3>
 
-              <div className="space-y-3 mb-6">
+              <div className="mb-6 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-[#A0A0A0]">جمع کل</span>
-                  <span className="text-white font-medium">{formatPrice(subtotal)}</span>
+                  <span className="font-medium text-white">{formatPrice(subtotal)}</span>
                 </div>
                 {userDiscount > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-[#A0A0A0]">تخفیف ویژه ({toPersianNumber(userDiscountPct)}٪)</span>
-                    <span className="text-green-400 font-medium">-{formatPrice(userDiscount)}</span>
-                  </div>
-                )}
-                {couponApplied && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#A0A0A0]">کد تخفیف</span>
-                    <span className="text-[#27AE60] font-medium">-{formatPrice(Math.round(subtotal * 0.1))}</span>
+                    <span className="font-medium text-green-400">-{formatPrice(userDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
@@ -195,43 +164,20 @@ export default function CartPage() {
                 <div className="h-px bg-white/8" />
                 <div className="flex justify-between">
                   <span className="font-bold text-white">مبلغ نهایی</span>
-                  <span className="font-black text-[#C8A85D] text-lg">{formatPrice(total)}</span>
+                  <span className="text-lg font-black text-[#C8A85D]">{formatPrice(total)}</span>
                 </div>
-              </div>
-
-              {/* Coupon */}
-              <div className="mb-6">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="کد تخفیف"
-                    leftIcon={<Tag className="h-4 w-4" />}
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                  />
-                  <Button
-                    variant="dark"
-                    size="sm"
-                    className="flex-shrink-0"
-                    onClick={() => { if (couponCode) setCouponApplied(true) }}
-                  >
-                    اعمال
-                  </Button>
-                </div>
-                {couponApplied && (
-                  <p className="text-xs text-[#27AE60] mt-1.5">✓ کد تخفیف اعمال شد</p>
-                )}
               </div>
 
               <Button asChild variant="gold" size="lg" className="w-full">
-                <Link href="/checkout">ادامه خرید</Link>
+                <Link href="/checkout">ادامه و تسویه حساب</Link>
               </Button>
 
               <Link
                 href="/products"
-                className="flex items-center justify-center gap-2 mt-4 text-sm text-[#A0A0A0] hover:text-white transition-colors"
+                className="mt-4 flex items-center justify-center gap-2 text-sm text-[#A0A0A0] transition-colors hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" />
-                ادامه خرید
+                ادامه خرید از فروشگاه
               </Link>
             </div>
           </div>

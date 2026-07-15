@@ -1,6 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { RefreshCw, Edit, Save } from 'lucide-react'
+import { toast } from 'sonner'
+import { getSettingsAction, saveSettingsAction } from '../../actions'
 
 const currencies = [
   { code: 'USD', name: 'دلار آمریکا', flag: '🇺🇸', rate: '58,200' },
@@ -11,9 +13,39 @@ const currencies = [
 export default function CurrencyPage() {
   const [manualOverride, setManualOverride] = useState(false)
   const [rates, setRates] = useState(currencies.map(c => ({ ...c })))
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    alert('نرخ‌های ارز ذخیره شد')
+  useEffect(() => {
+    void (async () => {
+      const result = await getSettingsAction()
+      if (!result.ok) {
+        toast.error(result.error)
+        return
+      }
+      const map = new Map((result.data ?? []).map((item: Record<string, unknown>) => [String(item.key), item.value]))
+      setManualOverride(Boolean(map.get('currency_manual_override') ?? false))
+      setRates((prev) => prev.map((item) => ({
+        ...item,
+        rate: String(map.get(`currency_rate_${item.code.toLowerCase()}`) ?? item.rate),
+      })))
+    })()
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    const entries: { key: string; value: unknown; group?: string }[] = rates.map((item) => ({
+      key: `currency_rate_${item.code.toLowerCase()}`,
+      value: Number(String(item.rate).replaceAll(',', '').trim() || 0),
+      group: 'currency',
+    }))
+    entries.push({ key: 'currency_manual_override', value: manualOverride, group: 'currency' })
+    const result = await saveSettingsAction(entries)
+    setSaving(false)
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+    toast.success('نرخ‌های ارز ذخیره شد')
   }
 
   return (
@@ -85,10 +117,11 @@ export default function CurrencyPage() {
           <div className="mt-4">
             <button
               onClick={handleSave}
+              disabled={saving}
               className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-zinc-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
             >
               <Save size={16} />
-              ذخیره نرخ‌ها
+              {saving ? 'در حال ذخیره...' : 'ذخیره نرخ‌ها'}
             </button>
           </div>
         )}

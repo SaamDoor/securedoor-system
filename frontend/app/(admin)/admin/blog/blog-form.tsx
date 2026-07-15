@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { Input, Textarea } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { saveBlogPostAction } from '../actions'
 import { cn, slugify } from '@/lib/utils'
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -132,9 +133,22 @@ function Section({ title, badge, children }: { title: string; badge?: string; ch
 // ─── Mock save functions (replace with real API calls) ────────────────────────
 
 async function saveBlogPost(data: BlogFormData, isEdit: boolean, postId?: string): Promise<void> {
-  // TODO: replace with real Supabase insert/update
-  await new Promise((r) => setTimeout(r, 800))
-  console.log('[saveBlogPost]', { data, isEdit, postId })
+  const payload = {
+    title: data.title,
+    slug: data.slug,
+    excerpt: data.excerpt,
+    content: data.content,
+    cover_image: data.cover_image || null,
+    status: data.status,
+    reading_time: data.reading_time,
+    meta_title: data.meta_title || null,
+    meta_description: data.meta_description || null,
+    meta_keywords: data.tags ? data.tags.split(/[,،]/).map((t) => t.trim()).filter(Boolean) : [],
+    published_at: data.status === 'published' ? (data.publish_date || new Date().toISOString()) : null,
+    is_featured: false,
+  }
+  const result = await saveBlogPostAction(payload, isEdit ? postId : undefined)
+  if (!result.ok) throw new Error(result.error)
 }
 
 async function uploadCoverImage(file: File): Promise<string> {

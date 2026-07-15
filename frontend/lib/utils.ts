@@ -91,6 +91,23 @@ export function slugify(text: string): string {
     .replace(/-+$/, '')
 }
 
+/** Prefer ASCII/SKU slugs for stable storefront URLs. */
+export function productSlugFromName(name: string, sku?: string): string {
+  const base = slugify(name)
+  const hasAscii = /[a-z0-9]/.test(base)
+  if (hasAscii) {
+    return base
+      .replace(/[؀-ۿ]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
+  const cleanSku = (sku || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return cleanSku ? `p-${cleanSku}` : `product-${Date.now().toString(36)}`
+}
+
 export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
   return text.substring(0, maxLength).trim() + '...'
