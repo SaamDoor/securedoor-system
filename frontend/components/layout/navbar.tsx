@@ -22,6 +22,8 @@ import {
   ShieldCheck,
   LogOut,
   Settings,
+  ArrowLeft,
+  Package,
 } from "lucide-react";
 import { cn, toPersianNumber } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -44,37 +46,42 @@ interface AuthUser {
   role: UserRole;
 }
 
-type NavChild = { label: string; href: string };
-type NavItem = { label: string; href: string; children?: NavChild[] };
-
-const FALLBACK_PRODUCT_CHILDREN: NavChild[] = [
-  { label: "همه محصولات", href: "/products" },
-];
+type NavChild = { label: string; href: string; count?: number };
+type NavItem = {
+  id: string;
+  label: string;
+  href: string;
+  children?: NavChild[];
+  /** Wide tag-grid mega menu (محصولات) */
+  mega?: boolean;
+};
 
 function buildNavItems(productCategories: ShopCategory[]): NavItem[] {
-  const productChildren =
+  const productChildren: NavChild[] =
     productCategories.length > 0
-      ? [
-          ...productCategories.slice(0, 10).map((c) => ({
-            label: c.name,
-            href: `/products?category=${encodeURIComponent(c.slug)}`,
-          })),
-          { label: "همه محصولات", href: "/products" },
-        ]
-      : FALLBACK_PRODUCT_CHILDREN;
+      ? productCategories.slice(0, 12).map((c) => ({
+          label: c.name,
+          href: `/products?category=${encodeURIComponent(c.slug)}`,
+          count: c.productCount > 0 ? c.productCount : undefined,
+        }))
+      : [];
 
   return [
-    { label: "خانه", href: "/" },
+    { id: "home", label: "خانه", href: "/" },
     {
+      id: "products",
       label: "محصولات",
       href: "/products",
+      mega: true,
       children: productChildren,
     },
     {
+      id: "tools",
       label: "ابزارهای مهندسی",
       href: "/tools/materials-calculator",
     },
     {
+      id: "projects",
       label: "پروژه‌ها",
       href: "/projects",
       children: [
@@ -84,9 +91,9 @@ function buildNavItems(productCategories: ShopCategory[]): NavItem[] {
         { label: "تحویل‌شده", href: "/projects?status=delivered" },
       ],
     },
-    { label: "وبلاگ", href: "/blog" },
-    { label: "درباره ما", href: "/about" },
-    { label: "تماس با ما", href: "/contact" },
+    { id: "blog", label: "وبلاگ", href: "/blog" },
+    { id: "about", label: "درباره ما", href: "/about" },
+    { id: "contact", label: "تماس با ما", href: "/contact" },
   ];
 }
 
@@ -204,6 +211,7 @@ export function Navbar({
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>("products");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { scrollY } = useScroll();
   const dropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -280,60 +288,134 @@ export function Navbar({
 
             {/* Desktop nav */}
             <nav className="hidden items-center gap-0.5 lg:flex">
-              {navItems.map((item) => (
-                <div
-                  key={item.label}
-                  className="relative"
-                  onMouseEnter={() => item.children && onDropdownEnter(item.label)}
-                  onMouseLeave={onDropdownLeave}
-                >
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-1 rounded-xl px-3.5 py-2 text-sm font-medium",
-                      "text-zinc-400 transition-all duration-200",
-                      "hover:bg-white/[0.06] hover:text-white",
-                    )}
+              {navItems.map((item) => {
+                const hasMenu = Boolean(item.children?.length) || Boolean(item.mega);
+                const open = activeDropdown === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    className="relative"
+                    onMouseEnter={() => hasMenu && onDropdownEnter(item.id)}
+                    onMouseLeave={onDropdownLeave}
                   >
-                    {item.label}
-                    {item.children && (
-                      <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", activeDropdown === item.label && "rotate-180")} />
-                    )}
-                  </Link>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-1 rounded-xl px-3.5 py-2 text-sm font-medium",
+                        "text-zinc-400 transition-all duration-200",
+                        "hover:bg-white/[0.06] hover:text-white",
+                        open && "bg-white/[0.06] text-white",
+                      )}
+                    >
+                      {item.label}
+                      {hasMenu && (
+                        <ChevronDown
+                          className={cn(
+                            "h-3 w-3 transition-transform duration-200",
+                            open && "rotate-180",
+                          )}
+                        />
+                      )}
+                    </Link>
 
-                  <AnimatePresence>
-                    {item.children && activeDropdown === item.label && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.96 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.96 }}
-                        transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        className="absolute right-0 top-full mt-2.5 w-52 rounded-2xl border border-white/10 py-1.5 overflow-hidden bg-zinc-950/95 shadow-[0_24px_64px_rgba(0,0,0,0.7)] backdrop-blur-xl z-50"
-                        onMouseEnter={() => onDropdownEnter(item.label)}
-                        onMouseLeave={onDropdownLeave}
-                      >
-                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            className="flex items-center mx-1 rounded-xl px-3.5 py-2.5 text-sm text-zinc-400 transition-all duration-150 hover:bg-white/[0.06] hover:text-white hover:pr-5"
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
-                        <div className="divider-primary mx-4 my-1.5" />
-                        <Link
-                          href={item.href}
-                          className="flex items-center mx-1 rounded-xl px-3.5 py-2.5 text-sm text-primary transition-colors hover:text-primary-400 hover:bg-primary/8"
+                    <AnimatePresence>
+                      {hasMenu && open && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.97 }}
+                          transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+                          className={cn(
+                            "absolute top-full z-50 mt-2.5 overflow-hidden rounded-2xl border border-white/10",
+                            "bg-zinc-950/95 shadow-[0_24px_64px_rgba(0,0,0,0.7)] backdrop-blur-xl",
+                            item.mega
+                              ? "right-1/2 w-[min(34rem,calc(100vw-2rem))] translate-x-1/2 p-4 sm:right-0 sm:translate-x-0"
+                              : "right-0 w-52 py-1.5",
+                          )}
+                          onMouseEnter={() => onDropdownEnter(item.id)}
+                          onMouseLeave={onDropdownLeave}
                         >
-                          مشاهده همه ←
-                        </Link>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
+                          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+                          {item.mega ? (
+                            <>
+                              <div className="mb-3 flex items-center justify-between gap-3 px-1">
+                                <div className="flex items-center gap-2 text-sm font-bold text-white">
+                                  <Package className="h-4 w-4 text-primary" />
+                                  دسته‌بندی محصولات
+                                </div>
+                                <Link
+                                  href="/products"
+                                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary transition-colors hover:text-primary-400"
+                                >
+                                  همه
+                                  <ArrowLeft className="h-3 w-3" />
+                                </Link>
+                              </div>
+                              {(item.children?.length ?? 0) > 0 ? (
+                                <div className="grid grid-cols-2 gap-2">
+                                  {item.children!.map((child) => (
+                                    <Link
+                                      key={`${child.href}-${child.label}`}
+                                      href={child.href}
+                                      className={cn(
+                                        "group flex min-h-[44px] items-center justify-between gap-2 rounded-xl border border-white/[0.07]",
+                                        "bg-white/[0.03] px-3 py-2.5 text-sm text-zinc-300",
+                                        "transition-all duration-200",
+                                        "hover:border-primary/35 hover:bg-primary/10 hover:text-white",
+                                      )}
+                                    >
+                                      <span className="truncate font-medium leading-5">{child.label}</span>
+                                      {typeof child.count === "number" && (
+                                        <span className="shrink-0 rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] tabular-nums text-zinc-500 group-hover:text-primary/90">
+                                          {toPersianNumber(child.count)}
+                                        </span>
+                                      )}
+                                    </Link>
+                                  ))}
+                                </div>
+                              ) : (
+                                <Link
+                                  href="/products"
+                                  className="flex min-h-[44px] items-center justify-center rounded-xl border border-dashed border-white/10 px-3 py-3 text-sm text-zinc-400 hover:border-primary/30 hover:text-primary"
+                                >
+                                  مشاهده همه محصولات
+                                </Link>
+                              )}
+                              <Link
+                                href="/products"
+                                className="mt-3 flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary/12 px-3 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+                              >
+                                فروشگاه کامل
+                                <ArrowLeft className="h-3.5 w-3.5" />
+                              </Link>
+                            </>
+                          ) : (
+                            <>
+                              {item.children?.map((child) => (
+                                <Link
+                                  key={`${child.href}-${child.label}`}
+                                  href={child.href}
+                                  className="mx-1 flex min-h-[40px] items-center rounded-xl px-3.5 py-2.5 text-sm text-zinc-400 transition-all duration-150 hover:bg-white/[0.06] hover:text-white"
+                                >
+                                  {child.label}
+                                </Link>
+                              ))}
+                              <div className="divider-primary mx-4 my-1.5" />
+                              <Link
+                                href={item.href}
+                                className="mx-1 flex min-h-[40px] items-center rounded-xl px-3.5 py-2.5 text-sm text-primary transition-colors hover:bg-primary/8"
+                              >
+                                مشاهده همه ←
+                              </Link>
+                            </>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </nav>
 
             {/* Actions */}
@@ -508,38 +590,121 @@ export function Navbar({
               )}
 
               {/* Nav links */}
-              <nav className="flex-1 overflow-y-auto px-3 py-3">
-                {navItems.map((item, i) => (
-                  <motion.div
-                    key={item.label}
-                    initial={{ opacity: 0, x: 12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04, duration: 0.22 }}
-                  >
-                    <Link
-                      href={item.href}
-                      onClick={() => setIsMobileOpen(false)}
-                      className="flex min-h-[44px] items-center justify-between rounded-xl px-4 py-3 font-medium text-white transition-all hover:bg-white/[0.05]"
+              <nav className="flex-1 overflow-y-auto overscroll-contain px-3 py-3">
+                {navItems.map((item, i) => {
+                  const hasMenu = Boolean(item.children?.length) || Boolean(item.mega);
+                  const expanded = mobileExpanded === item.id;
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: 12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04, duration: 0.22 }}
+                      className="mb-1"
                     >
-                      {item.label}
-                      {item.children && <ChevronDown className="h-4 w-4 text-zinc-600" />}
-                    </Link>
-                    {item.children && (
-                      <div className="mb-1 mr-3 border-r border-white/[0.07] pr-3">
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            onClick={() => setIsMobileOpen(false)}
-                            className="block min-h-[40px] px-4 py-2 text-sm text-zinc-500 transition-colors hover:text-primary"
+                      {hasMenu ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setMobileExpanded((prev) => (prev === item.id ? null : item.id))
+                          }
+                          className="flex min-h-[48px] w-full items-center justify-between rounded-xl px-4 py-3 text-right font-medium text-white transition-all hover:bg-white/[0.05]"
+                          aria-expanded={expanded}
+                        >
+                          <span>{item.label}</span>
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-200",
+                              expanded && "rotate-180 text-primary",
+                            )}
+                          />
+                        </button>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          onClick={() => setIsMobileOpen(false)}
+                          className="flex min-h-[48px] items-center rounded-xl px-4 py-3 font-medium text-white transition-all hover:bg-white/[0.05]"
+                        >
+                          {item.label}
+                        </Link>
+                      )}
+
+                      <AnimatePresence initial={false}>
+                        {hasMenu && expanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
                           >
-                            {child.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
+                            {item.mega ? (
+                              <div className="mb-3 space-y-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3">
+                                <div className="flex items-center justify-between px-1">
+                                  <span className="text-xs font-semibold tracking-wide text-zinc-500">
+                                    دسته‌بندی‌ها
+                                  </span>
+                                  <Link
+                                    href="/products"
+                                    onClick={() => setIsMobileOpen(false)}
+                                    className="text-xs font-semibold text-primary"
+                                  >
+                                    همه محصولات
+                                  </Link>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {(item.children?.length
+                                    ? item.children
+                                    : [{ label: "همه محصولات", href: "/products" }]
+                                  ).map((child) => (
+                                    <Link
+                                      key={`${child.href}-${child.label}`}
+                                      href={child.href}
+                                      onClick={() => setIsMobileOpen(false)}
+                                      className={cn(
+                                        "inline-flex min-h-[40px] max-w-full items-center gap-1.5 rounded-full border border-white/10",
+                                        "bg-zinc-900/80 px-3.5 py-2 text-sm text-zinc-300",
+                                        "transition-all active:scale-[0.98]",
+                                        "hover:border-primary/40 hover:bg-primary/10 hover:text-white",
+                                      )}
+                                    >
+                                      <span className="truncate">{child.label}</span>
+                                      {typeof child.count === "number" && (
+                                        <span className="rounded-full bg-white/5 px-1.5 text-[10px] tabular-nums text-zinc-500">
+                                          {toPersianNumber(child.count)}
+                                        </span>
+                                      )}
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="mb-2 mr-2 space-y-0.5 border-r border-white/[0.07] pr-2">
+                                {item.children?.map((child) => (
+                                  <Link
+                                    key={`${child.href}-${child.label}`}
+                                    href={child.href}
+                                    onClick={() => setIsMobileOpen(false)}
+                                    className="block min-h-[44px] rounded-xl px-4 py-2.5 text-sm text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-primary"
+                                  >
+                                    {child.label}
+                                  </Link>
+                                ))}
+                                <Link
+                                  href={item.href}
+                                  onClick={() => setIsMobileOpen(false)}
+                                  className="block min-h-[44px] rounded-xl px-4 py-2.5 text-sm font-semibold text-primary"
+                                >
+                                  مشاهده همه
+                                </Link>
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
               </nav>
 
               {/* Footer CTAs */}

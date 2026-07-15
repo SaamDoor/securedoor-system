@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { UserSidebar } from "@/components/user/user-sidebar";
 import { Navbar } from "@/components/layout/navbar";
 import { createClient } from "@/lib/supabase/server";
+import { fetchShopCategories } from "@/lib/shop/catalog.server";
 import { ROLE_HOME, USER_PANEL_ROLES, type UserRole } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -28,9 +29,11 @@ export default async function UserLayout({
     redirect(role ? ROLE_HOME[role] : "/");
   }
 
+  const productCategories = await fetchShopCategories().catch(() => []);
+
   return (
     <>
-      <Navbar />
+      <Navbar productCategories={productCategories} />
       <div className="min-h-screen bg-black">
         <div className="container py-8">
           <div className="flex gap-6">

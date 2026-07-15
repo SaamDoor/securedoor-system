@@ -1,8 +1,10 @@
 {
-    "platform": "next",
     "app": "mashuf",
+    "port": 3000,
     "build": {
-      "nodeVersion": "20"
+      "location": "iran",
+      "nodeVersion": "22"
     },
     "context": "frontend"
   }
+  
