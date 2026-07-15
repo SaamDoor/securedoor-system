@@ -1,0 +1,8 @@
+{
+    "platform": "next",
+    "app": "mashuf",
+    "build": {
+      "nodeVersion": "20"
+    },
+    "context": "frontend"
+  }
