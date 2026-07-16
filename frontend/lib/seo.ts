@@ -34,7 +34,20 @@ export function generateSeo(options: SeoOptions = {}): Metadata {
     title: fullTitle,
     description,
     keywords: [
-      'گروه صنعتی مشعوف', 'درب ضد سرقت', 'درب امنیتی', 'درب لوکس',
+      'گروه صنعتی مشعوف',
+      'درب ضد سرقت',
+      'درب ضدسرقت',
+      'درب ضد سرقت مازندران',
+      'درب ضد سرقت شمال',
+      'درب ضد سرقت عمده',
+      'چهارچوب فلزی',
+      'چهارچوب فلزی فرانسوی',
+      'چهارچوب فلزی مکزیکی',
+      'درب اتاقی',
+      'درب اتاق',
+      'درب ملامینه',
+      'درب ABS',
+      'دستگیره',
       ...keywords,
     ],
     robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
@@ -122,7 +135,7 @@ export function organizationSchema() {
       telephone: `+98-${CONTACT.phone.slice(1)}`,
       contactType: 'customer service',
       availableLanguage: 'Persian',
-      areaServed: 'IR',
+      areaServed: ['IR', 'مازندران', 'گیلان', 'گلستان'],
     },
     sameAs: [
       SOCIAL_LINKS.instagram,
@@ -130,6 +143,60 @@ export function organizationSchema() {
       SOCIAL_LINKS.eitaa,
       SOCIAL_LINKS.rubika,
     ],
+  }
+}
+
+export function localBusinessSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': `${SITE_URL}/#localbusiness`,
+    name: SITE_NAME,
+    image: `${SITE_URL}/og-image.jpg`,
+    url: SITE_URL,
+    telephone: `+98-${CONTACT.phone.slice(1)}`,
+    email: CONTACT.email,
+    description: SITE_DESCRIPTION,
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'IR',
+      addressRegion: 'مازندران',
+      addressLocality: 'قائم شهر',
+      streetAddress: CONTACT.address,
+    },
+    areaServed: [
+      { '@type': 'AdministrativeArea', name: 'مازندران' },
+      { '@type': 'AdministrativeArea', name: 'گیلان' },
+      { '@type': 'AdministrativeArea', name: 'گلستان' },
+      { '@type': 'Country', name: 'Iran' },
+    ],
+    openingHoursSpecification: [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday'],
+        opens: '08:00',
+        closes: '17:00',
+      },
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: 'Thursday',
+        opens: '08:00',
+        closes: '13:00',
+      },
+    ],
+    priceRange: '$$',
+    sameAs: [
+      SOCIAL_LINKS.instagram,
+      SOCIAL_LINKS.telegram,
+      SOCIAL_LINKS.eitaa,
+      SOCIAL_LINKS.rubika,
+    ],
+  }
+}
+
+export function jsonLdScript(data: Record<string, unknown> | Array<Record<string, unknown>>) {
+  return {
+    __html: JSON.stringify(data),
   }
 }
 

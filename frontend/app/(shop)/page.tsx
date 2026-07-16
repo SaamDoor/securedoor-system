@@ -12,22 +12,57 @@ import { ProcessSection } from '@/components/home/process-section'
 import { CertificatesSection } from '@/components/home/certificates-section'
 import { BlogHighlightsSection } from '@/components/home/blog-highlights-section'
 import { ContactCtaSection } from '@/components/home/contact-cta-section'
-import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/constants'
-import { organizationSchema } from '@/lib/seo'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/constants'
+import {
+  faqSchema,
+  jsonLdScript,
+  localBusinessSchema,
+  organizationSchema,
+} from '@/lib/seo'
 import { fetchFramePrices } from '@/lib/api/google-sheets'
 import { fetchFeaturedShopProducts, fetchShopCategories } from '@/lib/shop/catalog.server'
 
 export const metadata: Metadata = {
-  title: `${SITE_NAME} — درب ضد سرقت لوکس`,
+  title: `درب ضد سرقت و چهارچوب فلزی | ${SITE_NAME}`,
   description: SITE_DESCRIPTION,
+  keywords: [
+    'درب ضد سرقت',
+    'درب ضدسرقت',
+    'درب ضد سرقت مازندران',
+    'چهارچوب فلزی فرانسوی',
+    'چهارچوب فلزی مکزیکی',
+    'درب اتاقی',
+    'دستگیره',
+  ],
+  alternates: { canonical: SITE_URL },
   openGraph: {
-    title: `${SITE_NAME} — درب ضد سرقت لوکس`,
+    title: `درب ضد سرقت و چهارچوب فلزی | ${SITE_NAME}`,
     description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    locale: 'fa_IR',
     type: 'website',
   },
 }
 
 export const revalidate = 120
+
+const HOME_FAQS = [
+  {
+    question: 'چگونه می‌توانم سفارش بدهم؟',
+    answer:
+      'برای ثبت سفارش، محصول مورد نظر را به سبد خرید اضافه کرده و مراحل تسویه حساب را طی کنید یا با کارخانه مشعوف تماس بگیرید.',
+  },
+  {
+    question: 'آیا نصب درب توسط تیم گروه مشعوف انجام می‌شود؟',
+    answer:
+      'بله، تیم متخصص گروه صنعتی مشعوف در استان مازندران و شمال کشور خدمات نصب ارائه می‌دهد.',
+  },
+  {
+    question: 'آیا فروش عمده درب ضد سرقت دارید؟',
+    answer:
+      'بله؛ برای پیمانکاران و فروشگاه‌ها قیمت همکاری عمده از طریق واحد فروش اعلام می‌شود.',
+  },
+]
 
 const CATEGORY_IMAGE_FALLBACKS: Array<{ match: RegExp; image: string; accent: string }> = [
   {
@@ -113,7 +148,15 @@ export default async function HomePage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema()) }}
+        dangerouslySetInnerHTML={jsonLdScript(organizationSchema())}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLdScript(localBusinessSchema())}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLdScript(faqSchema(HOME_FAQS))}
       />
       <HeroSection />
       <FramePriceListSection

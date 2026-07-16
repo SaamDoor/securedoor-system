@@ -1,7 +1,7 @@
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'گروه صنعتی مشعوف'
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mashuf.com'
 export const SITE_DESCRIPTION =
-  'گروه صنعتی مشعوف — پیشرو در تولید درب‌های ضد سرقت، چهارچوب‌های فلزی فرانسوی و مکزیکی، درب‌های اتاقی و درب‌های حیاطی فرفورژه در استان مازندران.'
+  'خرید درب ضد سرقت، درب ضدسرقت مازندران و شمال، فروش عمده، چهارچوب فلزی فرانسوی و مکزیکی، درب اتاقی، درب ملامینه، درب ABS و دستگیره از کارخانه گروه صنعتی مشعوف در قائم‌شهر.'
 
 export const BRAND = {
   name: 'گروه صنعتی مشعوف',

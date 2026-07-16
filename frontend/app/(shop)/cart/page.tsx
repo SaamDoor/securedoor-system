@@ -87,7 +87,7 @@ export default function CartPage() {
 
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 text-xs text-[#A0A0A0]">کد: {item.sku}</div>
-                  <Link href={`/products/${item.productId}`}>
+                  <Link href={`/products/${encodeURI(item.slug || item.productId)}`}>
                     <h3 className="mb-3 text-sm font-bold text-white transition-colors hover:text-[#C8A85D]">
                       {item.name}
                     </h3>

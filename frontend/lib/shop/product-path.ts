@@ -1,5 +1,7 @@
-/** Safe product detail path — prefer UUID so Persian admin slugs never break routing. */
-export function getProductPath(product: { id: string; slug?: string }) {
+/** Product detail path — prefer Latin keyword slug for SEO; UUID only as fallback. */
+export function getProductPath(product: { id: string; slug?: string | null }) {
+  const slug = product.slug?.trim()
+  if (slug) return `/products/${encodeURI(slug)}`
   return `/products/${product.id}`
 }
 

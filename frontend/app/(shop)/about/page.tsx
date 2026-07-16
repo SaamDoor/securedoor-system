@@ -2,11 +2,15 @@ import type { Metadata } from 'next'
 import { Shield, Award, Users, Wrench, Building2, Phone } from 'lucide-react'
 import Link from 'next/link'
 import { SITE_NAME } from '@/lib/constants'
+import { generateSeo } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: `درباره ما — ${SITE_NAME}`,
-  description: 'گروه صنعتی مشعوف، پیشرو در تولید درب‌های ضد سرقت و محصولات ساختمانی لوکس در مازندران',
-}
+export const metadata: Metadata = generateSeo({
+  title: 'درباره ما — کارخانه درب ضد سرقت مازندران',
+  description:
+    'گروه صنعتی مشعوف، تولیدکننده درب ضد سرقت، چهارچوب فلزی فرانسوی و مکزیکی و درب اتاقی در قائم‌شهر، مازندران.',
+  keywords: ['درب ضد سرقت مازندران', 'کارخانه درب مشعوف', 'درب ضدسرقت شمال'],
+  path: '/about',
+})
 
 const stats = [
   { value: 'یک دهه+', label: 'تجربه تخصصی' },

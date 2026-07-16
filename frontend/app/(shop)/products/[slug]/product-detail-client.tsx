@@ -631,7 +631,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               {related.map((item) => (
                 <Link
                   key={item.id}
-                  href={`/products/${item.id}`}
+                  href={`/products/${encodeURI(item.slug || item.id)}`}
                   className="group overflow-hidden rounded-2xl border border-white/8 bg-zinc-950 transition-all hover:border-gold/30"
                 >
                   <div className="relative aspect-[4/5] bg-zinc-900">

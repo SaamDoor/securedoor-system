@@ -1,13 +1,21 @@
 import type { Metadata } from 'next'
 import { SITE_NAME } from '@/lib/constants'
+import { generateSeo } from '@/lib/seo'
 import { fetchShopCatalog } from '@/lib/shop/catalog.server'
 import { ProductsPageClient } from './products-client'
 
-export const metadata: Metadata = {
-  title: `محصولات | ${SITE_NAME}`,
+export const metadata: Metadata = generateSeo({
+  title: 'محصولات — درب ضد سرقت، چهارچوب فلزی، درب اتاقی',
   description:
-    `مشاهده کامل درب‌های ضد سرقت، چهارچوب‌های فلزی، درب‌های اتاقی و درب‌های حیاطی ${SITE_NAME}. با بهترین کیفیت و قیمت مناسب.`,
-}
+    `مشاهده کامل درب‌های ضد سرقت، چهارچوب‌های فلزی فرانسوی و مکزیکی، درب‌های اتاقی، ملامینه و ABS از ${SITE_NAME}. خرید مستقیم کارخانه در مازندران.`,
+  keywords: [
+    'درب ضد سرقت',
+    'چهارچوب فلزی',
+    'درب اتاقی',
+    'دستگیره',
+  ],
+  path: '/products',
+})
 
 export const revalidate = 60
 

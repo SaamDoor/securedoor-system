@@ -1,35 +1,80 @@
 import type { MetadataRoute } from 'next'
+import { createClient } from '@supabase/supabase-js'
 import { SITE_URL } from '@/lib/constants'
+import { SEO_COLLECTIONS } from '@/lib/seo/collections'
+import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/supabase/env'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const revalidate = 3600
+
+function createPublicClient() {
+  const url = getSupabaseUrl()
+  const key = getSupabaseAnonKey()
+  if (!url || !key) return null
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL
+  const now = new Date()
 
-  const staticRoutes = [
-    { url: `${baseUrl}/`, priority: 1.0, changeFrequency: 'weekly' as const },
-    { url: `${baseUrl}/products`, priority: 0.9, changeFrequency: 'daily' as const },
-    { url: `${baseUrl}/categories`, priority: 0.8, changeFrequency: 'weekly' as const },
-    { url: `${baseUrl}/blog`, priority: 0.8, changeFrequency: 'daily' as const },
-    { url: `${baseUrl}/about`, priority: 0.6, changeFrequency: 'monthly' as const },
-    { url: `${baseUrl}/contact`, priority: 0.7, changeFrequency: 'monthly' as const },
-    { url: `${baseUrl}/faq`, priority: 0.6, changeFrequency: 'monthly' as const },
-    { url: `${baseUrl}/terms`, priority: 0.3, changeFrequency: 'yearly' as const },
-    { url: `${baseUrl}/privacy`, priority: 0.3, changeFrequency: 'yearly' as const },
-    { url: `${baseUrl}/warranty`, priority: 0.5, changeFrequency: 'monthly' as const },
-    { url: `${baseUrl}/certificates`, priority: 0.5, changeFrequency: 'monthly' as const },
+  const staticRoutes: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/`, lastModified: now, changeFrequency: 'weekly', priority: 1 },
+    { url: `${baseUrl}/products`, lastModified: now, changeFrequency: 'daily', priority: 0.95 },
+    {
+      url: `${baseUrl}/products/chaharcharb-felezi-faransavi`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.95,
+    },
+    { url: `${baseUrl}/collections`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${baseUrl}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${baseUrl}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/faq`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/warranty`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/certificates`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    {
+      url: `${baseUrl}/tools/materials-calculator`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
   ]
 
-  const categoryRoutes = [
-    'darb-zed-sereqat',
-    'darb-zed-hariq',
-    'darb-apartmani',
-    'darb-villaei',
-    'darb-edari',
-    'moteallaqat',
-  ].map((slug) => ({
-    url: `${baseUrl}/categories/${slug}`,
-    priority: 0.8,
+  const collectionRoutes: MetadataRoute.Sitemap = SEO_COLLECTIONS.map((item) => ({
+    url: `${baseUrl}/collections/${item.slug}`,
+    lastModified: now,
     changeFrequency: 'weekly' as const,
+    priority: 0.9,
   }))
 
-  return [...staticRoutes, ...categoryRoutes]
+  let productRoutes: MetadataRoute.Sitemap = []
+  try {
+    const supabase = createPublicClient()
+    if (supabase) {
+      const { data } = await supabase
+        .from('products')
+        .select('slug, updated_at')
+        .eq('is_active', true)
+        .order('updated_at', { ascending: false })
+        .limit(2000)
+
+      productRoutes = (data ?? [])
+        .filter((row) => Boolean(row.slug))
+        .map((row) => ({
+          url: `${baseUrl}/products/${encodeURI(row.slug as string)}`,
+          lastModified: row.updated_at ? new Date(row.updated_at as string) : now,
+          changeFrequency: 'weekly' as const,
+          priority: 0.8,
+        }))
+    }
+  } catch (error) {
+    console.error('[sitemap] products fetch failed', error)
+  }
+
+  return [...staticRoutes, ...collectionRoutes, ...productRoutes]
 }

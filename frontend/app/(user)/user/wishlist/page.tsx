@@ -116,7 +116,7 @@ export default function WishlistPage() {
               {/* Content */}
               <div className="p-4">
                 <div className="text-xs text-[#A0A0A0] mb-1">{item.category}</div>
-                <Link href={`/products/${item.id}`}>
+                <Link href={`/products/${encodeURI(item.slug || item.id)}`}>
                   <h3 className="font-bold text-white text-sm mb-3 hover:text-[#C8A85D] transition-colors line-clamp-2">
                     {item.name}
                   </h3>

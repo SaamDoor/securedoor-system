@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { fetchRelatedShopProducts } from '@/lib/shop/catalog.server'
-import { decodeProductParam, isProductUuid } from '@/lib/shop/product-path'
+import { decodeProductParam, getProductPath, isProductUuid } from '@/lib/shop/product-path'
 import { ProductDetailClient, type ProductDetailData, type RelatedProductCard } from './product-detail-client'
 import { SITE_NAME, SITE_URL } from '@/lib/constants'
+import { breadcrumbSchema, jsonLdScript, productSchema } from '@/lib/seo'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -67,7 +68,6 @@ async function getProductRow(param: string): Promise<ProductRow | null> {
 
   if (data) return data as unknown as ProductRow
 
-  // Fallbacks: sku, or slug without decoding quirks
   const { data: bySku, error: skuError } = await supabase
     .from('products')
     .select(PRODUCT_SELECT)
@@ -141,15 +141,35 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const title = row.meta_title || row.name
   const description = row.meta_description || row.short_description || row.description || ''
+  const canonicalPath = getProductPath(row)
+  const canonical = `${SITE_URL}${canonicalPath}`
 
   return {
     title: `${title} | ${SITE_NAME}`,
     description,
+    keywords: [
+      row.name,
+      'درب ضد سرقت',
+      'درب ضدسرقت',
+      'چهارچوب فلزی',
+      'گروه صنعتی مشعوف',
+      ...(row.tags ?? []),
+    ],
+    alternates: { canonical },
     openGraph: {
       title,
       description,
-      images: [{ url: primaryImage }],
+      url: canonical,
+      locale: 'fa_IR',
+      siteName: SITE_NAME,
+      images: [{ url: primaryImage, alt: row.name }],
       type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [primaryImage],
     },
     other: {
       'product:price:amount': String(row.price),
@@ -162,8 +182,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params
   if (!slug) notFound()
 
+  const rawParam = decodeProductParam(slug)
   const row = await getProductRow(slug)
   if (!row) notFound()
+
+  // Consolidate SEO equity onto the keyword slug URL
+  if (isProductUuid(rawParam) && row.slug && row.slug !== rawParam) {
+    permanentRedirect(getProductPath(row))
+  }
 
   const supabase = await createClient()
   void supabase.rpc('increment_product_view', { product_slug: row.slug })
@@ -181,5 +207,46 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     }
   })
 
-  return <ProductDetailClient product={mapDetailProduct(row)} related={related} />
+  const productPath = getProductPath(row)
+  const primaryImage =
+    row.og_image_url ||
+    row.images?.find((image) => image.is_primary)?.url ||
+    row.images?.[0]?.url
+
+  const inStock = (row.stock_left ?? 0) + (row.stock_right ?? 0) > 0
+
+  const schemas = [
+    productSchema({
+      name: row.name,
+      description: row.meta_description || row.short_description || row.description || row.name,
+      price: Number(row.price),
+      image: primaryImage ?? undefined,
+      sku: row.sku,
+      availability: inStock,
+    }),
+    breadcrumbSchema([
+      { name: 'خانه', url: SITE_URL },
+      { name: 'محصولات', url: `${SITE_URL}/products` },
+      ...(row.category
+        ? [{
+            name: row.category.name,
+            url: `${SITE_URL}/products?category=${encodeURIComponent(row.category.slug)}`,
+          }]
+        : []),
+      { name: row.name, url: `${SITE_URL}${productPath}` },
+    ]),
+  ]
+
+  return (
+    <>
+      {schemas.map((schema, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLdScript(schema)}
+        />
+      ))}
+      <ProductDetailClient product={mapDetailProduct(row)} related={related} />
+    </>
+  )
 }

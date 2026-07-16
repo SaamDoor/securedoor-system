@@ -23,21 +23,20 @@ const FALLBACK_PRODUCT_LINKS = [
 const footerLinks = {
   tools: [
     { label: 'محاسبه‌گر مصالح ساختمان', href: '/tools/materials-calculator' },
+    { label: 'راهنمای محصولات', href: '/collections' },
+    { label: 'درب ضد سرقت', href: '/collections/darb-zed-sereqat' },
+    { label: 'چهارچوب فلزی فرانسوی', href: '/products/chaharcharb-felezi-faransavi' },
   ],
   company: [
-    { label: 'درباره گروه مشعوف',      href: '/about' },
-    { label: 'افتخارات و گواهینامه‌ها', href: '/certificates', prefetch: false },
-    { label: 'نمایندگی‌ها',             href: '/branches',     prefetch: false },
-    { label: 'وبلاگ',                  href: '/blog' },
-    { label: 'تماس با ما',             href: '/contact' },
-    { label: 'فرصت‌های شغلی',          href: '/careers',      prefetch: false },
+    { label: 'درباره گروه مشعوف', href: '/about' },
+    { label: 'افتخارات و گواهینامه‌ها', href: '/certificates' },
+    { label: 'وبلاگ', href: '/blog' },
+    { label: 'تماس با ما', href: '/contact' },
   ],
   support: [
-    { label: 'راهنمای خرید',    href: '/guide/buying',       prefetch: false },
-    { label: 'راهنمای نصب',     href: '/guide/installation', prefetch: false },
-    { label: 'ضمانت‌نامه',      href: '/warranty',           prefetch: false },
-    { label: 'پیگیری سفارش',   href: '/user/orders' },
-    { label: 'سوالات متداول',  href: '/faq',                prefetch: false },
+    { label: 'ضمانت‌نامه', href: '/warranty' },
+    { label: 'پیگیری سفارش', href: '/user/orders' },
+    { label: 'سوالات متداول', href: '/faq' },
     { label: 'قوانین و مقررات', href: '/terms' },
   ],
 }

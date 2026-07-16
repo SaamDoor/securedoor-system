@@ -14,7 +14,7 @@ const certificates = [
 
 export function CertificatesSection() {
   return (
-    <section className="section-padding bg-black relative overflow-hidden">
+    <section id="certificates" className="section-padding bg-black relative overflow-hidden">
       <div className="container">
         <div className="mb-12 flex flex-col items-center sm:mb-16">
           <SectionHeader

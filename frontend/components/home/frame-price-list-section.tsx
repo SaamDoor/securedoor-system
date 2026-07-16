@@ -205,6 +205,7 @@ export function FramePriceListSection({
 
   return (
     <section
+      id="frame-prices"
       dir="rtl"
       className="section-padding bg-black relative overflow-hidden"
     >
