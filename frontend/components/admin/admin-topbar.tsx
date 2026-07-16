@@ -6,11 +6,12 @@ import { useRouter } from 'next/navigation'
 import {
   Search, Bell, ChevronDown, LogOut, Settings, User,
   Globe, Shield, Plus, Package, FileText, Zap,
-  AlertCircle, CheckCircle2, Clock,
+  AlertCircle, CheckCircle2, Clock, Menu, X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { useAdminNav } from '@/components/admin/admin-nav-context'
 import type { UserRole } from '@/types'
 
 // ─── Quick create ─────────────────────────────────────────────────────────────
@@ -35,6 +36,7 @@ const NOTIFS = [
 
 export function AdminTopbar({ role }: { role?: UserRole }) {
   const router = useRouter()
+  const { mobileOpen, toggleMobile, closeMobile } = useAdminNav()
   const [notifOpen,  setNotifOpen]  = useState(false)
   const [userOpen,   setUserOpen]   = useState(false)
   const [quickOpen,  setQuickOpen]  = useState(false)
@@ -72,12 +74,35 @@ export function AdminTopbar({ role }: { role?: UserRole }) {
   const closeAll = () => { setNotifOpen(false); setUserOpen(false); setQuickOpen(false) }
 
   return (
-    <header className="h-14 shrink-0 border-b border-white/8 bg-charcoal flex items-center gap-3 px-4 sticky top-0 z-40">
+    <header className="h-14 shrink-0 border-b border-white/8 bg-charcoal/95 backdrop-blur-md flex items-center gap-2 sm:gap-3 px-3 sm:px-4 sticky top-0 z-40">
+
+      {/* ── Mobile menu toggle ─────────────────────────────────────────────── */}
+      <button
+        type="button"
+        onClick={() => { closeAll(); toggleMobile() }}
+        className="lg:hidden flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/8 bg-white/[0.03] text-muted transition-colors hover:border-gold/30 hover:text-white"
+        aria-label={mobileOpen ? 'بستن منو' : 'باز کردن منو'}
+        aria-expanded={mobileOpen}
+      >
+        <motion.span
+          key={mobileOpen ? 'close' : 'open'}
+          initial={{ opacity: 0, rotate: -40, scale: 0.85 }}
+          animate={{ opacity: 1, rotate: 0, scale: 1 }}
+          transition={{ duration: 0.18 }}
+          className="flex"
+        >
+          {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+        </motion.span>
+      </button>
 
       {/* ── Search ─────────────────────────────────────────────────────────── */}
-      <div className="flex-1 max-w-sm">
+      <div className="flex-1 min-w-0 max-w-sm">
         <button
-          onClick={() => { setSearchOpen(true); setTimeout(() => searchRef.current?.focus(), 80) }}
+          onClick={() => {
+            closeMobile()
+            setSearchOpen(true)
+            setTimeout(() => searchRef.current?.focus(), 80)
+          }}
           className={cn(
             'w-full h-9 rounded-xl border text-sm flex items-center gap-2.5 px-3 transition-colors',
             searchOpen
@@ -89,14 +114,14 @@ export function AdminTopbar({ role }: { role?: UserRole }) {
           {searchOpen ? (
             <input
               ref={searchRef}
-              className="flex-1 bg-transparent outline-none text-white placeholder:text-zinc-500 text-sm"
+              className="flex-1 min-w-0 bg-transparent outline-none text-white placeholder:text-zinc-500 text-sm"
               placeholder="جستجو در سیستم..."
               autoFocus
               onBlur={() => setSearchOpen(false)}
             />
           ) : (
             <>
-              <span className="flex-1 text-right">جستجو...</span>
+              <span className="flex-1 text-right truncate">جستجو...</span>
               <span className="hidden sm:flex items-center gap-0.5 text-[10px] font-mono border border-white/10 rounded px-1 py-0.5 text-zinc-600">
                 Ctrl K
               </span>
@@ -180,7 +205,7 @@ export function AdminTopbar({ role }: { role?: UserRole }) {
                 animate={{ opacity: 1, y: 0,  scale: 1     }}
                 exit={{    opacity: 0, y: -4, scale: 0.97  }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 mt-2 w-80 rounded-2xl border border-white/10 bg-charcoal shadow-2xl z-50 overflow-hidden"
+                className="absolute left-0 mt-2 w-[min(20rem,calc(100vw-1.5rem))] rounded-2xl border border-white/10 bg-charcoal shadow-2xl z-50 overflow-hidden"
                 dir="rtl"
               >
                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">

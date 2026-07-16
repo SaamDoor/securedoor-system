@@ -1,28 +1,67 @@
-# PowerShell deploy helper for Liara (Docker + prebuilt Next standalone)
+# Liara deploy: local Next standalone -> Docker runtime
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
-Write-Host '→ Building Next.js standalone...' -ForegroundColor Cyan
+Write-Host 'Building Next.js standalone...' -ForegroundColor Cyan
 npm run build
+if ($LASTEXITCODE -ne 0) { throw 'npm run build failed' }
 
-$standalone = Join-Path '.next\standalone\securedoor-system\frontend'
-if (-not (Test-Path (Join-Path $standalone 'server.js'))) {
-  throw "Standalone output missing at $standalone"
+$standalone = Join-Path $PSScriptRoot '.next\standalone\securedoor-system\frontend'
+$serverJs = Join-Path $standalone 'server.js'
+$buildId = Join-Path $standalone '.next\BUILD_ID'
+
+if (-not (Test-Path $serverJs)) {
+  throw "Standalone output missing: $serverJs"
+}
+if (-not (Test-Path $buildId)) {
+  throw "Standalone BUILD_ID missing: $buildId"
 }
 
-Write-Host '→ Preparing liara-release...' -ForegroundColor Cyan
-Remove-Item -Recurse -Force liara-release -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Path 'liara-release\.next\static' -Force | Out-Null
-Copy-Item -Recurse -Force (Join-Path $standalone '*') 'liara-release\'
-Copy-Item -Recurse -Force '.next\static\*' 'liara-release\.next\static\'
-Copy-Item -Recurse -Force 'public' 'liara-release\public'
+Write-Host 'Preparing liara-release...' -ForegroundColor Cyan
+$release = Join-Path $PSScriptRoot 'liara-release'
+Remove-Item -Recurse -Force $release -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Path $release -Force | Out-Null
+Copy-Item -Path (Join-Path $standalone '*') -Destination $release -Recurse -Force
 
-Write-Host '→ Packing node_modules as modules.tgz (Liara strips node_modules folders)...' -ForegroundColor Cyan
-if (Test-Path 'liara-release\modules.tgz') { Remove-Item 'liara-release\modules.tgz' -Force }
-tar -czf 'liara-release\modules.tgz' -C 'liara-release' node_modules
-Remove-Item -Recurse -Force 'liara-release\node_modules'
+$staticSrc = Join-Path $PSScriptRoot '.next\static'
+$staticDst = Join-Path $release '.next\static'
+Copy-Item -Path $staticSrc -Destination $staticDst -Recurse -Force
 
-Write-Host '→ Deploying to Liara (iran / docker)...' -ForegroundColor Cyan
-liara deploy --platform docker --app mashuf --port 3000 --no-app-logs -b iran
+$publicSrc = Join-Path $PSScriptRoot 'public'
+$publicDst = Join-Path $release 'public'
+Copy-Item -Path $publicSrc -Destination $publicDst -Recurse -Force
 
-Write-Host '✓ Done: https://mashuf.liara.run' -ForegroundColor Green
+# Liara Docker may run npm start from package.json; force standalone server
+$pkgPath = Join-Path $release 'package.json'
+$pkgText = [System.IO.File]::ReadAllText($pkgPath)
+$pkgText = [regex]::Replace($pkgText, '"start"\s*:\s*"next start"', '"start": "node server.js"')
+[System.IO.File]::WriteAllText($pkgPath, $pkgText)
+if ($pkgText -notmatch '"start"\s*:\s*"node server.js"') {
+  throw 'Failed to rewrite package.json start script'
+}
+
+Write-Host 'Packing node_modules and .next archives...' -ForegroundColor Cyan
+$modulesTgz = Join-Path $release 'modules.tgz'
+$nextTgz = Join-Path $release 'next-build.tgz'
+if (Test-Path $modulesTgz) { Remove-Item $modulesTgz -Force }
+if (Test-Path $nextTgz) { Remove-Item $nextTgz -Force }
+
+Push-Location $release
+try {
+  tar -czf modules.tgz node_modules
+  if ($LASTEXITCODE -ne 0) { throw 'tar modules.tgz failed' }
+  Remove-Item -Recurse -Force node_modules
+
+  tar -czf next-build.tgz .next
+  if ($LASTEXITCODE -ne 0) { throw 'tar next-build.tgz failed' }
+  Remove-Item -Recurse -Force .next
+}
+finally {
+  Pop-Location
+}
+
+Write-Host 'Deploying to Liara (docker / germany)...' -ForegroundColor Cyan
+liara deploy --platform docker --app mashuf --port 3000 --no-app-logs -b germany
+if ($LASTEXITCODE -ne 0) { throw 'liara deploy failed' }
+
+Write-Host 'Done: https://mashuf.liara.run' -ForegroundColor Green

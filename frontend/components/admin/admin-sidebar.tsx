@@ -18,8 +18,9 @@ import {
   Database, GitMerge, Map, RotateCcw, HelpCircle, Megaphone,
   MessageCircle, ThumbsUp, Banknote, Receipt, BadgePercent,
   PieChart, Activity, BookOpen, FileQuestion, Send, User,
-  Columns, LogOut, Cpu, Warehouse,
+  Columns, LogOut, Cpu, Warehouse, X,
 } from 'lucide-react'
+import { useAdminNav } from '@/components/admin/admin-nav-context'
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Types
@@ -288,18 +289,27 @@ function isBranch(item: NavItem): item is NavBranchItem {
 //  Leaf
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Leaf({ item, depth = 0 }: { item: NavLeafItem; depth?: number }) {
+function Leaf({
+  item,
+  depth = 0,
+  onNavigate,
+}: {
+  item: NavLeafItem
+  depth?: number
+  onNavigate?: () => void
+}) {
   const pathname = usePathname()
   const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href + '/'))
 
   return (
     <Link
       href={item.href}
+      onClick={onNavigate}
       className={cn(
-        'group flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
-        depth > 0 && 'mr-3 text-xs py-1.5',
+        'group flex items-center gap-2.5 rounded-xl px-3 py-2.5 sm:py-2 text-sm transition-all active:scale-[0.99]',
+        depth > 0 && 'mr-3 text-xs py-2 sm:py-1.5',
         isActive
-          ? 'bg-gold/10 text-gold border border-gold/15 font-medium'
+          ? 'bg-gold/10 text-gold border border-gold/15 font-medium shadow-[0_0_0_1px_rgba(196,30,58,0.08)]'
           : 'text-muted hover:text-white hover:bg-white/5',
       )}
     >
@@ -322,7 +332,15 @@ function Leaf({ item, depth = 0 }: { item: NavLeafItem; depth?: number }) {
 //  Branch
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Branch({ item, role }: { item: NavBranchItem; role: UserRole }) {
+function Branch({
+  item,
+  role,
+  onNavigate,
+}: {
+  item: NavBranchItem
+  role: UserRole
+  onNavigate?: () => void
+}) {
   const pathname       = usePathname()
   const visibleKids    = item.children.filter((c) => canSee(c.roles, role))
   const isChildActive  = visibleKids.some((c) => pathname === c.href || pathname.startsWith(c.href + '/'))
@@ -331,9 +349,10 @@ function Branch({ item, role }: { item: NavBranchItem; role: UserRole }) {
   return (
     <div>
       <button
+        type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          'group w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
+          'group w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 sm:py-2 text-sm transition-all active:scale-[0.99]',
           isChildActive ? 'bg-white/5 text-white' : 'text-muted hover:text-white hover:bg-white/5',
         )}
       >
@@ -352,7 +371,9 @@ function Branch({ item, role }: { item: NavBranchItem; role: UserRole }) {
             className="overflow-hidden"
           >
             <div className="mr-[22px] border-r border-white/8 pr-1 mt-0.5 space-y-0.5 mb-1">
-              {visibleKids.map((c) => <Leaf key={c.href} item={c} depth={1} />)}
+              {visibleKids.map((c) => (
+                <Leaf key={c.href} item={c} depth={1} onNavigate={onNavigate} />
+              ))}
             </div>
           </motion.div>
         )}
@@ -361,47 +382,64 @@ function Branch({ item, role }: { item: NavBranchItem; role: UserRole }) {
   )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  AdminSidebar
-// ─────────────────────────────────────────────────────────────────────────────
-
-export function AdminSidebar({ role }: { role: UserRole }) {
+function SidebarPanel({
+  role,
+  onNavigate,
+  onClose,
+  showClose,
+}: {
+  role: UserRole
+  onNavigate?: () => void
+  onClose?: () => void
+  showClose?: boolean
+}) {
   const router = useRouter()
+  const isSA = role === 'super_admin'
 
   async function logout() {
     const sb = createClient()
     await sb.auth.signOut()
     document.cookie = 'user_role=; path=/; Max-Age=0; SameSite=Lax'
+    onClose?.()
     router.push('/auth/login')
     router.refresh()
   }
 
-  const isSA = role === 'super_admin'
-
   return (
-    <aside
-      className="flex h-screen w-64 shrink-0 flex-col bg-charcoal border-l border-white/8"
-      dir="rtl"
-    >
+    <>
       {/* Brand */}
-      <div className="shrink-0 flex items-center gap-3 border-b border-white/8 px-5 py-4">
-        <Link href="/admin/dashboard" className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-gold-gradient rounded-xl flex items-center justify-center shadow-gold-sm">
+      <div className="shrink-0 flex items-center gap-3 border-b border-white/8 px-4 sm:px-5 py-3.5 sm:py-4">
+        <Link
+          href="/admin/dashboard"
+          onClick={onNavigate}
+          className="flex min-w-0 flex-1 items-center gap-3"
+        >
+          <div className="w-9 h-9 bg-gold-gradient rounded-xl flex items-center justify-center shadow-gold-sm shrink-0">
             {isSA
               ? <Shield className="h-4 w-4 text-black" />
               : <span className="text-black font-black text-base">م</span>
             }
           </div>
-          <div>
-            <div className="font-black text-white text-sm">{SITE_NAME}</div>
+          <div className="min-w-0">
+            <div className="font-black text-white text-sm truncate">{SITE_NAME}</div>
             <div className="text-2xs text-gold">{isSA ? 'سوپر ادمین' : 'پنل مدیریت'}</div>
           </div>
         </Link>
+        {showClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/8 bg-white/[0.03] text-muted transition-colors hover:border-white/15 hover:text-white"
+            aria-label="بستن منو"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
       <nav
-        className="flex-1 overflow-y-auto p-3 space-y-4
+        className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-4
           [&::-webkit-scrollbar]:w-1
           [&::-webkit-scrollbar-track]:bg-transparent
           [&::-webkit-scrollbar-thumb]:bg-white/10
@@ -409,7 +447,7 @@ export function AdminSidebar({ role }: { role: UserRole }) {
       >
         {NAV.filter((g) => canSee(g.roles, role)).map((group) => (
           <div key={group.title}>
-            <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
               {group.title}
             </p>
             <div className="space-y-0.5">
@@ -417,17 +455,16 @@ export function AdminSidebar({ role }: { role: UserRole }) {
                 .filter((item) => canSee(item.roles, role))
                 .map((item) =>
                   isBranch(item)
-                    ? <Branch key={item.label} item={item} role={role} />
-                    : <Leaf   key={item.href}  item={item} />
-                )
-              }
+                    ? <Branch key={item.label} item={item} role={role} onNavigate={onNavigate} />
+                    : <Leaf   key={item.href}  item={item} onNavigate={onNavigate} />,
+                )}
             </div>
           </div>
         ))}
       </nav>
 
       {/* Footer */}
-      <div className="shrink-0 p-3 border-t border-white/8 space-y-0.5">
+      <div className="shrink-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-white/8 space-y-0.5">
         <Link
           href="/"
           target="_blank"
@@ -437,6 +474,7 @@ export function AdminSidebar({ role }: { role: UserRole }) {
           مشاهده سایت
         </Link>
         <button
+          type="button"
           onClick={logout}
           className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-danger hover:bg-danger/10 transition-all"
         >
@@ -444,6 +482,66 @@ export function AdminSidebar({ role }: { role: UserRole }) {
           خروج از سیستم
         </button>
       </div>
-    </aside>
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  AdminSidebar
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function AdminSidebar({ role }: { role: UserRole }) {
+  const { mobileOpen, closeMobile } = useAdminNav()
+
+  return (
+    <>
+      {/* Desktop / large tablet sticky sidebar */}
+      <aside
+        className="hidden lg:flex h-screen w-64 shrink-0 flex-col sticky top-0 bg-charcoal border-l border-white/8"
+        dir="rtl"
+      >
+        <SidebarPanel role={role} />
+      </aside>
+
+      {/* Mobile / tablet drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[60] lg:hidden"
+            dir="rtl"
+          >
+            <button
+              type="button"
+              aria-label="بستن منو"
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              onClick={closeMobile}
+            />
+
+            <motion.aside
+              initial={{ x: '100%' }}
+              animate={{ x: '0%' }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+              className="absolute inset-y-0 right-0 flex w-[min(20rem,88vw)] flex-col bg-charcoal border-l border-white/10 shadow-[-24px_0_80px_rgba(0,0,0,0.75)]"
+              role="dialog"
+              aria-modal="true"
+              aria-label="منوی پنل مدیریت"
+            >
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-gold/25 to-transparent" />
+              <SidebarPanel
+                role={role}
+                showClose
+                onClose={closeMobile}
+                onNavigate={closeMobile}
+              />
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

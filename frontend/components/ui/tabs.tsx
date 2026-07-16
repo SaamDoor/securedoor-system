@@ -40,18 +40,29 @@ const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      'relative inline-flex items-center gap-1 p-1.5',
-      'rounded-2xl',
-      /* pill tray — inset shadow for "sunken" feel */
-      'bg-zinc-900/80 border border-white/[0.06]',
-      'shadow-[inset_0_2px_8px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(0,0,0,0.3)]',
-      className,
-    )}
-    {...props}
-  />
+  <div className="relative w-full">
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 rounded-r-2xl bg-gradient-to-l from-zinc-900 to-transparent sm:hidden"
+    />
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 rounded-l-2xl bg-gradient-to-r from-zinc-900 to-transparent sm:hidden"
+    />
+    <TabsPrimitive.List
+      ref={ref}
+      className={cn(
+        'relative flex w-full items-center gap-1 p-1.5',
+        'rounded-2xl',
+        'bg-zinc-900/80 border border-white/[0.06]',
+        'shadow-[inset_0_2px_8px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(0,0,0,0.3)]',
+        'overflow-x-auto overscroll-x-contain hide-scrollbar',
+        'snap-x snap-mandatory',
+        className,
+      )}
+      {...props}
+    />
+  </div>
 ))
 TabsList.displayName = TabsPrimitive.List.displayName
 
@@ -68,8 +79,9 @@ const TabsTrigger = React.forwardRef<
       ref={ref}
       value={value}
       className={cn(
-        'relative inline-flex items-center justify-center whitespace-nowrap',
-        'rounded-xl px-5 py-2 text-sm font-semibold z-10',
+        'relative inline-flex shrink-0 items-center justify-center whitespace-nowrap snap-start',
+        'rounded-xl px-4 sm:px-5 py-2.5 sm:py-2 text-sm font-semibold z-10',
+        'min-h-10 sm:min-h-0',
         'cursor-pointer select-none',
         'transition-colors duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C41E3A]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-900',

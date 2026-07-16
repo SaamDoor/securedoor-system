@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Input, Textarea } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { AdminScrollTabs } from '@/components/admin/admin-scroll-tabs'
 import { cn, productSlugFromName } from '@/lib/utils'
 import {
   createProductAction,
@@ -394,35 +395,21 @@ export function ProductForm({ product, categories }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate>
       {/* ── Tab bar ─────────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-zinc-900 border border-white/8 mb-8 overflow-x-auto hide-scrollbar">
-        {TABS.map(({ id, label, icon: Icon }) => {
-          const isActive = activeTab === id
-          const hasError =
+      <AdminScrollTabs
+        activeId={activeTab}
+        onChange={(id) => setActiveTab(id as TabId)}
+        tabs={TABS.map(({ id, label, icon }) => ({
+          id,
+          label,
+          icon,
+          hasError: Boolean(
             (id === 'basic' && (errors.name || errors.slug || errors.sku || errors.category_id)) ||
             (id === 'content' && errors.description) ||
             (id === 'pricing' && errors.price) ||
-            (id === 'seo' && (errors.meta_title || errors.meta_description))
-
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setActiveTab(id)}
-              className={cn(
-                'relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap',
-                isActive ? 'bg-gold text-black' : 'text-muted hover:text-white hover:bg-white/5',
-                hasError && !isActive && 'text-red-400',
-              )}
-            >
-              <Icon className="h-3.5 w-3.5 shrink-0" />
-              {label}
-              {hasError && !isActive && (
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500" />
-              )}
-            </button>
-          )
-        })}
-      </div>
+            (id === 'seo' && (errors.meta_title || errors.meta_description)),
+          ),
+        }))}
+      />
 
       <div className="space-y-6">
         {/* ══════════════ TAB: BASIC ══════════════ */}

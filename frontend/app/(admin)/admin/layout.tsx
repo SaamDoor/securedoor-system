@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
+import { AdminNavProvider } from "@/components/admin/admin-nav-context";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { createClient } from "@/lib/supabase/server";
@@ -29,12 +30,16 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-black">
-      <AdminSidebar role={role} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <AdminTopbar role={role} />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+    <AdminNavProvider>
+      <div className="flex min-h-screen bg-black">
+        <AdminSidebar role={role} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <AdminTopbar role={role} />
+          <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </AdminNavProvider>
   );
 }

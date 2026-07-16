@@ -1,7 +1,6 @@
-# Lightweight runtime image; app is prebuilt into ./liara-release
-# node_modules is uploaded as modules.tgz because Liara strips node_modules folders
-# Use Iran Docker mirror so build.location=iran works
-FROM registry.docker.ir/library/node:20-alpine
+# Prebuilt Next.js standalone for Liara Docker
+# modules.tgz / next-build.tgz: Liara often strips node_modules and .next from uploads
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -11,7 +10,9 @@ ENV HOSTNAME=0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY liara-release/ ./
-RUN tar -xzf modules.tgz && rm modules.tgz
+RUN tar -xzf modules.tgz && rm -f modules.tgz \
+  && tar -xzf next-build.tgz && rm -f next-build.tgz
 
 EXPOSE 3000
+# Explicit binary — do not rely on npm start
 CMD ["node", "server.js"]

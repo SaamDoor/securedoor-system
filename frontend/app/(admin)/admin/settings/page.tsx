@@ -129,7 +129,7 @@ export default function AdminSettingsPage() {
       {loading && <p className="text-sm text-[#A0A0A0]">در حال بارگذاری تنظیمات...</p>}
 
       <Tabs defaultValue="general">
-        <TabsList className="flex-wrap">
+        <TabsList className="mb-1 w-full sm:w-auto sm:flex-wrap">
           <TabsTrigger value="general">عمومی</TabsTrigger>
           <TabsTrigger value="contact">اطلاعات تماس</TabsTrigger>
           <TabsTrigger value="social">شبکه‌های اجتماعی</TabsTrigger>

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build",
-    "start": "next start",
+    "start": "node server.js",
+    "deploy:liara": "powershell -ExecutionPolicy Bypass -File ./deploy-liara.ps1",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
