@@ -12,6 +12,9 @@ const FRAME_CODE_MAX = 1110
 
 // Supabase key in the price_snapshots table
 const SNAPSHOT_KEY = 'frame_prices'
+const PRICE_CACHE_TTL_MS = 10 * 60 * 1000
+const EXTERNAL_FETCH_TIMEOUT_MS = 4_000
+const SNAPSHOT_FETCH_TIMEOUT_MS = 1_500
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,6 +36,9 @@ export interface SheetFramePrices {
    */
   lastUpdated: string
 }
+
+let cachedPrices: { value: SheetFramePrices; expiresAt: number } | null = null
+let pendingPrices: Promise<SheetFramePrices> | null = null
 
 // ─── Color map ────────────────────────────────────────────────────────────────
 
@@ -145,6 +151,7 @@ async function readSnapshot(): Promise<Snapshot | null> {
           'Content-Type': 'application/json',
         },
         cache: 'no-store',
+        signal: AbortSignal.timeout(SNAPSHOT_FETCH_TIMEOUT_MS),
       },
     )
     if (!res.ok) return null
@@ -178,9 +185,11 @@ async function upsertSnapshot(newHash: string): Promise<string> {
       },
       body: JSON.stringify({ key: SNAPSHOT_KEY, price_hash: newHash, changed_at: changedAt }),
       cache: 'no-store',
+      signal: AbortSignal.timeout(SNAPSHOT_FETCH_TIMEOUT_MS),
     })
-  } catch (err) {
-    console.error('[upsertSnapshot] error:', err)
+  } catch {
+    // Snapshot persistence is optional metadata. A network outage must not
+    // slow down or flood logs for customer-facing pages.
   }
 
   return changedAt
@@ -188,12 +197,15 @@ async function upsertSnapshot(newHash: string): Promise<string> {
 
 // ─── Main fetcher ─────────────────────────────────────────────────────────────
 
-export async function fetchFramePrices(): Promise<SheetFramePrices> {
+async function fetchFramePricesUncached(): Promise<SheetFramePrices> {
   const empty: SheetFramePrices = { frenchPrices: [], mexicanPrices: [], lastUpdated: '' }
 
   try {
     // 1. Fetch CSV from Google Sheets (ISR: revalidated every 10 min by the page)
-    const res = await fetch(CSV_URL, { next: { revalidate: 600 } })
+    const res = await fetch(CSV_URL, {
+      next: { revalidate: 600 },
+      signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS),
+    })
     if (!res.ok) throw new Error(`Google Sheets HTTP ${res.status}`)
     const text = await res.text()
 
@@ -253,8 +265,30 @@ export async function fetchFramePrices(): Promise<SheetFramePrices> {
     const lastUpdated = formatPersianDateTime(new Date(changedAtIso))
 
     return { frenchPrices, mexicanPrices, lastUpdated }
-  } catch (err) {
-    console.error('[fetchFramePrices] error:', err)
-    return empty
+  } catch {
+    return cachedPrices?.value ?? empty
   }
+}
+
+/**
+ * Share one in-flight request and keep the last successful value for ten
+ * minutes. Both the homepage and frame product page call this function.
+ */
+export async function fetchFramePrices(): Promise<SheetFramePrices> {
+  const now = Date.now()
+  if (cachedPrices && cachedPrices.expiresAt > now) return cachedPrices.value
+  if (pendingPrices) return pendingPrices
+
+  pendingPrices = fetchFramePricesUncached()
+    .then((value) => {
+      if (value.frenchPrices.length || value.mexicanPrices.length) {
+        cachedPrices = { value, expiresAt: Date.now() + PRICE_CACHE_TTL_MS }
+      }
+      return value
+    })
+    .finally(() => {
+      pendingPrices = null
+    })
+
+  return pendingPrices
 }

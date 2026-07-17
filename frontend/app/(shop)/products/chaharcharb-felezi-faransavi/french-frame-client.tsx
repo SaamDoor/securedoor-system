@@ -126,7 +126,7 @@ export function FrenchFrameClient({ frenchPrices = [], lastUpdated }: Props) {
                     fill
                     className="object-cover"
                     priority
-                    quality={95}
+                    quality={85}
                     sizes="(max-width: 1024px) 100vw, 500px"
                   />
                 </motion.div>

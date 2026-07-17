@@ -5,9 +5,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Liara (and other PaaS) use the standalone server output
   output: 'standalone',
+  // This package is the deployment root. Explicitly setting it avoids Next
+  // walking up to unrelated lockfiles and tracing unnecessary parent files.
+  outputFileTracingRoot: process.cwd(),
   // Keep CI builders under the 20-minute Liara timeout
   eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: true },
+  typescript: { ignoreBuildErrors: false },
 
   images: {
     remotePatterns: [
@@ -18,6 +21,7 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ['image/avif', 'image/webp'],
+    qualities: [75, 85],
     deviceSizes: [375, 640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 86400,

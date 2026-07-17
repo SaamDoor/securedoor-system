@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public.server'
 import { BRAND, SITE_NAME } from '@/lib/constants'
 import { ProjectsGrid } from './projects-grid'
 import type { ConstructionProject } from '@/types'
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 async function getData() {
   try {
-    const supabase = await createClient()
+    const supabase = createPublicClient()
     const { data } = await supabase
       .from('construction_projects')
       .select('id, title, slug, short_description, status, area, location, floors, units, price_from, price_to, completion_year, is_featured, thumbnail_url, amenities')
@@ -20,8 +20,7 @@ async function getData() {
       .order('is_featured', { ascending: false })
       .order('created_at', { ascending: false })
     return (data ?? []) as Partial<ConstructionProject>[]
-  } catch (err) {
-    console.error('[ProjectsPage] getData failed:', err)
+  } catch {
     return []
   }
 }

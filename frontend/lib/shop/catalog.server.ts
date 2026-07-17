@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public.server'
 import type { Product, StockStatus } from '@/types'
 import type { ShopCatalogParams, ShopCategory } from '@/lib/shop/catalog.types'
 
@@ -138,7 +138,7 @@ export function mapShopProduct(row: RawProduct): Product {
 }
 
 export async function fetchShopCategories(): Promise<ShopCategory[]> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const [{ data: categories, error }, { data: products, error: productsError }] = await Promise.all([
     supabase
@@ -208,7 +208,7 @@ function resolveCategoryIds(
 }
 
 export async function fetchShopCatalog(params: ShopCatalogParams = {}): Promise<ShopCatalogResult> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const page = Math.max(1, params.page ?? 1)
   const limit = Math.max(1, Math.min(48, params.limit ?? PRODUCTS_PER_PAGE))
   const from = (page - 1) * limit
@@ -279,7 +279,7 @@ export async function fetchShopCatalog(params: ShopCatalogParams = {}): Promise<
 }
 
 export async function fetchFeaturedShopProducts(limit = 8): Promise<Product[]> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data, error } = await supabase
     .from('products')
     .select(PRODUCT_SELECT)
@@ -307,7 +307,7 @@ export async function fetchFeaturedShopProducts(limit = 8): Promise<Product[]> {
 }
 
 export async function fetchShopProductBySlug(slug: string): Promise<Product | null> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data, error } = await supabase
     .from('products')
     .select(PRODUCT_SELECT)
@@ -329,7 +329,7 @@ export async function fetchRelatedShopProducts(
   excludeId: string,
   limit = 4,
 ): Promise<Product[]> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data, error } = await supabase
     .from('products')
     .select(PRODUCT_SELECT)

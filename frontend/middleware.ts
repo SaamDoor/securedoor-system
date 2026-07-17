@@ -28,6 +28,13 @@ const PREFIX_ACCESS: Array<{ prefix: string; allowed: readonly UserRole[] }> = [
 
 const AUTH_ROUTES = ["/auth/login", "/auth/register"];
 
+function needsAuthCheck(pathname: string) {
+  return (
+    AUTH_ROUTES.some((route) => pathname.startsWith(route)) ||
+    PREFIX_ACCESS.some(({ prefix }) => pathname.startsWith(prefix))
+  );
+}
+
 type CookieSetOptions = Parameters<
   typeof NextResponse.prototype.cookies.set
 >[2];
@@ -49,6 +56,52 @@ export async function middleware(request: NextRequest) {
   // (and any verification bot) down with it. Fail open: on any unexpected
   // error, just let the request through unauthenticated rather than crash.
   try {
+    const { pathname } = request.nextUrl
+
+    // Fast path: GSC / static verification files must never touch Supabase
+    if (
+      pathname.startsWith('/google') &&
+      pathname.endsWith('.html')
+    ) {
+      return NextResponse.next()
+    }
+
+    // Public pages do not need a remote auth lookup. Calling getUser() here
+    // made every marketing/catalog request wait for Supabase and amplified a
+    // transient DNS outage into multi-second page loads and noisy errors.
+    if (!needsAuthCheck(pathname)) {
+      const response = NextResponse.next({ request })
+      response.headers.set('X-Robots-Tag', 'index, follow')
+      return response
+    }
+
+    // Fast path: public marketing pages for crawlers — skip auth round-trip
+    const ua = request.headers.get('user-agent') ?? ''
+    const isBot =
+      /googlebot|google-inspectiontool|bingbot|yandex|duckduckbot|baiduspider|facebookexternalhit|twitterbot|linkedinbot|slurp|applebot/i.test(
+        ua,
+      )
+    const isPublicPath =
+      pathname === '/' ||
+      pathname.startsWith('/products') ||
+      pathname.startsWith('/collections') ||
+      pathname.startsWith('/blog') ||
+      pathname.startsWith('/about') ||
+      pathname.startsWith('/contact') ||
+      pathname.startsWith('/faq') ||
+      pathname.startsWith('/warranty') ||
+      pathname.startsWith('/certificates') ||
+      pathname.startsWith('/privacy') ||
+      pathname.startsWith('/terms') ||
+      pathname.startsWith('/projects') ||
+      pathname.startsWith('/tools')
+
+    if (isBot && isPublicPath) {
+      const res = NextResponse.next({ request })
+      res.headers.set('X-Robots-Tag', 'index, follow')
+      return res
+    }
+
     return await handleMiddleware(request);
   } catch (err) {
     console.error("[Middleware Fatal Error]:", err);
@@ -170,6 +223,6 @@ async function handleMiddleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|fonts|images|icons|.*\\.(?:svg|png|jpg|jpeg|webp|avif|ico|gif|woff|woff2|ttf|otf)).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|google[^/]*\\.html|fonts|images|icons|.*\\.(?:svg|png|jpg|jpeg|webp|avif|ico|gif|html|woff|woff2|ttf|otf)).*)",
   ],
 };

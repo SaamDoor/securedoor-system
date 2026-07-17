@@ -46,7 +46,9 @@ export const metadata: Metadata = {
   creator: 'گروه صنعتی مشعوف',
   publisher: 'گروه صنعتی مشعوف',
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    google:
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+      'GNnoKC0kfU3iaBodMAd9KZS4imIDAWH26EZsKAQmBOs',
   },
   alternates: {
     canonical: SITE_URL,

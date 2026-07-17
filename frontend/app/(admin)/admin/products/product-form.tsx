@@ -22,6 +22,10 @@ import {
   uploadProductImagesAction,
 } from './actions'
 import {
+  compressProductImageFiles,
+  PRODUCT_UPLOAD_MAX_BYTES,
+} from '@/lib/admin/compress-product-image.client'
+import {
   type AdminProductImageInput, type AdminProductSpecificationInput,
 } from '@/lib/api/products'
 import { productFormSchema, type ProductFormData } from '@/lib/validations/product'
@@ -247,10 +251,15 @@ export function ProductForm({ product, categories }: Props) {
     if (!files?.length) return
     setUploading(true)
     try {
+      const original = Array.from(files)
+      toast.message('در حال فشرده‌سازی تصاویر تا سقف ۲۰۰ کیلوبایت…')
+      const compressed = await compressProductImageFiles(original)
+
       const formData = new FormData()
-      Array.from(files).forEach((file) => formData.append('files', file))
+      compressed.forEach((file) => formData.append('files', file))
       const result = await uploadProductImagesAction(formData)
       if (!result.ok) throw new Error(result.error)
+
       setGallery((prev) => {
         const next = [
           ...prev,
@@ -263,7 +272,16 @@ export function ProductForm({ product, categories }: Props) {
         ]
         return next.map((img, order) => ({ ...img, order }))
       })
-      toast.success(`${result.urls.length} تصویر با فرمت یکسان ذخیره شد`)
+
+      const beforeKb = Math.round(
+        original.reduce((sum, file) => sum + file.size, 0) / 1024,
+      )
+      const afterKb = Math.round(
+        compressed.reduce((sum, file) => sum + file.size, 0) / 1024,
+      )
+      toast.success(
+        `${result.urls.length} تصویر فشرده شد (${beforeKb}KB → ${afterKb}KB، حداکثر ${Math.round(PRODUCT_UPLOAD_MAX_BYTES / 1024)}KB)`,
+      )
     } catch (err) {
       toast.error('خطا در آپلود تصویر: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
@@ -693,7 +711,11 @@ export function ProductForm({ product, categories }: Props) {
           <Section title="تصاویر محصول">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted">هر تصویر هنگام آپلود به <span className="text-gold">WebP مربع ۱۲۰۰×۱۲۰۰</span> تبدیل می‌شود.</p>
+                <p className="text-sm text-muted">
+                  هر تصویر قبل از ذخیره در مرورگر فشرده می‌شود:{' '}
+                  <span className="text-gold">حداکثر ۲۰۰ کیلوبایت</span>
+                  {' '}· WebP مربع تا ۱۲۰۰×۱۲۰۰
+                </p>
                 <p className="text-xs text-muted/80">فرمت ورودی: JPG / PNG / WebP / AVIF — حداکثر ۱۵ مگابایت. با دکمه‌های چپ/راست ترتیب را عوض کنید.</p>
               </div>
               <label className={cn(
@@ -709,8 +731,8 @@ export function ProductForm({ product, categories }: Props) {
             {gallery.length === 0 ? (
               <div className="text-center py-16 text-muted border-2 border-dashed border-white/15 rounded-xl">
                 <ImageIcon className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">تصاویر را انتخاب کنید تا استانداردسازی و ذخیره شوند</p>
-                <p className="text-xs mt-1 opacity-60">خروجی نهایی: WebP · ۱۲۰۰×۱۲۰۰ · کیفیت ۸۲</p>
+                <p className="text-sm">تصاویر را انتخاب کنید تا فشرده و ذخیره شوند</p>
+                <p className="text-xs mt-1 opacity-60">خروجی نهایی: WebP · تا ۱۲۰۰×۱۲۰۰ · حداکثر ۲۰۰KB</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

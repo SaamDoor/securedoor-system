@@ -9,7 +9,7 @@ const buttonVariants = cva(
   [
     'inline-flex items-center justify-center gap-2',
     'font-semibold select-none',
-    'transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+    'transition-all duration-300 ease-out',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C41E3A]/60',
     'focus-visible:ring-offset-2 focus-visible:ring-offset-black',
     'disabled:pointer-events-none disabled:opacity-40 disabled:scale-100',

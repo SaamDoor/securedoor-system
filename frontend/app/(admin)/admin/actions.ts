@@ -62,6 +62,10 @@ import {
   fetchPayoutsServer,
   fetchInvoicesServer,
 } from '@/lib/admin/misc.server'
+import {
+  fetchLiaraHealth,
+  fetchSupabaseHealth,
+} from '@/lib/admin/system-health.server'
 import type { OrderStatus } from '@/types'
 
 function revalidate(...paths: string[]) {
@@ -74,6 +78,60 @@ export async function getDashboardStatsAction() {
     return actionOk(await fetchDashboardStatsServer())
   } catch (e) {
     return actionError(e instanceof Error ? e.message : 'خطا')
+  }
+}
+
+export async function getSystemResourcesAction() {
+  try {
+    const { role } = await requirePanelAdmin()
+    if (role !== 'super_admin') {
+      throw new Error('مشاهده منابع سرور فقط برای سوپر ادمین مجاز است')
+    }
+
+    const [supabase, liara] = await Promise.all([
+      fetchSupabaseHealth(),
+      fetchLiaraHealth(),
+    ])
+
+    return actionOk({ supabase, liara })
+  } catch (e) {
+    return actionError(e instanceof Error ? e.message : 'خطا در دریافت منابع سیستم')
+  }
+}
+
+export async function restartLiaraAppAction() {
+  try {
+    const { role } = await requirePanelAdmin()
+    if (role !== 'super_admin') {
+      throw new Error('راه‌اندازی مجدد سرور فقط برای سوپر ادمین مجاز است')
+    }
+
+    const token = process.env.LIARA_API_TOKEN
+    const appName = process.env.LIARA_APP_NAME || 'mashuf'
+    if (!token) throw new Error('LIARA_API_TOKEN تنظیم نشده است')
+
+    const response = await fetch(
+      `https://api.iran.liara.ir/v1/projects/${encodeURIComponent(appName)}/actions/restart`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(12_000),
+      },
+    )
+
+    if (!response.ok) {
+      throw new Error(
+        response.status === 401
+          ? 'توکن API لیارا معتبر نیست'
+          : `ری‌استارت لیارا با کد ${response.status} ناموفق بود`,
+      )
+    }
+
+    revalidate('/admin/health')
+    return actionOk(true)
+  } catch (e) {
+    return actionError(e instanceof Error ? e.message : 'ری‌استارت لیارا ناموفق بود')
   }
 }
 

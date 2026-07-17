@@ -19,6 +19,22 @@ import {
   updateProductServer,
   type CategorySaveInput,
 } from '@/lib/api/products-admin.server'
+import {
+  adminCatalogFilterSchema,
+  inventoryBulkSchema,
+  inventoryRowPatchSchema,
+  pricingBulkSchema,
+  pricingRowPatchSchema,
+  type AdminCatalogFilter,
+} from '@/lib/admin/catalog-ops'
+import {
+  bulkAdjustInventoryServer,
+  bulkAdjustPricingServer,
+  fetchAdminInventoryPageServer,
+  fetchAdminPricingPageServer,
+  patchInventoryRowsServer,
+  patchPricingRowsServer,
+} from '@/lib/api/products-catalog-ops.server'
 
 async function debugLog(location: string, message: string, data: Record<string, unknown>, hypothesisId: string) {
   const entry = JSON.stringify({
@@ -165,6 +181,90 @@ export async function updateProductAction(
     return { ok: true as const }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'خطا در به‌روزرسانی محصول'
+    return { ok: false as const, error: message }
+  }
+}
+
+function revalidateCatalogPaths() {
+  revalidatePath('/admin/products')
+  revalidatePath('/admin/products/inventory')
+  revalidatePath('/admin/pricing/products')
+  revalidatePath('/products')
+  revalidatePath('/')
+}
+
+export async function fetchAdminInventoryPageAction(rawFilter: Partial<AdminCatalogFilter> = {}) {
+  try {
+    await requireCatalogAdmin()
+    const filter = adminCatalogFilterSchema.parse(rawFilter)
+    const page = await fetchAdminInventoryPageServer(filter)
+    return { ok: true as const, ...page }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'خطا در بارگذاری موجودی'
+    return { ok: false as const, error: message }
+  }
+}
+
+export async function saveInventoryPatchesAction(rawRows: unknown) {
+  try {
+    await requireCatalogAdmin()
+    const rows = inventoryRowPatchSchema.array().min(1).parse(rawRows)
+    const updated = await patchInventoryRowsServer(rows)
+    revalidateCatalogPaths()
+    return { ok: true as const, updated }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'ذخیره موجودی ناموفق بود'
+    return { ok: false as const, error: message }
+  }
+}
+
+export async function bulkAdjustInventoryAction(rawInput: unknown) {
+  try {
+    await requireCatalogAdmin()
+    const input = inventoryBulkSchema.parse(rawInput)
+    const updated = await bulkAdjustInventoryServer(input)
+    revalidateCatalogPaths()
+    return { ok: true as const, updated }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'عملیات گروهی موجودی ناموفق بود'
+    return { ok: false as const, error: message }
+  }
+}
+
+export async function fetchAdminPricingPageAction(rawFilter: Partial<AdminCatalogFilter> = {}) {
+  try {
+    await requireCatalogAdmin()
+    const filter = adminCatalogFilterSchema.parse(rawFilter)
+    const page = await fetchAdminPricingPageServer(filter)
+    return { ok: true as const, ...page }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'خطا در بارگذاری قیمت‌ها'
+    return { ok: false as const, error: message }
+  }
+}
+
+export async function savePricingPatchesAction(rawRows: unknown) {
+  try {
+    await requireCatalogAdmin()
+    const rows = pricingRowPatchSchema.array().min(1).parse(rawRows)
+    const updated = await patchPricingRowsServer(rows)
+    revalidateCatalogPaths()
+    return { ok: true as const, updated }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'ذخیره قیمت ناموفق بود'
+    return { ok: false as const, error: message }
+  }
+}
+
+export async function bulkAdjustPricingAction(rawInput: unknown) {
+  try {
+    await requireCatalogAdmin()
+    const input = pricingBulkSchema.parse(rawInput)
+    const updated = await bulkAdjustPricingServer(input)
+    revalidateCatalogPaths()
+    return { ok: true as const, updated }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'عملیات گروهی قیمت ناموفق بود'
     return { ok: false as const, error: message }
   }
 }

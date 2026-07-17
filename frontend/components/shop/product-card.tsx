@@ -149,7 +149,7 @@ export function ProductCard({ product, viewMode = 'grid', className }: ProductCa
             src={primaryImage.url}
             alt={primaryImage.alt ?? product.name}
             fill
-            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.07]"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (

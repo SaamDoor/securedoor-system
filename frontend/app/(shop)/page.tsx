@@ -97,23 +97,18 @@ function resolveCategoryVisual(name: string, slug: string, imageUrl: string | nu
 }
 
 export default async function HomePage() {
-  let frenchPrices: import('@/lib/api/google-sheets').PriceRow[] = []
-  let mexicanPrices: import('@/lib/api/google-sheets').PriceRow[] = []
-  let lastUpdated = ''
-
-  try {
-    const prices = await fetchFramePrices()
-    frenchPrices = prices.frenchPrices
-    mexicanPrices = prices.mexicanPrices
-    lastUpdated = prices.lastUpdated
-  } catch (error) {
-    console.error('[Google Sheets API Error]:', error)
-  }
-
-  const [featuredProducts, shopCategories] = await Promise.all([
+  // These sources are independent. Running them in parallel prevents a slow
+  // Google/Supabase endpoint from blocking the other homepage sections.
+  const [prices, featuredProducts, shopCategories] = await Promise.all([
+    fetchFramePrices().catch(() => ({
+      frenchPrices: [],
+      mexicanPrices: [],
+      lastUpdated: '',
+    })),
     fetchFeaturedShopProducts(8).catch(() => []),
     fetchShopCategories().catch(() => []),
   ])
+  const { frenchPrices, mexicanPrices, lastUpdated } = prices
 
   const featuredCards = featuredProducts.slice(0, 8).map((product) => {
     const primary = product.images.find((img) => img.isPrimary) ?? product.images[0]

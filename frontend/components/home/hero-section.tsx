@@ -110,7 +110,7 @@ export function HeroSection() {
               src={heroSlides[activeSlide].desktop}
               alt={heroSlides[activeSlide].alt}
               fill priority
-              quality={95}
+              quality={85}
               className="hidden md:block object-cover object-center"
               sizes="100vw"
             />
@@ -118,7 +118,7 @@ export function HeroSection() {
               src={heroSlides[activeSlide].mobile}
               alt={heroSlides[activeSlide].alt}
               fill priority
-              quality={95}
+              quality={85}
               className="block md:hidden object-cover object-[60%_top]"
               sizes="100vw"
             />

@@ -74,7 +74,13 @@ export function FaqSection() {
                 </div>
                 <div>
                   <div className="font-semibold text-white text-sm">تلفن پشتیبانی</div>
-                  <a href="tel:09003286539" className="text-xs text-gold font-medium hover:text-gold-light transition-colors">۰۹۰۰ ۳۲۸ ۶۵۳۹</a>
+                  <a
+                    href="tel:09003286539"
+                    className="text-xs text-gold font-medium hover:text-gold-light transition-colors"
+                    dir="ltr"
+                  >
+                    0900 328 6539
+                  </a>
                 </div>
               </div>
             </div>

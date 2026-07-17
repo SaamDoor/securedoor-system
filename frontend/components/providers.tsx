@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { startTransition, useState, useEffect, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useSettingsStore } from "@/store/settings.store";
 import { useAuthStore } from "@/store/auth.store";
@@ -32,6 +32,7 @@ function StoreHydrator() {
  */
 function AuthStateListener() {
   const router = useRouter();
+  const pathname = usePathname();
   const initializeFromCookie = useAuthStore(
     (state) => state.initializeFromCookie,
   );
@@ -42,6 +43,22 @@ function AuthStateListener() {
     let isMounted = true;
 
     initializeFromCookie();
+
+    const needsLiveSession =
+      pathname.startsWith("/auth") ||
+      pathname.startsWith("/admin") ||
+      pathname.startsWith("/partner") ||
+      pathname.startsWith("/user") ||
+      pathname.startsWith("/checkout") ||
+      document.cookie.includes("user_role=");
+
+    // Anonymous visitors on public pages do not need an auth network
+    // round-trip. The cookie hydration above is enough for the initial UI.
+    if (!needsLiveSession) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
     // A missing/misconfigured Supabase env var makes createClient() throw
@@ -91,7 +108,7 @@ function AuthStateListener() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [initializeFromCookie, router, setLoading, syncSession]);
+  }, [initializeFromCookie, pathname, router, setLoading, syncSession]);
 
   return null;
 }

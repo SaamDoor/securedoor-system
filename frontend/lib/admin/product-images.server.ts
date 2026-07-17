@@ -1,12 +1,13 @@
 import sharp from 'sharp'
 import { createClient } from '@/lib/supabase/server'
 
-/** Standard product gallery size — square WebP for consistent listing/detail cards. */
+/** Standard product gallery size — square WebP, max 200KB after compress. */
 export const PRODUCT_IMAGE = {
   width: 1200,
   height: 1200,
   quality: 82,
   format: 'webp' as const,
+  maxOutputBytes: 200 * 1024,
   maxInputBytes: 15 * 1024 * 1024,
   allowedMime: new Set([
     'image/jpeg',
@@ -31,22 +32,43 @@ function assertImageFile(file: File) {
   }
 }
 
-/** Normalize any uploaded image to 1200×1200 WebP (cover crop, EXIF-rotated). */
+/** Normalize any uploaded image to ≤200KB square WebP (cover crop, EXIF-rotated). */
 export async function normalizeProductImage(file: File): Promise<Buffer> {
   assertImageFile(file)
   const input = Buffer.from(await file.arrayBuffer())
 
   try {
-    return await sharp(input, { failOn: 'none' })
-      .rotate()
-      .resize(PRODUCT_IMAGE.width, PRODUCT_IMAGE.height, {
-        fit: 'cover',
-        position: 'centre',
-        withoutEnlargement: false,
-      })
-      .webp({ quality: PRODUCT_IMAGE.quality, effort: 4 })
-      .toBuffer()
-  } catch {
+    let edge = PRODUCT_IMAGE.width
+    let quality = PRODUCT_IMAGE.quality
+    let buffer: Buffer | null = null
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      buffer = await sharp(input, { failOn: 'none' })
+        .rotate()
+        .resize(edge, edge, {
+          fit: 'cover',
+          position: 'centre',
+          withoutEnlargement: false,
+        })
+        .webp({ quality, effort: 4 })
+        .toBuffer()
+
+      if (buffer.byteLength <= PRODUCT_IMAGE.maxOutputBytes) return buffer
+
+      if (quality > 48) {
+        quality -= 8
+      } else {
+        edge = Math.max(480, Math.round(edge * 0.85))
+        quality = Math.max(42, quality - 4)
+      }
+    }
+
+    if (!buffer || buffer.byteLength > PRODUCT_IMAGE.maxOutputBytes) {
+      throw new Error(`تصویر «${file.name}» پس از فشرده‌سازی از ۲۰۰ کیلوبایت بزرگ‌تر است`)
+    }
+    return buffer
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('۲۰۰ کیلوبایت')) throw error
     throw new Error(`پردازش تصویر «${file.name}» ناموفق بود`)
   }
 }

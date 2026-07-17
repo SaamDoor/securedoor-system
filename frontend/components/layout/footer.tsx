@@ -286,7 +286,6 @@ export function Footer({
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      prefetch={'prefetch' in link ? link.prefetch : undefined}
                       className="text-sm text-zinc-500 hover:text-primary transition-all duration-200 hover:translate-x-[-3px] inline-block"
                     >
                       {link.label}
@@ -307,7 +306,6 @@ export function Footer({
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      prefetch={'prefetch' in link ? link.prefetch : undefined}
                       className="text-sm text-zinc-500 hover:text-primary transition-all duration-200 hover:translate-x-[-3px] inline-block"
                     >
                       {link.label}
